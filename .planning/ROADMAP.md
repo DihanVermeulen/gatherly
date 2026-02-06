@@ -31,10 +31,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Tailwind CSS upgraded from v2 to v3.4.19+ without breaking existing UI
   4. Existing events from v1.0 continue to work with new schema (backward compatibility verified)
   5. Atomic claiming operations prevent duplicate claims via database constraints
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: TBD during plan-phase
+- [ ] 01-01-PLAN.md -- Tailwind CSS v3 upgrade and Konsta UI v5 integration
+- [ ] 01-02-PLAN.md -- Database schema migration (wishlists, invites, claims) and Event type extension
 
 ### Phase 2: Wishlist Core
 **Goal**: Participants can create, edit, and view wishlists with images, descriptions, and links
@@ -117,7 +118,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Privacy | 0/TBD | Not started | - |
+| 1. Foundation & Privacy | 0/2 | Planned | - |
 | 2. Wishlist Core | 0/TBD | Not started | - |
 | 3. Claiming System | 0/TBD | Not started | - |
 | 4. Invite System | 0/TBD | Not started | - |
