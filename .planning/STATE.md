@@ -4,8 +4,8 @@
 
 Phase: Not started (researching)
 Plan: —
-Status: Researching domain ecosystem for v2.0 features
-Last activity: 2026-02-06 — Project initialized with v2.0 redesign scope
+Status: Completing research for milestone v2.0
+Last activity: 2026-02-06 — Starting milestone v2.0 (wishlists, claiming, invites, UI redesign)
 
 ## Project Reference
 
