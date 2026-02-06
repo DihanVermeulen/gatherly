@@ -42,13 +42,13 @@ Requirements for v2.0 milestone. Each maps to roadmap phases.
 
 ### Technical Requirements
 
-- [ ] **TECH-01**: Tailwind CSS upgraded from v2 to v3.4.19+
-- [ ] **TECH-02**: Konsta UI v5.0.0 integrated for iOS-style components
-- [ ] **TECH-03**: Database schema includes wishlists table with proper indexes
-- [ ] **TECH-04**: Database schema includes invites table for tracking
-- [ ] **TECH-05**: Gift claiming uses atomic database operations (INSERT ON CONFLICT)
+- [x] **TECH-01**: Tailwind CSS upgraded from v2 to v3.4.19+
+- [x] **TECH-02**: Konsta UI v5.0.0 integrated for iOS-style components
+- [x] **TECH-03**: Database schema includes wishlists table with proper indexes
+- [x] **TECH-04**: Database schema includes invites table for tracking
+- [x] **TECH-05**: Gift claiming uses atomic database operations (INSERT ON CONFLICT)
 - [ ] **TECH-06**: Image uploads are compressed before storage (max 800px width, 80% quality)
-- [ ] **TECH-07**: Wishlist data extends EventsContext with backward compatibility
+- [x] **TECH-07**: Wishlist data extends EventsContext with backward compatibility
 
 ## Future Requirements (v2.1+)
 
@@ -110,13 +110,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | UI-05 | Phase 5 | Pending |
 | UI-06 | Phase 5 | Pending |
 | UI-07 | Phase 5 | Pending |
-| TECH-01 | Phase 1 | Pending |
-| TECH-02 | Phase 1 | Pending |
-| TECH-03 | Phase 1 | Pending |
-| TECH-04 | Phase 1 | Pending |
-| TECH-05 | Phase 1 | Pending |
+| TECH-01 | Phase 1 | Complete |
+| TECH-02 | Phase 1 | Complete |
+| TECH-03 | Phase 1 | Complete |
+| TECH-04 | Phase 1 | Complete |
+| TECH-05 | Phase 1 | Complete |
 | TECH-06 | Phase 6 | Pending |
-| TECH-07 | Phase 1 | Pending |
+| TECH-07 | Phase 1 | Complete |
 
 **Coverage:**
 - v2.0 requirements: 28 total
@@ -125,4 +125,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-06*
-*Last updated: 2026-02-06 after roadmap creation*
+*Last updated: 2026-02-06 after Phase 1 completion*

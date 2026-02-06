@@ -12,7 +12,7 @@ Transform Gatherly from a functional Secret Santa app into a mobile-first gift e
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation & Privacy** - Database schema, authorization, Tailwind upgrade
+- [x] **Phase 1: Foundation & Privacy** - Database schema, authorization, Tailwind upgrade
 - [ ] **Phase 2: Wishlist Core** - CRUD operations with images and links
 - [ ] **Phase 3: Claiming System** - Anonymous claiming with race condition protection
 - [ ] **Phase 4: Invite System** - Shareable links and QR codes
@@ -118,7 +118,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Privacy | 0/2 | Planned | - |
+| 1. Foundation & Privacy | 2/2 | Complete | 2026-02-06 |
 | 2. Wishlist Core | 0/TBD | Not started | - |
 | 3. Claiming System | 0/TBD | Not started | - |
 | 4. Invite System | 0/TBD | Not started | - |
