@@ -4,7 +4,10 @@ import { Trash2, Copy, Eye, EyeOff, Plus, X } from "lucide-react";
 import { useState } from "react";
 
 const HomePage = () => {
-  const { state: { events }, dispatch } = useEvents();
+  const {
+    state: { events },
+    dispatch,
+  } = useEvents();
   const [currentView, setCurrentView] = useState("events");
   const [newEventName, setNewEventName] = useState("");
   const [editingEventId, setEditingEventId] = useState(null);
@@ -19,7 +22,6 @@ const HomePage = () => {
   const [revealedCodes, setRevealedCodes] = useState({});
   const [copiedCode, setCopiedCode] = useState(null);
 
-
   const createEvent = () => {
     if (!newEventName.trim()) return;
     const event = {
@@ -33,7 +35,7 @@ const HomePage = () => {
       date: new Date().toISOString(),
       participants: [],
     };
-    dispatch({ type: 'ADD_EVENT', payload: event });
+    dispatch({ type: "ADD_EVENT", payload: event });
     setNewEventName("");
   };
   const startEditEvent = (event) => {
@@ -47,13 +49,13 @@ const HomePage = () => {
   };
   const saveEvent = () => {
     if (editingEvent) {
-      dispatch({ 
-        type: 'UPDATE_EVENT', 
+      dispatch({
+        type: "UPDATE_EVENT",
         payload: {
           ...editingEvent,
           couples: selectedCouples,
           coupleCrossing,
-        }
+        },
       });
     }
     setEditingEventId(null);
@@ -66,121 +68,31 @@ const HomePage = () => {
   const addPersonToEvent = () => {
     if (!newPerson.trim() || !editingEvent) return;
     if (editingEvent.people.includes(newPerson)) return;
-    
+
     const updatedEvent = {
       ...editingEvent,
       people: [...editingEvent.people, newPerson],
     };
-    
-    dispatch({ type: 'UPDATE_EVENT', payload: updatedEvent });
+
+    dispatch({ type: "UPDATE_EVENT", payload: updatedEvent });
     setEditingEvent(updatedEvent);
     setNewPerson("");
   };
   const removePersonFromEvent = (person) => {
     if (!editingEvent) return;
-    
+
     const updatedEvent = {
       ...editingEvent,
       people: editingEvent.people.filter((p) => p !== person),
     };
-    
-    dispatch({ type: 'UPDATE_EVENT', payload: updatedEvent });
+
+    dispatch({ type: "UPDATE_EVENT", payload: updatedEvent });
     setEditingEvent(updatedEvent);
-    setSelectedCouples(selectedCouples.filter((couple) => !couple.includes(person)));
+    setSelectedCouples(
+      selectedCouples.filter((couple) => !couple.includes(person)),
+    );
     setFirstPersonSelected(null);
   };
-
-  // const createEvent = () => {
-  //   if (!newEventName.trim()) return;
-  //   const event = {
-  //     id: Date.now(),
-  //     name: newEventName,
-  //     people: [],
-  //     couples: [],
-  //     assignments: null,
-  //     coupleCrossing: false,
-  //     gifts: {},
-  //   };
-  //   setEvents([...events, event]);
-  //   setNewEventName("");
-  // };
-
-  // const startEditEvent = (event) => {
-  //   setEditingEventId(event.id);
-  //   setEditingEvent({ ...event });
-  //   setSelectedCouples([...event.couples]);
-  //   setCoupleCrossing(event.coupleCrossing);
-  //   setGiftCount(1);
-  //   setFirstPersonSelected(null);
-  //   setCurrentView("edit");
-  // };
-
-  // const saveEvent = () => {
-  //   if (editingEvent) {
-  //     dispatch({ 
-  //       type: 'UPDATE_EVENT', 
-  //       payload: {
-  //         ...editingEvent,
-  //         couples: selectedCouples,
-  //         coupleCrossing,
-  //       }
-  //     });
-  //   }
-  //   setEditingEventId(null);
-  //   setEditingEvent(null);
-  //   setSelectedCouples([]);
-  //   setGiftCount(1);
-  //   setFirstPersonSelected(null);
-  //   setCurrentView("events");
-  // };
-  // const addPersonToEvent = () => {
-  //   if (!newPerson.trim() || !editingEvent) return;
-  //   if (editingEvent.people.includes(newPerson)) return;
-    
-  //   const updatedEvent = {
-  //     ...editingEvent,
-  //     people: [...editingEvent.people, newPerson],
-  //   };
-    
-  //   dispatch({ type: 'UPDATE_EVENT', payload: updatedEvent });
-  //   setEditingEvent(updatedEvent);
-  //   setNewPerson("");
-  // };
-  // const removePersonFromEvent = (person) => {
-  //   if (!editingEvent) return;
-    
-  //   const updatedEvent = {
-  //     ...editingEvent,
-  //     people: editingEvent.people.filter((p) => p !== person),
-  //   };
-    
-  //   dispatch({ type: 'UPDATE_EVENT', payload: updatedEvent });
-  //   setEditingEvent(updatedEvent);
-  //   setSelectedCouples(selectedCouples.filter((couple) => !couple.includes(person)));
-  //   setFirstPersonSelected(null);
-  // };
-
-  // const addPersonToEvent = () => {
-  //   if (!newPerson.trim() || !editingEvent) return;
-  //   if (editingEvent.people.includes(newPerson)) return;
-  //   setEditingEvent({
-  //     ...editingEvent,
-  //     people: [...editingEvent.people, newPerson],
-  //   });
-  //   setNewPerson("");
-  // };
-
-  // const removePersonFromEvent = (person) => {
-  //   if (!editingEvent) return;
-  //   setEditingEvent({
-  //     ...editingEvent,
-  //     people: editingEvent.people.filter((p) => p !== person),
-  //   });
-  //   setSelectedCouples(
-  //     selectedCouples.filter((couple) => !couple.includes(person))
-  //   );
-  //   setFirstPersonSelected(null);
-  // };
 
   const generateAssignments = () => {
     if (!editingEvent || editingEvent.people.length < 2) return;
@@ -195,7 +107,7 @@ const HomePage = () => {
           people.length
         } people, each person can buy for maximum ${
           people.length - 1
-        } different people.`
+        } different people.`,
       );
       return;
     }
@@ -228,7 +140,7 @@ const HomePage = () => {
               if (assigned.has(receiver)) return false;
               if (!coupleCrossing && giverCouple) {
                 let receiverCouple = selectedCouples.find((c) =>
-                  c.includes(receiver)
+                  c.includes(receiver),
                 );
                 if (receiverCouple && giverCouple === receiverCouple)
                   return false;
@@ -245,7 +157,7 @@ const HomePage = () => {
           // Pick from those with least gifts received
           const minReceived = receivedCount[validReceivers[0]];
           const candidates = validReceivers.filter(
-            (r) => receivedCount[r] === minReceived
+            (r) => receivedCount[r] === minReceived,
           );
           const receiver =
             candidates[Math.floor(Math.random() * candidates.length)];
@@ -261,7 +173,7 @@ const HomePage = () => {
       if (valid) {
         // Verify all received exactly targetGiftCount
         const allCorrect = people.every(
-          (person) => receivedCount[person] === targetGiftCount
+          (person) => receivedCount[person] === targetGiftCount,
         );
         if (allCorrect) {
           assignments = tempAssignments;
@@ -283,7 +195,7 @@ const HomePage = () => {
       }
     } else {
       alert(
-        "Could not generate valid assignments. Try adjusting the number of gifts per person or couple constraints."
+        "Could not generate valid assignments. Try adjusting the number of gifts per person or couple constraints.",
       );
     }
   };
@@ -294,7 +206,7 @@ const HomePage = () => {
   };
 
   const deleteEvent = (id) => {
-    dispatch({ type: 'DELETE_EVENT', payload: id });
+    dispatch({ type: "DELETE_EVENT", payload: id });
   };
 
   const toggleCodeReveal = (code) => {
@@ -467,8 +379,8 @@ const HomePage = () => {
                         setGiftCount(
                           Math.min(
                             editingEvent.people.length - 1,
-                            giftCount + 1
-                          )
+                            giftCount + 1,
+                          ),
                         )
                       }
                       className="bg-red-600 hover:bg-red-700 text-white w-10 h-10 rounded-lg transition-colors flex items-center justify-center"
@@ -519,7 +431,7 @@ const HomePage = () => {
                             <button
                               onClick={() =>
                                 setSelectedCouples(
-                                  selectedCouples.filter((_, i) => i !== idx)
+                                  selectedCouples.filter((_, i) => i !== idx),
                                 )
                               }
                               className="text-red-600 hover:text-red-700 transition-colors"
@@ -539,7 +451,7 @@ const HomePage = () => {
                   <div className="grid grid-cols-2 gap-2">
                     {editingEvent.people
                       .filter(
-                        (p) => !selectedCouples.some((c) => c.includes(p))
+                        (p) => !selectedCouples.some((c) => c.includes(p)),
                       )
                       .map((person) => (
                         <button
@@ -599,7 +511,7 @@ const HomePage = () => {
                       ([person, receivers]) => {
                         const code = generateCode(
                           person,
-                          editingEvent.assignments
+                          editingEvent.assignments,
                         );
                         const isRevealed = revealedCodes[code];
                         return (
@@ -641,7 +553,7 @@ const HomePage = () => {
                             </div>
                           </div>
                         );
-                      }
+                      },
                     )}
                   </div>
                   <button
@@ -668,4 +580,3 @@ const HomePage = () => {
 };
 
 export default HomePage;
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       

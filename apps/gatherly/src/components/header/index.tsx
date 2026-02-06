@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router";
 import { Menu } from "lucide-react";
 
 const navItems = [
-  { id: "home", label: "Home", emoji: "🏠", route: "/home" },
+  // { id: "home", label: "Home", emoji: "🏠", route: "/home" },
   { id: "events", label: "Events", emoji: "🎄", route: "/events" },
   { id: "decipher", label: "Decipher Code", emoji: "🔐", route: "/decipher" },
 ];
