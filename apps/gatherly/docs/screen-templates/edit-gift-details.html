@@ -1,0 +1,197 @@
+<!doctype html>
+
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Edit Gift Details</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#13ec5b",
+              "background-light": "#f6f8f6",
+              "background-dark": "#102216",
+            },
+            fontFamily: {
+              display: ["Plus Jakarta Sans"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body class="bg-slate-900 flex items-center justify-center min-h-screen p-4">
+    <!-- Modal Container (iOS Sheet Style) -->
+    <div
+      class="relative w-full max-w-[480px] bg-background-light dark:bg-background-dark rounded-xl overflow-hidden shadow-2xl flex flex-col h-[90vh]"
+    >
+      <!-- BottomSheetHandle - Top Grabber -->
+      <div
+        class="flex flex-col items-stretch bg-background-light dark:bg-background-dark"
+      >
+        <button class="flex h-5 w-full items-center justify-center">
+          <div
+            class="h-1.5 w-10 rounded-full bg-black/10 dark:bg-white/20"
+          ></div>
+        </button>
+      </div>
+      <!-- TopAppBar -->
+      <div
+        class="flex items-center bg-background-light dark:bg-background-dark px-4 pb-2 justify-between border-b border-black/5 dark:border-white/5"
+      >
+        <div
+          class="text-slate-900 dark:text-white flex size-12 shrink-0 items-center justify-start"
+          data-icon="close"
+        >
+          <span class="material-symbols-outlined cursor-pointer">close</span>
+        </div>
+        <h2
+          class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center"
+        >
+          Edit Gift Details
+        </h2>
+        <div class="size-12 flex items-center justify-end">
+          <!-- Empty div for balance -->
+        </div>
+      </div>
+      <!-- Form Content -->
+      <div class="flex-1 overflow-y-auto pb-24">
+        <!-- Image Upload Area -->
+        <div class="px-4 py-6">
+          <div
+            class="relative w-full aspect-square max-h-48 rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 flex flex-col items-center justify-center gap-2 group cursor-pointer overflow-hidden"
+          >
+            <!-- Example of an existing image -->
+            <img
+              alt="Woolen Scarf"
+              class="absolute inset-0 w-full h-full object-cover opacity-50"
+              data-alt="A cozy handmade dark blue woolen scarf"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIKJwLmgicF-SbLcbNzEdyVqopUJJ59r2RvcpctpW1ESthRYuEAcvlc2178JG0l1SOZ6ZBubcB3sJ9pjd0wE_SHVaK2Qsie1gRftU99Bn2WS0JRJ0pN_fHoDktqtQmPGzxoCyJ7ZyPlU1OIxJdtRj_LfX3Q08vMiTdcH48uOZbFX_SzeMJ8tvFqIlk0prkY2MfT_rQNhjzF5pxRAePZvKb2FdyL833zvZ9N9a5XjMssgmnpvACPsQtyKALbuuVKKkVp3O_93UsZ0k"
+            />
+            <div class="relative z-10 flex flex-col items-center">
+              <span
+                class="material-symbols-outlined text-4xl text-slate-800 dark:text-white"
+                >photo_camera</span
+              >
+              <p
+                class="text-sm font-semibold text-slate-800 dark:text-white mt-2"
+              >
+                Change Photo
+              </p>
+            </div>
+          </div>
+        </div>
+        <!-- TextField: Gift Name -->
+        <div class="flex flex-wrap items-end gap-4 px-4 py-3">
+          <label class="flex flex-col min-w-40 flex-1">
+            <p
+              class="text-slate-900 dark:text-white text-base font-medium leading-normal pb-2"
+            >
+              Gift Name
+            </p>
+            <input
+              class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-black/10 dark:border-white/10 bg-white dark:bg-slate-800 h-14 placeholder:text-slate-400 p-[15px] text-base font-normal leading-normal"
+              placeholder="What is the gift?"
+              value="Woolen Scarf"
+            />
+          </label>
+        </div>
+        <!-- TextField: Description -->
+        <div class="flex flex-wrap items-end gap-4 px-4 py-3">
+          <label class="flex flex-col min-w-40 flex-1">
+            <p
+              class="text-slate-900 dark:text-white text-base font-medium leading-normal pb-2"
+            >
+              Description
+            </p>
+            <textarea
+              class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-black/10 dark:border-white/10 bg-white dark:bg-slate-800 min-h-36 placeholder:text-slate-400 p-[15px] text-base font-normal leading-normal"
+              placeholder="Add details, sizes, colors..."
+            >
+Dark blue, preferably handmade from high-quality wool. No tassels please.</textarea
+            >
+          </label>
+        </div>
+        <!-- SectionHeader: Priority -->
+        <div class="px-4">
+          <h3
+            class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-2 pt-4"
+          >
+            Priority
+          </h3>
+        </div>
+        <!-- Custom Segmented Picker for Priority -->
+        <div class="px-4 py-2">
+          <div class="flex p-1 bg-black/5 dark:bg-white/5 rounded-xl gap-1">
+            <button
+              class="flex-1 py-3 px-2 text-sm font-semibold rounded-lg text-slate-600 dark:text-slate-400"
+            >
+              Low
+            </button>
+            <button
+              class="flex-1 py-3 px-2 text-sm font-semibold rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm border border-black/5"
+            >
+              Medium
+            </button>
+            <button
+              class="flex-1 py-3 px-2 text-sm font-semibold rounded-lg text-slate-600 dark:text-slate-400"
+            >
+              High
+            </button>
+          </div>
+        </div>
+        <!-- Delete Button (Destructive) -->
+        <div class="px-4 py-8">
+          <button
+            class="w-full flex items-center justify-center gap-2 py-4 text-red-500 font-semibold hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-colors"
+          >
+            <span class="material-symbols-outlined text-xl">delete</span>
+            Delete Gift
+          </button>
+        </div>
+      </div>
+      <!-- Sticky Footer for Primary Action -->
+      <div
+        class="absolute bottom-0 left-0 right-0 p-4 bg-background-light dark:bg-background-dark border-t border-black/5 dark:border-white/5"
+      >
+        <button
+          class="w-full bg-primary hover:brightness-95 text-slate-900 font-bold py-4 rounded-xl shadow-lg transition-all active:scale-[0.98]"
+        >
+          Save Changes
+        </button>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,334 @@
+<!doctype html>
+
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Shared Gift Registry</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#13ec5b",
+              "background-light": "#f6f8f6",
+              "background-dark": "#102216",
+            },
+            fontFamily: {
+              display: ["Plus Jakarta Sans"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 400,
+          "GRAD" 0,
+          "opsz" 24;
+      }
+      .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark text-[#0d1b12] dark:text-white min-h-screen"
+  >
+    <!-- Top Navigation Bar -->
+    <div
+      class="sticky top-0 z-10 flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between border-b border-gray-200 dark:border-gray-800"
+    >
+      <div class="flex size-12 shrink-0 items-center">
+        <span class="material-symbols-outlined text-2xl">arrow_back</span>
+      </div>
+      <div class="flex-1 text-center">
+        <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">
+          Gift Registry
+        </h2>
+        <p class="text-xs font-medium text-gray-500 dark:text-gray-400">
+          Smith Family gatherly
+        </p>
+      </div>
+      <div class="flex w-12 items-center justify-end">
+        <button
+          class="flex cursor-pointer items-center justify-center rounded-lg h-12 bg-transparent gap-2 p-0"
+        >
+          <span class="material-symbols-outlined text-2xl">info</span>
+        </button>
+      </div>
+    </div>
+    <main class="flex flex-col pb-24">
+      <!-- Section Header: Your Wishlist -->
+      <div class="flex items-center justify-between px-4 pt-6 pb-2">
+        <h2 class="text-[22px] font-bold leading-tight tracking-[-0.015em]">
+          Your Wishlist
+        </h2>
+        <span
+          class="text-xs font-semibold px-2 py-1 bg-primary/20 text-[#0d1b12] dark:text-primary rounded-full"
+          >Visible to others</span
+        >
+      </div>
+      <!-- Carousel: Personal Wishlist Items -->
+      <div class="flex overflow-x-auto hide-scrollbar gap-4 px-4 py-2">
+        <!-- Item 1 -->
+        <div
+          class="flex flex-col w-44 shrink-0 rounded-xl bg-white dark:bg-[#1a2e20] shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800"
+        >
+          <div
+            class="w-full aspect-square bg-center bg-no-repeat bg-cover"
+            data-alt="Modern high-end over-ear noise cancelling headphones"
+            style="
+              background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuCluDZEE4Wom8oKFZ2yROaH3PaxN82AfXb4-9NpO6dVZUzVrSdbmBIWOY3MuR8Yf21VWx7HZFEB4BoMBqQFsP288lUf634l9812eGpy2zH7z8_A0mtjo80cntNzq-0NEDtlR64ZMP-tDKOby5zMNjBwCYoxkb546hwj1VUe2kfkIwcXWKW_nrK72uxJwbrLWJkuN8nyt8mJ7-kogiyvtQcZ4PLE7XRPibAGBEnUB-p8M9-7DuY6En584-poSrcwCUZaqKUahqld8_Q&quot;);
+            "
+          ></div>
+          <div class="p-3 flex flex-col gap-2">
+            <div>
+              <p class="text-sm font-bold leading-tight truncate">
+                Sony WH-1000XM5
+              </p>
+              <p
+                class="text-[10px] font-bold text-primary uppercase tracking-wider mt-1"
+              >
+                High Priority
+              </p>
+            </div>
+            <button
+              class="w-full flex items-center justify-center rounded-lg h-8 bg-gray-100 dark:bg-gray-800 text-xs font-bold"
+            >
+              Edit
+            </button>
+          </div>
+        </div>
+        <!-- Item 2 -->
+        <div
+          class="flex flex-col w-44 shrink-0 rounded-xl bg-white dark:bg-[#1a2e20] shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800"
+        >
+          <div
+            class="w-full aspect-square bg-center bg-no-repeat bg-cover"
+            data-alt="Premium leather-bound daily journal with pen"
+            style="
+              background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuCgQQJQ-rr1m9ZZoKM2xKG8JZ2G8EIyOtimJDdlXG-1aazDmiYnC0TNSPxYNmSHFf1wvci5rorLaCMbJu5bLwYTkijsTPprpGcpb4CSmAMw4MOJN0ovxM-E-NKKzjXxawaP-GJh3HHkd1paWO-1Lrxdi2XZS0Nq88P7V8VtAMopELmgjwXdDVrYmz_tXW68zSTjTObM5rItOxHDMYIGniUGjkiYV5f2p7cl-h5EFhJLPG3f0TydHze6uGD3bcMq3u7IopyUXlH7a4Q&quot;);
+            "
+          ></div>
+          <div class="p-3 flex flex-col gap-2">
+            <div>
+              <p class="text-sm font-bold leading-tight truncate">
+                Premium Journal
+              </p>
+              <p
+                class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mt-1"
+              >
+                Medium Priority
+              </p>
+            </div>
+            <button
+              class="w-full flex items-center justify-center rounded-lg h-8 bg-gray-100 dark:bg-gray-800 text-xs font-bold"
+            >
+              Edit
+            </button>
+          </div>
+        </div>
+        <!-- Item 3 (Add Placeholder) -->
+        <div
+          class="flex flex-col w-44 shrink-0 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-800 items-center justify-center p-4"
+        >
+          <div
+            class="size-10 rounded-full bg-primary/20 flex items-center justify-center mb-2"
+          >
+            <span class="material-symbols-outlined text-primary">add</span>
+          </div>
+          <p class="text-xs font-bold text-center">Add More</p>
+        </div>
+      </div>
+      <!-- Action: Add Gift Button -->
+      <div class="px-4 py-4">
+        <button
+          class="flex w-full cursor-pointer items-center justify-center rounded-xl h-12 px-4 bg-primary text-[#0d1b12] gap-2 text-sm font-bold shadow-lg shadow-primary/20"
+        >
+          <span class="material-symbols-outlined">add_circle</span>
+          <span>Add Your First Gift</span>
+        </button>
+      </div>
+      <!-- Section Header: Registry -->
+      <div class="px-4 pt-8 pb-4">
+        <h2 class="text-[22px] font-bold leading-tight tracking-[-0.015em]">
+          Registry
+        </h2>
+        <p class="text-sm text-gray-500">Claim gifts to buy for others</p>
+      </div>
+      <!-- Registry List Organized by Participant -->
+      <div class="space-y-6 px-4">
+        <!-- Participant: Sarah -->
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center gap-2">
+            <div
+              class="size-8 rounded-full bg-blue-100 flex items-center justify-center overflow-hidden border border-white"
+            >
+              <img
+                class="size-full object-cover"
+                data-alt="Profile picture of Sarah"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGDsGAxc7vEiMMXMjgghS3mPf4U6A_kcYs0LqJPzx4HZKAIAqZYBfLwymjCTkZzm4k_rrlXL7OJoXHCflLJs0oORFDN4lfItwJaDb8GU6qIV3NGcXrfIE9kl_ibuvRUjC3wcrytWrKRFh0iAPcvPJ7qKCbJZGT6vSrZbJm2E6p1Nyii0NTHqN1Y1RO677YaVlBq_pXkt2NJ0mjhT-w3aOzC6Ii03d0FhF9hZ5Np0nOEFYd1gxPF6TxkvO4BiXnZDPrm1r4FQE9JH0"
+              />
+            </div>
+            <h3 class="font-bold text-base">Sarah's Wishlist</h3>
+          </div>
+          <!-- Sarah's Gifts -->
+          <div class="space-y-3">
+            <!-- Gift 1 (Unclaimed) -->
+            <div
+              class="flex bg-white dark:bg-[#1a2e20] p-3 rounded-xl gap-4 shadow-sm border border-gray-100 dark:border-gray-800"
+            >
+              <div
+                class="size-20 rounded-lg bg-cover bg-center shrink-0"
+                data-alt="A stylish ceramic coffee mug"
+                style="
+                  background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuAc1s3DgzgVHgIzKP1fZA3Vqp_7Jw7oQMOf5CFal20Xbk5OdWQgwqKZIOL035xKMjjz68880-Lo2dyYNDx-9gz2-nSn6ljecjc-_34NQ6a2So1Iml9By9u5qeIR9hJKGdPvf_lPwl4hkmWIlKn0PNbj_X7eKJZcpjN99oK5GiylXTBpSk1nApkyc52djPtdPJc9jCejx1xHI_bbWaSRdb7fmuqhjzK0MwIUFkS2_OqNDH44MjH6UqIV1Ty2ggopZNgfQq_LODzz9aM&quot;);
+                "
+              ></div>
+              <div class="flex flex-col justify-between flex-1 py-1">
+                <div>
+                  <p class="text-sm font-bold">Ceramic Coffee Mug</p>
+                  <p class="text-xs text-gray-500">Blue glaze finish</p>
+                </div>
+                <button
+                  class="mt-2 h-8 rounded-lg bg-primary text-[#0d1b12] text-xs font-bold px-4 self-start"
+                >
+                  I'll buy this
+                </button>
+              </div>
+            </div>
+            <!-- Gift 2 (Claimed) -->
+            <div
+              class="flex bg-gray-50 dark:bg-[#0d1b12]/50 p-3 rounded-xl gap-4 border border-gray-100 dark:border-gray-800 opacity-80"
+            >
+              <div
+                class="size-20 rounded-lg bg-cover bg-center shrink-0 grayscale"
+                data-alt="A pair of colorful running shoes"
+                style="
+                  background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuD4JCZa9fhHk-dphjLddOSwtV_gI5DgJIGvY_VeHV-wzU6Wv6V9R5h9bI9hNgeOecgYYOH5XR_LMLuscVAhGD2knDQuwOMQhj8dHyoMqOJC7engo2hsmUMpyeEsPwO7igzwytXIMXO1mOBUuOfa30eITipu3a2XhOB7DhM8NpYXCcZeWn6eslmIAcQP6wejMrTIaewfdJy5vy8GBDMt2orYDzgGWRXPlKExUmC8Z94OC-JpW2nsZ9jJ0zRoLtJ4I_BDiA_EbZJvRSg&quot;);
+                "
+              ></div>
+              <div class="flex flex-col justify-between flex-1 py-1">
+                <div>
+                  <p class="text-sm font-bold text-gray-400">Running Shoes</p>
+                  <p class="text-xs text-gray-400">Size 8, Red</p>
+                </div>
+                <div class="mt-2 flex items-center gap-1.5 text-gray-400">
+                  <span class="material-symbols-outlined text-sm"
+                    >check_circle</span
+                  >
+                  <span class="text-xs font-bold">Claimed</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Participant: Marcus -->
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center gap-2">
+            <div
+              class="size-8 rounded-full bg-orange-100 flex items-center justify-center overflow-hidden border border-white"
+            >
+              <img
+                class="size-full object-cover"
+                data-alt="Profile picture of Marcus"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBr_RCGHJmC-4WNNGpRmbF8_mHIXG7CKyHwxz-4nyMcrqoR9ncB47K1hroad-qjXTEEIwFZGjjxu9RWqhGRIloRVYsupO9MuheNfLd3hY3HVtJo93D8Q0i9XhPNy32YX_9LyL8_72P63MuvaGV8jbH5DjxoJyYglLZDM0EMJeWBP82wnj6G-GoI7G6Rp_F2w6X1fRK4gngPCpmzzX2VsC4hmTA6Xq8N1rCYovPldU3L8FJZIFYvhkPxaCdnHWy900jsGSi662Efoe4"
+              />
+            </div>
+            <h3 class="font-bold text-base">Marcus's Wishlist</h3>
+          </div>
+          <!-- Marcus's Gifts -->
+          <div class="space-y-3">
+            <!-- Gift 1 (Unclaimed) -->
+            <div
+              class="flex bg-white dark:bg-[#1a2e20] p-3 rounded-xl gap-4 shadow-sm border border-gray-100 dark:border-gray-800"
+            >
+              <div
+                class="size-20 rounded-lg bg-cover bg-center shrink-0"
+                data-alt="Mechanical gaming keyboard"
+                style="
+                  background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuBdOaeXsIWYsnKTHgBYmM4STzqADgI2gGhMTfTxkkgXUsCKo_fo2qtjZMMiAiYeENTBchvmBMdmETaP7E9CFdztlURvtpfnjtby2s7JOus-kT0qOiFQhSX0OyYjb00LTnBqHKAh3ZoZ89j5jwx1TM0MRAeCuyTD2ZAaJuCwqnBil7nlAhvhB6GOR-JdRAtv9eu5Fq6DRo_Iz614ghISaPhMl_PFXg41qnOdFBeG4je_q-y01zMQ3cncG0bnkBUPctpSOJDwqiuhnzM&quot;);
+                "
+              ></div>
+              <div class="flex flex-col justify-between flex-1 py-1">
+                <div>
+                  <p class="text-sm font-bold">Mechanical Keyboard</p>
+                  <p
+                    class="text-[10px] font-bold text-primary uppercase tracking-wider mt-0.5"
+                  >
+                    High Priority
+                  </p>
+                </div>
+                <button
+                  class="mt-2 h-8 rounded-lg bg-primary text-[#0d1b12] text-xs font-bold px-4 self-start"
+                >
+                  I'll buy this
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <!-- Bottom Navigation Bar (iOS Style) -->
+    <div
+      class="fixed bottom-0 left-0 right-0 h-20 bg-white/90 dark:bg-background-dark/90 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 flex items-center justify-around px-6 pb-4"
+    >
+      <div class="flex flex-col items-center gap-1 text-gray-400">
+        <span class="material-symbols-outlined">event</span>
+        <span class="text-[10px] font-bold">Events</span>
+      </div>
+      <div class="flex flex-col items-center gap-1 text-primary">
+        <span
+          class="material-symbols-outlined"
+          style="font-variation-settings: &quot;FILL&quot; 1"
+          >card_giftcard</span
+        >
+        <span class="text-[10px] font-bold">Registry</span>
+      </div>
+      <div class="flex flex-col items-center gap-1 text-gray-400">
+        <span class="material-symbols-outlined">group</span>
+        <span class="text-[10px] font-bold">Friends</span>
+      </div>
+      <div class="flex flex-col items-center gap-1 text-gray-400">
+        <span class="material-symbols-outlined">settings</span>
+        <span class="text-[10px] font-bold">Settings</span>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,328 @@
+<!doctype html>
+
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#13ec5b",
+              "background-light": "#f6f8f6",
+              "background-dark": "#102216",
+            },
+            fontFamily: {
+              display: ["Plus Jakarta Sans"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 400,
+          "GRAD" 0,
+          "opsz" 24;
+        font-size: 24px;
+      }
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gray-900/40 min-h-screen flex items-end justify-center font-display"
+  >
+    <!-- Bottom Sheet Container (iOS Style) -->
+    <div
+      class="relative w-full max-w-[480px] bg-background-light dark:bg-background-dark rounded-t-[2.5rem] shadow-2xl overflow-hidden flex flex-col"
+    >
+      <!-- BottomSheetHandle Component -->
+      <div class="flex flex-col items-center pt-3">
+        <div class="h-1.5 w-12 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+      </div>
+      <!-- TitleText Component -->
+      <div class="pt-6 pb-2">
+        <h1
+          class="text-[#0d1b12] dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 text-center"
+        >
+          Share Event Link and Invites
+        </h1>
+      </div>
+      <div class="overflow-y-auto max-h-[85vh] px-4 pb-10">
+        <!-- Link Sharing Section -->
+        <div class="mt-4">
+          <div class="flex flex-col gap-2">
+            <p
+              class="text-[#0d1b12] dark:text-gray-200 text-base font-semibold leading-normal px-1"
+            >
+              Event Link
+            </p>
+            <div class="flex items-center gap-2">
+              <div
+                class="flex-1 flex items-center rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 h-14 px-4 overflow-hidden"
+              >
+                <span class="text-[#4c9a66] material-symbols-outlined mr-2"
+                  >link</span
+                >
+                <input
+                  class="bg-transparent border-none focus:ring-0 text-[#0d1b12] dark:text-white text-sm flex-1 truncate"
+                  readonly=""
+                  value="secretsanta.app/e/family-2024"
+                />
+              </div>
+              <button
+                class="bg-primary hover:opacity-90 transition-opacity h-14 px-6 rounded-xl text-[#0d1b12] font-bold text-sm shadow-sm flex items-center justify-center whitespace-nowrap"
+              >
+                Copy Link
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- SectionHeader: Share Via -->
+        <div class="mt-8 mb-4">
+          <h3
+            class="text-[#0d1b12] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]"
+          >
+            Share Via
+          </h3>
+        </div>
+        <!-- Share Icons Grid -->
+        <div class="grid grid-cols-3 gap-4 mb-8">
+          <button class="flex flex-col items-center gap-2 group">
+            <div
+              class="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 group-active:scale-95 transition-transform"
+            >
+              <span class="material-symbols-outlined" style="font-size: 32px"
+                >mail</span
+              >
+            </div>
+            <span class="text-xs font-medium text-gray-600 dark:text-gray-400"
+              >Email</span
+            >
+          </button>
+          <button class="flex flex-col items-center gap-2 group">
+            <div
+              class="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400 group-active:scale-95 transition-transform"
+            >
+              <span class="material-symbols-outlined" style="font-size: 32px"
+                >chat</span
+              >
+            </div>
+            <span class="text-xs font-medium text-gray-600 dark:text-gray-400"
+              >Messages</span
+            >
+          </button>
+          <button class="flex flex-col items-center gap-2 group">
+            <div
+              class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-700 dark:text-gray-300 group-active:scale-95 transition-transform"
+            >
+              <span class="material-symbols-outlined" style="font-size: 32px"
+                >qr_code_2</span
+              >
+            </div>
+            <span class="text-xs font-medium text-gray-600 dark:text-gray-400"
+              >QR Code</span
+            >
+          </button>
+        </div>
+        <!-- SectionHeader: Invited Participants -->
+        <div class="flex items-center justify-between mt-4 mb-4">
+          <h3
+            class="text-[#0d1b12] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]"
+          >
+            Invited Participants
+          </h3>
+          <span
+            class="text-xs font-bold text-[#4c9a66] bg-primary/20 px-2 py-1 rounded-full"
+            >8 People</span
+          >
+        </div>
+        <!-- Participant List -->
+        <div class="space-y-3">
+          <!-- Row 1: Joined -->
+          <div
+            class="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800"
+          >
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center"
+              >
+                <span
+                  class="material-symbols-outlined text-[#0d1b12]"
+                  style="font-size: 20px"
+                  >person</span
+                >
+              </div>
+              <div>
+                <p class="font-bold text-[#0d1b12] dark:text-white text-sm">
+                  Sarah Mitchell
+                </p>
+                <div class="flex items-center gap-1">
+                  <span
+                    class="material-symbols-outlined text-primary"
+                    style="
+                      font-size: 14px;
+                      font-variation-settings: &quot;FILL&quot; 1;
+                    "
+                    >check_circle</span
+                  >
+                  <p
+                    class="text-[11px] font-semibold text-primary uppercase tracking-wider"
+                  >
+                    Joined
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="text-gray-400">
+              <span class="material-symbols-outlined">chevron_right</span>
+            </div>
+          </div>
+          <!-- Row 2: Pending -->
+          <div
+            class="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800"
+          >
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center"
+              >
+                <span
+                  class="material-symbols-outlined text-gray-500"
+                  style="font-size: 20px"
+                  >person</span
+                >
+              </div>
+              <div>
+                <p class="font-bold text-[#0d1b12] dark:text-white text-sm">
+                  Uncle Robert
+                </p>
+                <div class="flex items-center gap-1 text-amber-500">
+                  <span
+                    class="material-symbols-outlined"
+                    style="font-size: 14px"
+                    >schedule</span
+                  >
+                  <p class="text-[11px] font-semibold uppercase tracking-wider">
+                    Pending
+                  </p>
+                </div>
+              </div>
+            </div>
+            <button
+              class="px-3 py-1.5 rounded-lg border border-primary text-xs font-bold text-[#0d1b12] dark:text-primary hover:bg-primary/10 transition-colors"
+            >
+              Resend
+            </button>
+          </div>
+          <!-- Row 3: Pending -->
+          <div
+            class="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800"
+          >
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center"
+              >
+                <span
+                  class="material-symbols-outlined text-gray-500"
+                  style="font-size: 20px"
+                  >person</span
+                >
+              </div>
+              <div>
+                <p class="font-bold text-[#0d1b12] dark:text-white text-sm">
+                  Emma Watson
+                </p>
+                <div class="flex items-center gap-1 text-amber-500">
+                  <span
+                    class="material-symbols-outlined"
+                    style="font-size: 14px"
+                    >schedule</span
+                  >
+                  <p class="text-[11px] font-semibold uppercase tracking-wider">
+                    Pending
+                  </p>
+                </div>
+              </div>
+            </div>
+            <button
+              class="px-3 py-1.5 rounded-lg border border-primary text-xs font-bold text-[#0d1b12] dark:text-primary hover:bg-primary/10 transition-colors"
+            >
+              Resend
+            </button>
+          </div>
+          <!-- Row 4: Joined -->
+          <div
+            class="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800"
+          >
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center"
+              >
+                <span
+                  class="material-symbols-outlined text-[#0d1b12]"
+                  style="font-size: 20px"
+                  >person</span
+                >
+              </div>
+              <div>
+                <p class="font-bold text-[#0d1b12] dark:text-white text-sm">
+                  Lucas Green
+                </p>
+                <div class="flex items-center gap-1">
+                  <span
+                    class="material-symbols-outlined text-primary"
+                    style="
+                      font-size: 14px;
+                      font-variation-settings: &quot;FILL&quot; 1;
+                    "
+                    >check_circle</span
+                  >
+                  <p
+                    class="text-[11px] font-semibold text-primary uppercase tracking-wider"
+                  >
+                    Joined
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="text-gray-400">
+              <span class="material-symbols-outlined">chevron_right</span>
+            </div>
+          </div>
+        </div>
+        <!-- Bottom Spacer -->
+        <div class="h-8"></div>
+      </div>
+    </div>
+  </body>
+</html>
