@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Konsta UI theme - must come after Tailwind directives */
+@import 'konsta/react/theme.css';
+
 @layer utilities {
   .line-clamp-2 {
     overflow: hidden;
