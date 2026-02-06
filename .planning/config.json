@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0",
+  "workflow": {
+    "research": true,
+    "plan_check": true
+  },
+  "model_profile": "balanced",
+  "commit_docs": true
+}
