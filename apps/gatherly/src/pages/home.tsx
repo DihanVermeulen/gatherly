@@ -8,7 +8,7 @@ export const HomePage = () => {
       {/* Hero Section */}
       <div className="text-center py-16 mb-12">
         <h1 className="text-5xl font-bold text-red-800 mb-4">
-          gatherly Made Simple
+          Events Made Simple
         </h1>
         <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
           Create and manage your gatherly events with ease. Add participants,

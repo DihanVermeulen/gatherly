@@ -43,11 +43,9 @@ export const Header: React.FC<{
       <div className="max-w-6xl mx-auto px-6 py-6">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-4xl font-bold text-red-800 mb-1">
-              🎅 gatherly
-            </h1>
+            <h1 className="text-4xl font-bold text-red-800 mb-1">Gatherly</h1>
             <p className="text-gray-500 text-sm">
-              Organize and manage your gatherly events
+              Organize and manage your events
             </p>
           </div>
 

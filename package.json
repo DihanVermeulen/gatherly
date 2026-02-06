@@ -1,8 +1,11 @@
 {
-  "name": "kitchen-sink",
+  "name": "gatherly",
   "private": true,
   "scripts": {
-    "build": "turbo run build",
+    "build": "pnpm run build:packages && pnpm run build:apps",
+    "build:packages": "turbo run build --filter=\"./packages/*\"",
+    "build:apps": "cd apps/packages; pnpm install; turbo run build --filter=\"./apps/*\"",
+    "build:turbo": "turbo run build",
     "clean": "turbo run clean",
     "dev": "turbo run dev",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
