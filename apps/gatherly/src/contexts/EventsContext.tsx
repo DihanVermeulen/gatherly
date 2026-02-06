@@ -39,7 +39,14 @@ const eventsReducer = (
 ): EventsState => {
   switch (action.type) {
     case "SET_EVENTS":
-      return { ...state, events: action.payload, loading: false };
+      return {
+        ...state,
+        events: action.payload.map(event => ({
+          ...event,
+          wishlists: event.wishlists || [],
+        })),
+        loading: false,
+      };
     case "ADD_EVENT":
       return { ...state, events: [...state.events, action.payload] };
     case "UPDATE_EVENT":
@@ -74,7 +81,15 @@ export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({
   const [state, dispatch] = useReducer(eventsReducer, initialState, () => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? { ...JSON.parse(saved), loading: false, error: null } : initialState;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Ensure backward compatibility: add missing fields
+        const events = (parsed.events || []).map((e: Event) => ({
+          ...e,
+          wishlists: e.wishlists || [],
+        }));
+        return { events, loading: false, error: null };
+      }
     }
     return initialState;
   });

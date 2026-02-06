@@ -1,5 +1,21 @@
 import apiClient from "./client";
 
+export type WishlistItem = {
+  id: number;
+  eventId: number;
+  participantId: number;
+  participantName?: string;
+  itemName: string;
+  description?: string;
+  imageUrl?: string;
+  productUrl?: string;
+  priority: 'low' | 'medium' | 'high';
+  claimedBy?: number;
+  claimedByName?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export type Event = {
   id: string;
   name: string;
@@ -10,6 +26,7 @@ export type Event = {
   gifts: Record<string, any>;
   date: string;
   participants: string[];
+  wishlists?: WishlistItem[];
 };
 
 export const eventsApi = {
