@@ -4,9 +4,8 @@ import { useNavigate, useLocation } from "react-router";
 import { Menu } from "lucide-react";
 
 const navItems = [
-  // { id: "home", label: "Home", emoji: "🏠", route: "/home" },
-  { id: "events", label: "Events", emoji: "🎄", route: "/events" },
-  { id: "decipher", label: "Decipher Code", emoji: "🔐", route: "/decipher" },
+  { id: "events", label: "Events", emoji: "", route: "/events" },
+  { id: "decipher", label: "Decipher Code", emoji: "", route: "/decipher" },
 ];
 
 export const Header: React.FC<{
@@ -39,29 +38,39 @@ export const Header: React.FC<{
   };
 
   return (
-    <header className="bg-white border-b border-red-100 mb-8">
-      <div className="max-w-6xl mx-auto px-6 py-6">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-4xl font-bold text-red-800 mb-1">Gatherly</h1>
-            <p className="text-gray-500 text-sm">
-              Organize and manage your events
-            </p>
+    <header className="bg-white dark:bg-background-dark border-b border-slate-100 dark:border-slate-800 mb-8 sticky top-0 z-40 backdrop-blur-md bg-white/80 dark:bg-background-dark/80">
+      <div className="max-w-6xl mx-auto px-6 py-4">
+        <div className="flex justify-between items-center">
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={() => navigate("/home")}
+          >
+            <span className="material-symbols-outlined text-primary font-bold text-3xl">
+              card_giftcard
+            </span>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white leading-none">
+                Gatherly
+              </h1>
+              <p className="text-slate-500 text-[10px] font-medium uppercase tracking-wider opacity-70">
+                Organize and manage your events
+              </p>
+            </div>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex gap-4 items-center">
+          <nav className="hidden md:flex gap-2 items-center">
             {navItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => handleNavClick(item.route)}
-                className={`px-4 py-2 rounded-lg transition-colors ${
+                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                   isActive(item.route)
-                    ? "bg-red-600 text-white"
-                    : "text-gray-600 hover:bg-red-50"
+                    ? "bg-primary text-black shadow-lg shadow-primary/20"
+                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
                 }`}
               >
-                {item.emoji} {item.label}
+                {item.label}
               </button>
             ))}
           </nav>
@@ -69,26 +78,28 @@ export const Header: React.FC<{
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden text-gray-600 hover:text-gray-800"
+            className="md:hidden size-10 flex items-center justify-center bg-slate-50 dark:bg-slate-800 rounded-full text-slate-600 dark:text-slate-400"
           >
-            <Menu size={24} />
+            <span className="material-symbols-outlined">
+              {isMobileMenuOpen ? "close" : "menu"}
+            </span>
           </button>
         </div>
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <nav className="md:hidden mt-4 pt-4 border-t border-red-100 space-y-2">
+          <nav className="md:hidden mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
             {navItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => handleNavClick(item.route)}
-                className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
+                className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition-all ${
                   isActive(item.route)
-                    ? "bg-red-600 text-white"
-                    : "text-gray-600 hover:bg-red-50"
+                    ? "bg-primary text-black"
+                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
                 }`}
               >
-                {item.emoji} {item.label}
+                {item.label}
               </button>
             ))}
           </nav>

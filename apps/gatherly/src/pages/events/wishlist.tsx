@@ -1,14 +1,21 @@
-import { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router';
-import { ArrowLeft, Plus, Info } from 'lucide-react';
-import { useEvents } from 'contexts/EventsContext';
-import { WishlistForm, WishlistCard, WishlistRegistryItem } from 'components/wishlist';
-import { wishlistsApi } from 'api/wishlists';
-import type { WishlistItem } from 'api/events';
-import type { WishlistFormData } from 'components/wishlist/WishlistForm';
+import { useEffect, useState, useRef } from "react";
+import { useParams, useNavigate } from "react-router";
+import { ArrowLeft, Plus, Info } from "lucide-react";
+import { useEvents } from "contexts/EventsContext";
+import {
+  WishlistForm,
+  WishlistCard,
+  WishlistRegistryItem,
+} from "components/wishlist";
+import { wishlistsApi } from "api/wishlists";
+import type { WishlistItem } from "api/events";
+import type { WishlistFormData } from "components/wishlist/WishlistForm";
 
 export function WishlistPage() {
-  const { eventId, participantId } = useParams<{ eventId: string; participantId: string }>();
+  const { eventId, participantId } = useParams<{
+    eventId: string;
+    participantId: string;
+  }>();
   const navigate = useNavigate();
   const { state, dispatch, useApi } = useEvents();
 
@@ -21,7 +28,7 @@ export function WishlistPage() {
   const touchStartX = useRef(0);
 
   // Find the current event
-  const event = state.events.find(e => e.id === eventId);
+  const event = state.events.find((e) => e.id === eventId);
   const wishlists = event?.wishlists || [];
 
   // Load wishlists on mount
@@ -33,10 +40,10 @@ export function WishlistPage() {
         setLoading(true);
         if (useApi) {
           const items = await wishlistsApi.getAll(eventId);
-          dispatch({ type: 'SET_WISHLISTS', payload: { eventId, items } });
+          dispatch({ type: "SET_WISHLISTS", payload: { eventId, items } });
         }
       } catch (error) {
-        console.error('Failed to load wishlists:', error);
+        console.error("Failed to load wishlists:", error);
       } finally {
         setLoading(false);
       }
@@ -46,18 +53,25 @@ export function WishlistPage() {
   }, [eventId, useApi]);
 
   // Filter personal and registry items
-  const personalItems = wishlists.filter(w => w.participantId === parseInt(participantId || '0'));
-  const registryItems = wishlists.filter(w => w.participantId !== parseInt(participantId || '0'));
+  const personalItems = wishlists.filter(
+    (w) => w.participantId === parseInt(participantId || "0"),
+  );
+  const registryItems = wishlists.filter(
+    (w) => w.participantId !== parseInt(participantId || "0"),
+  );
 
   // Group registry items by participant
-  const groupedRegistry = registryItems.reduce((acc, item) => {
-    const name = item.participantName || `Participant ${item.participantId}`;
-    if (!acc[name]) {
-      acc[name] = [];
-    }
-    acc[name].push(item);
-    return acc;
-  }, {} as Record<string, WishlistItem[]>);
+  const groupedRegistry = registryItems.reduce(
+    (acc, item) => {
+      const name = item.participantName || `Participant ${item.participantId}`;
+      if (!acc[name]) {
+        acc[name] = [];
+      }
+      acc[name].push(item);
+      return acc;
+    },
+    {} as Record<string, WishlistItem[]>,
+  );
 
   // Sort participant names alphabetically
   const sortedParticipantNames = Object.keys(groupedRegistry).sort();
@@ -81,18 +95,35 @@ export function WishlistPage() {
       if (editingItem) {
         // Update existing item
         if (useApi) {
-          const updated = await wishlistsApi.update(eventId, editingItem.id, itemData);
-          dispatch({ type: 'UPDATE_WISHLIST_ITEM', payload: { eventId, item: updated } });
+          const updated = await wishlistsApi.update(
+            eventId,
+            editingItem.id,
+            itemData,
+          );
+          dispatch({
+            type: "UPDATE_WISHLIST_ITEM",
+            payload: { eventId, item: updated },
+          });
         } else {
           // LocalStorage fallback
-          const updated = { ...editingItem, ...itemData, updatedAt: new Date().toISOString() };
-          dispatch({ type: 'UPDATE_WISHLIST_ITEM', payload: { eventId, item: updated } });
+          const updated = {
+            ...editingItem,
+            ...itemData,
+            updatedAt: new Date().toISOString(),
+          };
+          dispatch({
+            type: "UPDATE_WISHLIST_ITEM",
+            payload: { eventId, item: updated },
+          });
         }
       } else {
         // Create new item
         if (useApi) {
           const created = await wishlistsApi.create(eventId, itemData);
-          dispatch({ type: 'ADD_WISHLIST_ITEM', payload: { eventId, item: created } });
+          dispatch({
+            type: "ADD_WISHLIST_ITEM",
+            payload: { eventId, item: created },
+          });
         } else {
           // LocalStorage fallback - create with temporary negative ID
           const created: WishlistItem = {
@@ -107,15 +138,18 @@ export function WishlistPage() {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           };
-          dispatch({ type: 'ADD_WISHLIST_ITEM', payload: { eventId, item: created } });
+          dispatch({
+            type: "ADD_WISHLIST_ITEM",
+            payload: { eventId, item: created },
+          });
         }
       }
 
       setIsFormOpen(false);
       setEditingItem(null);
     } catch (error) {
-      console.error('Failed to save wishlist item:', error);
-      alert('Failed to save item. Please try again.');
+      console.error("Failed to save wishlist item:", error);
+      alert("Failed to save item. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -127,7 +161,9 @@ export function WishlistPage() {
 
     // Check if item is claimed
     if (item.claimedBy) {
-      const confirmed = window.confirm('Someone has claimed this item. Delete anyway?');
+      const confirmed = window.confirm(
+        "Someone has claimed this item. Delete anyway?",
+      );
       if (!confirmed) return;
     }
 
@@ -135,10 +171,13 @@ export function WishlistPage() {
       if (useApi) {
         await wishlistsApi.delete(eventId, item.id, parseInt(participantId));
       }
-      dispatch({ type: 'DELETE_WISHLIST_ITEM', payload: { eventId, itemId: item.id } });
+      dispatch({
+        type: "DELETE_WISHLIST_ITEM",
+        payload: { eventId, itemId: item.id },
+      });
     } catch (error) {
-      console.error('Failed to delete item:', error);
-      alert('Failed to delete item. Please try again.');
+      console.error("Failed to delete item:", error);
+      alert("Failed to delete item. Please try again.");
     }
   };
 
@@ -188,14 +227,16 @@ export function WishlistPage() {
   // Get participant avatar color (deterministic based on name)
   const getAvatarColor = (name: string) => {
     const colors = [
-      'bg-blue-100 text-blue-700',
-      'bg-purple-100 text-purple-700',
-      'bg-pink-100 text-pink-700',
-      'bg-orange-100 text-orange-700',
-      'bg-green-100 text-green-700',
-      'bg-indigo-100 text-indigo-700',
+      "bg-blue-100 text-blue-700",
+      "bg-purple-100 text-purple-700",
+      "bg-pink-100 text-pink-700",
+      "bg-orange-100 text-orange-700",
+      "bg-green-100 text-green-700",
+      "bg-indigo-100 text-indigo-700",
     ];
-    const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const hash = name
+      .split("")
+      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return colors[hash % colors.length];
   };
 
@@ -205,7 +246,7 @@ export function WishlistPage() {
         <div className="text-center">
           <p className="text-gray-500 mb-4">Event not found</p>
           <button
-            onClick={() => navigate('/events')}
+            onClick={() => navigate("/events")}
             className="text-primary hover:underline"
           >
             Back to Events
@@ -226,8 +267,12 @@ export function WishlistPage() {
             </button>
           </div>
           <div className="flex-1 text-center">
-            <h2 className="text-lg font-bold leading-tight tracking-[-0.015em]">Gift Registry</h2>
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{event.name}</p>
+            <h2 className="text-lg font-bold leading-tight tracking-[-0.015em]">
+              Gift Registry
+            </h2>
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+              {event.name}
+            </p>
           </div>
           <div className="flex w-12 items-center justify-end">
             <button className="flex cursor-pointer items-center justify-center rounded-lg h-12 bg-transparent gap-2 p-0">
@@ -241,8 +286,11 @@ export function WishlistPage() {
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-1/2 mb-4"></div>
             <div className="flex gap-4 overflow-x-hidden mb-6">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="w-44 h-64 bg-gray-200 dark:bg-gray-800 rounded-xl shrink-0"></div>
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="w-44 h-64 bg-gray-200 dark:bg-gray-800 rounded-xl shrink-0"
+                ></div>
               ))}
             </div>
           </div>
@@ -261,8 +309,12 @@ export function WishlistPage() {
           </button>
         </div>
         <div className="flex-1 text-center">
-          <h2 className="text-lg font-bold leading-tight tracking-[-0.015em]">Gift Registry</h2>
-          <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{event.name}</p>
+          <h2 className="text-lg font-bold leading-tight tracking-[-0.015em]">
+            Gift Registry
+          </h2>
+          <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+            {event.name}
+          </p>
         </div>
         <div className="flex w-12 items-center justify-end">
           <button className="flex cursor-pointer items-center justify-center rounded-lg h-12 bg-transparent gap-2 p-0">
@@ -275,7 +327,9 @@ export function WishlistPage() {
       <main className="flex flex-col pb-24">
         {/* Section Header: Your Wishlist */}
         <div className="flex items-center justify-between px-4 pt-6 pb-2">
-          <h2 className="text-[22px] font-bold leading-tight tracking-[-0.015em]">Your Wishlist</h2>
+          <h2 className="text-[22px] font-bold leading-tight tracking-[-0.015em]">
+            Your Wishlist
+          </h2>
           <span className="text-xs font-semibold px-2 py-1 bg-primary/20 text-[#0d1b12] dark:text-primary rounded-full">
             Visible to others
           </span>
@@ -283,7 +337,7 @@ export function WishlistPage() {
 
         {/* Carousel: Personal Wishlist Items */}
         <div className="flex overflow-x-auto hide-scrollbar gap-4 px-4 py-2">
-          {personalItems.map(item => (
+          {personalItems.map((item) => (
             <div
               key={item.id}
               className="relative"
@@ -295,7 +349,10 @@ export function WishlistPage() {
               <div
                 className="transition-transform"
                 style={{
-                  transform: swipingItemId === item.id ? `translateX(-${swipeOffset}px)` : 'translateX(0)',
+                  transform:
+                    swipingItemId === item.id
+                      ? `translateX(-${swipeOffset}px)`
+                      : "translateX(0)",
                 }}
               >
                 <WishlistCard item={item} onEdit={handleEdit} />
@@ -336,13 +393,19 @@ export function WishlistPage() {
             className="flex w-full cursor-pointer items-center justify-center rounded-xl h-12 px-4 bg-primary text-[#0d1b12] gap-2 text-sm font-bold shadow-lg shadow-primary/20"
           >
             <Plus className="w-5 h-5" />
-            <span>{personalItems.length === 0 ? 'Add Your First Gift' : 'Add to Wishlist'}</span>
+            <span>
+              {personalItems.length === 0
+                ? "Add Your First Gift"
+                : "Add to Wishlist"}
+            </span>
           </button>
         </div>
 
         {/* Section Header: Registry */}
         <div className="px-4 pt-8 pb-4">
-          <h2 className="text-[22px] font-bold leading-tight tracking-[-0.015em]">Registry</h2>
+          <h2 className="text-[22px] font-bold leading-tight tracking-[-0.015em]">
+            Registry
+          </h2>
           <p className="text-sm text-gray-500">Claim gifts to buy for others</p>
         </div>
 
@@ -353,7 +416,7 @@ export function WishlistPage() {
               <p className="text-sm text-gray-400">No other wishlists yet</p>
             </div>
           ) : (
-            sortedParticipantNames.map(participantName => {
+            sortedParticipantNames.map((participantName) => {
               const items = groupedRegistry[participantName];
               const avatarColor = getAvatarColor(participantName);
               const initial = participantName.charAt(0).toUpperCase();
@@ -362,15 +425,19 @@ export function WishlistPage() {
                 <div key={participantName} className="flex flex-col gap-3">
                   {/* Participant Header */}
                   <div className="flex items-center gap-2">
-                    <div className={`size-8 rounded-full flex items-center justify-center overflow-hidden border border-white ${avatarColor}`}>
+                    <div
+                      className={`size-8 rounded-full flex items-center justify-center overflow-hidden border border-white ${avatarColor}`}
+                    >
                       <span className="text-sm font-bold">{initial}</span>
                     </div>
-                    <h3 className="font-bold text-base">{participantName}'s Wishlist</h3>
+                    <h3 className="font-bold text-base">
+                      {participantName}'s Wishlist
+                    </h3>
                   </div>
 
                   {/* Participant's Gifts */}
                   <div className="space-y-3">
-                    {items.map(item => (
+                    {items.map((item) => (
                       <WishlistRegistryItem
                         key={item.id}
                         item={item}

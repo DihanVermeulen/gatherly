@@ -9,7 +9,7 @@ export type WishlistItem = {
   description?: string;
   imageUrl?: string;
   productUrl?: string;
-  priority: 'low' | 'medium' | 'high';
+  priority: "low" | "medium" | "high";
   claimedBy?: number;
   claimedByName?: string;
   createdAt?: string;
@@ -27,6 +27,7 @@ export type Event = {
   date: string;
   participants: string[];
   wishlists?: WishlistItem[];
+  hash?: string;
 };
 
 export const eventsApi = {
@@ -70,7 +71,7 @@ export const eventsApi = {
   // Remove participant
   removeParticipant: async (eventId: string, name: string): Promise<void> => {
     await apiClient.delete(
-      `/api/events/${eventId}/participants/${encodeURIComponent(name)}`
+      `/api/events/${eventId}/participants/${encodeURIComponent(name)}`,
     );
   },
 
@@ -78,7 +79,7 @@ export const eventsApi = {
   addCouple: async (
     eventId: string,
     person1: string,
-    person2: string
+    person2: string,
   ): Promise<void> => {
     await apiClient.post(`/api/events/${eventId}/couples`, {
       person1,
@@ -94,7 +95,7 @@ export const eventsApi = {
   // Generate assignments
   generateAssignments: async (
     eventId: string,
-    giftCount: number
+    giftCount: number,
   ): Promise<{ assignments: Record<string, string[]> }> => {
     const response = await apiClient.post(`/api/events/${eventId}/generate`, {
       giftCount,
@@ -104,7 +105,7 @@ export const eventsApi = {
 
   // Get codes
   getCodes: async (
-    eventId: string
+    eventId: string,
   ): Promise<{
     assignments: Record<string, string[]>;
     codes: Record<string, string>;
