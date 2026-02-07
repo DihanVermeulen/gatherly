@@ -47,10 +47,14 @@ Plans:
   3. User can delete their own wishlist items
   4. Participants can view other participants' wishlists within the event
   5. Wishlist images are compressed before storage (max 800px width, 80% quality)
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 02-01: TBD during plan-phase
+- [ ] 02-01-PLAN.md -- Backend wishlist CRUD API routes + frontend API client
+- [ ] 02-02-PLAN.md -- Validation, image compression, EventsContext wishlist actions
+- [ ] 02-03-PLAN.md -- Wishlist UI components (form drawer, carousel card, registry item)
+- [ ] 02-04-PLAN.md -- Wishlist page assembly with route registration
+- [ ] 02-05-PLAN.md -- Visual and functional verification checkpoint
 
 ### Phase 3: Claiming System
 **Goal**: Participants can anonymously claim gifts with race condition protection and privacy guarantees
@@ -119,7 +123,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Privacy | 2/2 | Complete | 2026-02-06 |
-| 2. Wishlist Core | 0/TBD | Not started | - |
+| 2. Wishlist Core | 0/5 | Not started | - |
 | 3. Claiming System | 0/TBD | Not started | - |
 | 4. Invite System | 0/TBD | Not started | - |
 | 5. Mobile UI Redesign | 0/TBD | Not started | - |
