@@ -1,20 +1,26 @@
 import { useEvents } from "contexts/EventsContext";
-import { Copy, Eye, EyeOff, Plus, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 
 export const EditEventPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { state: { events }, dispatch } = useEvents();
+  const {
+    state: { events },
+    dispatch,
+  } = useEvents();
 
   const [editingEvent, setEditingEvent] = useState<any>(null);
   const [selectedCouples, setSelectedCouples] = useState<string[][]>([]);
   const [coupleCrossing, setCoupleCrossing] = useState(false);
-  const [firstPersonSelected, setFirstPersonSelected] = useState<string | null>(null);
+  const [firstPersonSelected, setFirstPersonSelected] = useState<string | null>(
+    null,
+  );
   const [giftCount, setGiftCount] = useState(1);
   const [newPerson, setNewPerson] = useState("");
-  const [revealedCodes, setRevealedCodes] = useState<Record<string, boolean>>({});
+  const [revealedCodes, setRevealedCodes] = useState<Record<string, boolean>>(
+    {},
+  );
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   useEffect(() => {
@@ -23,18 +29,19 @@ export const EditEventPage = () => {
       setEditingEvent({ ...event });
       setSelectedCouples([...(event.couples || [])]);
       setCoupleCrossing(event.coupleCrossing || false);
+      // Assuming giftCount isn't stored in the original model but we can derive it or keep it in local state
     }
   }, [id, events]);
 
   const saveEvent = () => {
     if (editingEvent) {
       dispatch({
-        type: 'UPDATE_EVENT',
+        type: "UPDATE_EVENT",
         payload: {
           ...editingEvent,
           couples: selectedCouples,
           coupleCrossing,
-        }
+        },
       });
     }
     navigate("/events");
@@ -49,7 +56,6 @@ export const EditEventPage = () => {
       people: [...editingEvent.people, newPerson],
     };
 
-    dispatch({ type: 'UPDATE_EVENT', payload: updatedEvent });
     setEditingEvent(updatedEvent);
     setNewPerson("");
   };
@@ -62,9 +68,10 @@ export const EditEventPage = () => {
       people: editingEvent.people.filter((p: string) => p !== person),
     };
 
-    dispatch({ type: 'UPDATE_EVENT', payload: updatedEvent });
     setEditingEvent(updatedEvent);
-    setSelectedCouples(selectedCouples.filter((couple) => !couple.includes(person)));
+    setSelectedCouples(
+      selectedCouples.filter((couple) => !couple.includes(person)),
+    );
     setFirstPersonSelected(null);
   };
 
@@ -77,7 +84,7 @@ export const EditEventPage = () => {
     const totalGiftsNeeded = people.length * targetGiftCount;
     if (totalGiftsNeeded > people.length * (people.length - 1)) {
       alert(
-        `Not enough people! With ${people.length} people, each person can buy for maximum ${people.length - 1} different people.`
+        `Not enough people! With ${people.length} people, each person can buy for maximum ${people.length - 1} different people.`,
       );
       return;
     }
@@ -108,7 +115,7 @@ export const EditEventPage = () => {
               if (assigned.has(receiver)) return false;
               if (!coupleCrossing && giverCouple) {
                 let receiverCouple = selectedCouples.find((c) =>
-                  c.includes(receiver)
+                  c.includes(receiver),
                 );
                 if (receiverCouple && giverCouple === receiverCouple)
                   return false;
@@ -124,7 +131,7 @@ export const EditEventPage = () => {
 
           const minReceived = receivedCount[validReceivers[0]];
           const candidates = validReceivers.filter(
-            (r) => receivedCount[r] === minReceived
+            (r) => receivedCount[r] === minReceived,
           );
           const receiver =
             candidates[Math.floor(Math.random() * candidates.length)];
@@ -139,7 +146,7 @@ export const EditEventPage = () => {
 
       if (valid) {
         const allCorrect = people.every(
-          (person) => receivedCount[person] === targetGiftCount
+          (person) => receivedCount[person] === targetGiftCount,
         );
         if (allCorrect) {
           assignments = tempAssignments;
@@ -153,20 +160,17 @@ export const EditEventPage = () => {
         assignments,
         hash: Math.random().toString(36).substring(2, 15),
       });
-
-      const element = document.querySelector("[data-generate-button]");
-      if (element) {
-        element.classList.add("animate-pulse");
-        setTimeout(() => element.classList.remove("animate-pulse"), 1000);
-      }
     } else {
       alert(
-        "Could not generate valid assignments. Try adjusting the number of gifts per person or couple constraints."
+        "Could not generate valid assignments. Try adjusting the number of gifts per person or couple constraints.",
       );
     }
   };
 
-  const generateCode = (person: string, assignments: Record<string, string[]>) => {
+  const generateCode = (
+    person: string,
+    assignments: Record<string, string[]>,
+  ) => {
     const receivers = assignments[person]?.join(",") || "";
     return btoa(`${person}:${receivers}`);
   };
@@ -186,289 +190,291 @@ export const EditEventPage = () => {
 
   if (!editingEvent) {
     return (
-      <div className="max-w-6xl mx-auto p-6">
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">Event not found</p>
-          <button
-            onClick={() => navigate("/events")}
-            className="mt-4 text-red-600 hover:text-red-700"
-          >
-            Back to Events
-          </button>
-        </div>
+      <div className="bg-background-light dark:bg-background-dark min-h-screen p-6 text-center">
+        <p className="text-slate-500">Event not found</p>
+        <button
+          onClick={() => navigate("/events")}
+          className="mt-4 text-primary font-bold"
+        >
+          Back to Events
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <button
-        onClick={() => navigate("/events")}
-        className="text-gray-600 hover:text-gray-800 mb-6 flex items-center gap-2"
-      >
-        ← Back
-      </button>
-
-      <h1 className="text-3xl font-bold text-red-800 mb-6">{editingEvent.name}</h1>
-
-      <div className="space-y-6">
-        {/* People Management */}
-        <div className="bg-white rounded-lg shadow-sm border border-red-100 p-6">
-          <h2 className="text-xl font-semibold text-red-800 mb-4">
-            Participants
-          </h2>
-          <div className="flex gap-3 mb-4">
-            <input
-              type="text"
-              placeholder="Add person..."
-              value={newPerson}
-              onChange={(e) => setNewPerson(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && addPersonToEvent()}
-              className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-red-400"
-            />
-            <button
-              onClick={addPersonToEvent}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
+    <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen pb-32 font-sans -mt-20 -mx-6">
+      {/* Top App Bar */}
+      <div className=" bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+        <div className="flex items-center p-4 justify-between max-w-md mx-auto">
+          <div className="flex items-center gap-3">
+            <span
+              onClick={() => navigate("/events")}
+              className="material-symbols-outlined cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-800 p-1 rounded-full transition-colors"
             >
-              <Plus size={20} />
-            </button>
+              arrow_back
+            </span>
+            <h2 className="text-lg font-bold leading-tight tracking-tight">
+              {editingEvent.name}
+            </h2>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <span className="material-symbols-outlined text-primary cursor-pointer">
+            settings
+          </span>
+        </div>
+      </div>
+
+      <main className="max-w-7xl mx-auto">
+        {/* Participants Section */}
+        <section className="mt-4">
+          <h3 className="text-lg font-bold px-4 pb-2 pt-4">Participants</h3>
+          <div className="flex gap-2 p-4 flex-wrap">
             {editingEvent.people.map((person: string) => (
               <div
                 key={person}
-                className="bg-red-100 text-red-800 px-3 py-1 rounded-full flex items-center gap-2 text-sm"
+                className="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary/20 dark:bg-primary/10 border border-primary/30 pl-3 pr-2"
               >
-                {person}
-                <button
+                <p className="text-sm font-semibold">{person}</p>
+                <span
                   onClick={() => removePersonFromEvent(person)}
-                  className="hover:text-red-600"
+                  className="material-symbols-outlined text-[18px] cursor-pointer hover:text-red-500"
                 >
-                  <X size={16} />
-                </button>
+                  close
+                </span>
               </div>
             ))}
+            {editingEvent.people.length === 0 && (
+              <p className="text-slate-400 italic text-sm px-2">
+                No participants yet
+              </p>
+            )}
           </div>
-        </div>
-
-        {/* Gift Count Selection */}
-        {editingEvent.people.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-red-100 p-6">
-            <h2 className="text-xl font-semibold text-red-800 mb-4">
-              Gifts Per Person
-            </h2>
-            <p className="text-gray-600 text-sm mb-4">
-              How many people will each person buy gifts for?
-            </p>
-            <div className="flex items-center gap-4">
+          <div className="px-4 py-2">
+            <div className="flex w-full items-stretch rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+              <input
+                className="flex-1 bg-transparent border-none focus:ring-0 px-4 py-3 text-sm dark:text-white"
+                placeholder="Enter friend's name"
+                value={newPerson}
+                onChange={(e) => setNewPerson(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addPersonToEvent()}
+              />
               <button
-                onClick={() => setGiftCount(Math.max(1, giftCount - 1))}
-                className="bg-red-600 hover:bg-red-700 text-white w-10 h-10 rounded-lg transition-colors flex items-center justify-center"
+                onClick={addPersonToEvent}
+                className="bg-primary text-black px-4 flex items-center justify-center hover:opacity-90 transition-opacity"
               >
-                −
-              </button>
-              <div className="flex-1 text-center">
-                <div className="text-4xl font-bold text-red-800">
-                  {giftCount}
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  {giftCount === 1 ? "person" : "people"}
-                </p>
-              </div>
-              <button
-                onClick={() =>
-                  setGiftCount(
-                    Math.min(editingEvent.people.length - 1, giftCount + 1)
-                  )
-                }
-                className="bg-red-600 hover:bg-red-700 text-white w-10 h-10 rounded-lg transition-colors flex items-center justify-center"
-              >
-                +
+                <span className="material-symbols-outlined font-bold">add</span>
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-4">
-              Max: {editingEvent.people.length - 1} person
-              {editingEvent.people.length - 1 !== 1 ? "s" : ""}
-            </p>
           </div>
-        )}
+        </section>
 
-        {/* Couples Management */}
-        {editingEvent.people.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-red-100 p-6">
-            <h2 className="text-xl font-semibold text-red-800 mb-4">
-              Couples
-            </h2>
-            <label className="flex items-center gap-3 mb-6 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={coupleCrossing}
-                onChange={(e) => setCoupleCrossing(e.target.checked)}
-                className="w-4 h-4"
-              />
-              <span className="text-gray-700">
+        {/* Gifts Per Person Section */}
+        <section className="mt-6">
+          <h3 className="text-lg font-bold px-4 pb-2 pt-4">Gifts Per Person</h3>
+          <div className="px-4 py-3">
+            <div className="flex items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+              <span className="text-sm font-medium">
+                Number of gifts each participant gives
+              </span>
+              <div className="flex items-center gap-4 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+                <button
+                  onClick={() => setGiftCount(Math.max(1, giftCount - 1))}
+                  className="w-8 h-8 flex items-center justify-center rounded-md bg-white dark:bg-slate-700 shadow-sm hover:bg-slate-50"
+                >
+                  <span className="material-symbols-outlined text-sm">
+                    remove
+                  </span>
+                </button>
+                <span className="w-4 text-center font-bold">{giftCount}</span>
+                <button
+                  onClick={() =>
+                    setGiftCount(
+                      Math.min(
+                        editingEvent.people.length - 1 || 1,
+                        giftCount + 1,
+                      ),
+                    )
+                  }
+                  className="w-8 h-8 flex items-center justify-center rounded-md bg-white dark:bg-slate-700 shadow-sm hover:bg-slate-50"
+                >
+                  <span className="material-symbols-outlined text-sm">add</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Couples Section */}
+        <section className="mt-6 px-4">
+          <h3 className="text-lg font-bold pb-2 pt-4">Pairing Rules</h3>
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <label className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800">
+              <span className="text-sm font-medium">
                 Allow couples to buy for each other
               </span>
+              <div className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={coupleCrossing}
+                  onChange={(e) => setCoupleCrossing(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+              </div>
             </label>
-
-            {/* Current Couples */}
-            {selectedCouples.length > 0 && (
-              <div className="mb-6">
-                <h3 className="font-medium text-gray-700 mb-3">
-                  Paired Couples
-                </h3>
-                <div className="space-y-2">
-                  {selectedCouples.map((couple, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-4 py-3"
+            <div className="p-4 bg-slate-50/50 dark:bg-slate-800/30">
+              <p className="text-xs text-slate-500 mb-4 font-medium uppercase tracking-wider">
+                Define Exclusions
+              </p>
+              <div className="space-y-3">
+                {selectedCouples.map((couple, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between gap-2"
+                  >
+                    <div className="flex-1 text-xs font-semibold bg-white dark:bg-slate-900 p-2 rounded border border-slate-200 dark:border-slate-700 text-center">
+                      {couple[0]}
+                    </div>
+                    <span
+                      onClick={() =>
+                        setSelectedCouples(
+                          selectedCouples.filter((_, i) => i !== idx),
+                        )
+                      }
+                      className="material-symbols-outlined text-slate-400 text-sm cursor-pointer hover:text-red-500"
                     >
-                      <span className="text-green-800 font-medium">
-                        {couple[0]} ↔ {couple[1]}
+                      link_off
+                    </span>
+                    <div className="flex-1 text-xs font-semibold bg-white dark:bg-slate-900 p-2 rounded border border-slate-200 dark:border-slate-700 text-center">
+                      {couple[1]}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Couple creation UI integrated into exclusions list */}
+                <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-200/50">
+                  <div className="flex flex-wrap gap-1">
+                    {editingEvent.people
+                      .filter(
+                        (p: string) =>
+                          !selectedCouples.some((c) => c.includes(p)),
+                      )
+                      .map((person: string) => (
+                        <button
+                          key={person}
+                          onClick={() => {
+                            if (firstPersonSelected === person) {
+                              setFirstPersonSelected(null);
+                            } else if (!firstPersonSelected) {
+                              setFirstPersonSelected(person);
+                            } else {
+                              setSelectedCouples([
+                                ...selectedCouples,
+                                [firstPersonSelected, person],
+                              ]);
+                              setFirstPersonSelected(null);
+                            }
+                          }}
+                          className={`text-[10px] px-2 py-1 rounded transition-colors ${
+                            firstPersonSelected === person
+                              ? "bg-primary text-black"
+                              : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400"
+                          }`}
+                        >
+                          {person}
+                        </button>
+                      ))}
+                  </div>
+                </div>
+                {firstPersonSelected && (
+                  <p className="text-[10px] text-primary italic">
+                    Select another person to pair with {firstPersonSelected}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Generate Section */}
+        <section className="mt-8 px-4">
+          <button
+            onClick={generateAssignments}
+            className="w-full bg-primary hover:opacity-90 text-black font-bold py-4 rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-transform active:scale-[0.98]"
+          >
+            <span className="material-symbols-outlined">casino</span>
+            Generate Secret Codes
+          </button>
+        </section>
+
+        {/* Secret Codes List */}
+        {editingEvent.assignments && (
+          <section className="mt-8 px-4 pb-12">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-lg font-bold">Secret Access Codes</h3>
+              <span className="text-xs font-medium text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+                Generated Today
+              </span>
+            </div>
+            <div className="space-y-2">
+              {Object.entries(
+                editingEvent.assignments as Record<string, string[]>,
+              ).map(([person, receivers]) => {
+                const code = generateCode(person, editingEvent.assignments);
+                const isRevealed = revealedCodes[code];
+                return (
+                  <div
+                    key={person}
+                    className="flex items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800"
+                  >
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold">{person}</span>
+                      <span className="text-xs font-mono text-slate-400">
+                        {isRevealed ? code : "••••••"}
                       </span>
+                    </div>
+                    <div className="flex items-center gap-2">
                       <button
-                        onClick={() =>
-                          setSelectedCouples(
-                            selectedCouples.filter((_, i) => i !== idx)
-                          )
-                        }
-                        className="text-red-600 hover:text-red-700 transition-colors"
+                        onClick={() => toggleCodeReveal(code)}
+                        className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 transition-colors"
                       >
-                        <X size={18} />
+                        <span className="material-symbols-outlined text-xl">
+                          {isRevealed ? "visibility_off" : "visibility"}
+                        </span>
+                      </button>
+                      <button
+                        onClick={() => copyCode(code)}
+                        className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-xl">
+                          {copiedCode === code ? "check" : "content_copy"}
+                        </span>
                       </button>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Available Singles */}
-            <h3 className="font-medium text-gray-700 mb-3">
-              Create Couple
-            </h3>
-            <div className="grid grid-cols-2 gap-2">
-              {editingEvent.people
-                .filter(
-                  (p: string) => !selectedCouples.some((c) => c.includes(p))
-                )
-                .map((person: string) => (
-                  <button
-                    key={person}
-                    onClick={() => {
-                      if (firstPersonSelected === person) {
-                        setFirstPersonSelected(null);
-                      } else if (!firstPersonSelected) {
-                        setFirstPersonSelected(person);
-                      } else {
-                        setSelectedCouples([
-                          ...selectedCouples,
-                          [firstPersonSelected, person],
-                        ]);
-                        setFirstPersonSelected(null);
-                      }
-                    }}
-                    className={`text-left px-4 py-2 rounded-lg transition-colors ${
-                      firstPersonSelected === person
-                        ? "bg-red-500 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-red-100"
-                    }`}
-                  >
-                    {person}
-                  </button>
-                ))}
+                  </div>
+                );
+              })}
             </div>
-            {firstPersonSelected && (
-              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-700">
-                  <strong>{firstPersonSelected}</strong> is selected.
-                  Click another person to pair them.
-                </p>
-              </div>
-            )}
-          </div>
+          </section>
         )}
+      </main>
 
-        {/* Generate Assignments */}
-        <button
-          onClick={generateAssignments}
-          disabled={editingEvent.people.length < 2}
-          data-generate-button
-          className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white py-3 rounded-lg transition-colors font-medium flex items-center justify-center gap-2"
-        >
-          ✨ Generate Secret Codes
-        </button>
-
-        {/* Assignments Display */}
-        {editingEvent.assignments && (
-          <div className="bg-white rounded-lg shadow-sm border border-green-100 p-6">
-            <h2 className="text-xl font-semibold text-green-800 mb-4">
-              Secret Codes
-            </h2>
-            <div className="space-y-3">
-              {Object.entries(editingEvent.assignments).map(
-                ([person, receivers]) => {
-                  const code = generateCode(
-                    person,
-                    editingEvent.assignments
-                  );
-                  const isRevealed = revealedCodes[code];
-                  return (
-                    <div
-                      key={person}
-                      className="bg-green-50 border border-green-200 rounded-lg p-4"
-                    >
-                      <div className="font-semibold text-green-900 mb-2">
-                        {person}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <code
-                          className={`flex-1 font-mono text-sm ${
-                            isRevealed ? "text-gray-800" : "text-gray-400"
-                          }`}
-                        >
-                          {isRevealed ? code : "•".repeat(code.length)}
-                        </code>
-                        <button
-                          onClick={() => toggleCodeReveal(code)}
-                          className="text-gray-500 hover:text-gray-700 transition-colors"
-                        >
-                          {isRevealed ? (
-                            <EyeOff size={18} />
-                          ) : (
-                            <Eye size={18} />
-                          )}
-                        </button>
-                        <button
-                          onClick={() => copyCode(code)}
-                          className={`transition-colors ${
-                            copiedCode === code
-                              ? "text-green-600"
-                              : "text-gray-500 hover:text-gray-700"
-                          }`}
-                        >
-                          <Copy size={18} />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                }
-              )}
-            </div>
-            <button
-              onClick={generateAssignments}
-              className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg transition-colors text-sm font-medium"
-            >
-              Regenerate Codes
-            </button>
-          </div>
-        )}
-
-        <button
-          onClick={saveEvent}
-          className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg transition-colors font-medium"
-        >
-          Save Event
-        </button>
+      {/* Bottom Action Bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 p-4 safe-area-bottom">
+        <div className="max-w-md mx-auto flex gap-4">
+          <button
+            onClick={() => navigate("/events")}
+            className="flex-1 py-3 px-4 rounded-xl font-bold text-sm text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={saveEvent}
+            className="flex-[2] py-3 px-4 rounded-xl font-bold text-sm text-black bg-primary shadow-lg shadow-primary/20 hover:opacity-95 transition-opacity"
+          >
+            Save Event
+          </button>
+        </div>
       </div>
     </div>
   );

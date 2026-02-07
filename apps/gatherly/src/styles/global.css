@@ -2,9 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Konsta UI theme - must come after Tailwind directives */
-@import 'konsta/react/theme.css';
-
 @layer utilities {
   .line-clamp-2 {
     overflow: hidden;
@@ -12,4 +9,13 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
   }
+}
+
+/* Hide scrollbar utility for carousel */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
