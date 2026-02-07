@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect, useState } from "react";
-import { eventsApi, Event } from "../api/events";
+import { eventsApi, Event, WishlistItem } from "../api/events";
 
 type EventsState = {
   events: Event[];
@@ -13,7 +13,11 @@ type EventsAction =
   | { type: "DELETE_EVENT"; payload: string }
   | { type: "SET_EVENTS"; payload: Event[] }
   | { type: "SET_LOADING"; payload: boolean }
-  | { type: "SET_ERROR"; payload: string | null };
+  | { type: "SET_ERROR"; payload: string | null }
+  | { type: "ADD_WISHLIST_ITEM"; payload: { eventId: string; item: WishlistItem } }
+  | { type: "UPDATE_WISHLIST_ITEM"; payload: { eventId: string; item: WishlistItem } }
+  | { type: "DELETE_WISHLIST_ITEM"; payload: { eventId: string; itemId: number } }
+  | { type: "SET_WISHLISTS"; payload: { eventId: string; items: WishlistItem[] } };
 
 const initialState: EventsState = {
   events: [],
@@ -65,6 +69,52 @@ const eventsReducer = (
       return { ...state, loading: action.payload };
     case "SET_ERROR":
       return { ...state, error: action.payload, loading: false };
+    case "ADD_WISHLIST_ITEM":
+      return {
+        ...state,
+        events: state.events.map(event =>
+          event.id === action.payload.eventId
+            ? { ...event, wishlists: [action.payload.item, ...(event.wishlists || [])] }
+            : event
+        ),
+      };
+    case "UPDATE_WISHLIST_ITEM":
+      return {
+        ...state,
+        events: state.events.map(event =>
+          event.id === action.payload.eventId
+            ? {
+                ...event,
+                wishlists: (event.wishlists || []).map(item =>
+                  item.id === action.payload.item.id ? action.payload.item : item
+                ),
+              }
+            : event
+        ),
+      };
+    case "DELETE_WISHLIST_ITEM":
+      return {
+        ...state,
+        events: state.events.map(event =>
+          event.id === action.payload.eventId
+            ? {
+                ...event,
+                wishlists: (event.wishlists || []).filter(
+                  item => item.id !== action.payload.itemId
+                ),
+              }
+            : event
+        ),
+      };
+    case "SET_WISHLISTS":
+      return {
+        ...state,
+        events: state.events.map(event =>
+          event.id === action.payload.eventId
+            ? { ...event, wishlists: action.payload.items }
+            : event
+        ),
+      };
     default:
       return state;
   }
