@@ -160,9 +160,6 @@ importers:
       i18next:
         specifier: ^25.7.3
         version: 25.8.4(typescript@5.9.3)
-      konsta:
-        specifier: ^5.0.6
-        version: 5.0.6
       lucide-react:
         specifier: ^0.562.0
         version: 0.562.0(react@19.2.4)
@@ -11150,13 +11147,6 @@ packages:
     resolution: {integrity: sha512-dhG34DXATL5hSxJbIexCft8FChFXtmskoZYnoPWjXQuebWYCNkVeV3KkGegCK9CP1oswI/vQibS2GY7Em/sJJA==}
     engines: {node: '>= 8'}
 
-  /konsta@5.0.6:
-    resolution: {integrity: sha512-qMwBigssLnqTHDfpFnLPMYYWP329FGI6jr+qMpzVXIRsvHUwRmE9y9jxKf8IURh1n4aCAaytD/04BS6yNoKd3w==}
-    engines: {node: '>= 4.7.0'}
-    dependencies:
-      tailwind-merge: 3.4.0
-    dev: false
-
   /language-subtag-registry@0.3.23:
     resolution: {integrity: sha512-0K65Lea881pHotoGEa5gDlMxt3pctLi2RplBb7Ezh4rRdLEOtgi7n4EwK9lamnUCkKBqaeKRVebTq6BAxSkpXQ==}
 
@@ -14674,10 +14664,6 @@ packages:
     os: [darwin, linux, win32, freebsd, openbsd, netbsd, sunos, android]
     hasBin: true
     dev: true
-
-  /tailwind-merge@3.4.0:
-    resolution: {integrity: sha512-uSaO4gnW+b3Y2aWoWfFpX62vn2sR3skfhbjsEnaBI81WD1wBLlHZe5sWf0AqjksNdYTbGBEd0UasQMT3SNV15g==}
-    dev: false
 
   /tailwindcss@3.4.19:
     resolution: {integrity: sha512-3ofp+LL8E+pK/JuPLPggVAIaEuhvIz4qNcf3nA1Xn2o/7fb7s/TYpHhwGDv1ZU3PkBluUVaF8PyCHcm48cKLWQ==}

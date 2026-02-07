@@ -15,7 +15,6 @@
     "axios": "^1.13.2",
     "browser-image-compression": "^2.0.2",
     "i18next": "^25.7.3",
-    "konsta": "^5.0.6",
     "lucide-react": "^0.562.0",
     "pg": "^8.18.0",
     "react": "^19.2.3",

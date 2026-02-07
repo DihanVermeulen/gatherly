@@ -1,6 +1,4 @@
-const konstaConfig = require('konsta/config');
-
-module.exports = konstaConfig({
+module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}", "./public/index.html"],
   darkMode: 'class',
   theme: {
@@ -14,4 +12,4 @@ module.exports = konstaConfig({
     },
   },
   plugins: [],
-});
+};
