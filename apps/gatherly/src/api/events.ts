@@ -26,6 +26,7 @@ export type Event = {
   gifts: Record<string, any>;
   date: string;
   participants: string[];
+  participantDetails?: Array<{ id: number; name: string }>;
   wishlists?: WishlistItem[];
   hash?: string;
 };

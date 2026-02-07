@@ -203,7 +203,7 @@ export const EditEventPage = () => {
   }
 
   return (
-    <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen pb-32 font-sans -mt-20 -mx-6">
+    <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen pb-32 font-sans -mt-20">
       {/* Top App Bar */}
       <div className=" bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center p-4 justify-between max-w-md mx-auto">
@@ -264,6 +264,41 @@ export const EditEventPage = () => {
               >
                 <span className="material-symbols-outlined font-bold">add</span>
               </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Wishlists Section */}
+        <section className="mt-6">
+          <h3 className="text-lg font-bold px-4 pb-2 pt-4">Wishlists</h3>
+          <div className="px-4 py-2">
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+              View and manage wishlist items for each participant
+            </p>
+            <div className="space-y-2">
+              {editingEvent.participantDetails && editingEvent.participantDetails.length > 0 ? (
+                editingEvent.participantDetails.map((participant: { id: number; name: string }) => (
+                  <button
+                    key={participant.id}
+                    onClick={() => navigate(`/events/${editingEvent.id}/wishlist/${participant.id}`)}
+                    className="w-full flex items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-primary/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/20 dark:bg-primary/10 flex items-center justify-center text-primary font-bold">
+                        {participant.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="text-sm font-medium">{participant.name}'s Wishlist</span>
+                    </div>
+                    <span className="material-symbols-outlined text-slate-400">
+                      arrow_forward
+                    </span>
+                  </button>
+                ))
+              ) : (
+                <p className="text-sm text-slate-400 italic px-2">
+                  Add participants to enable wishlists
+                </p>
+              )}
             </div>
           </div>
         </section>
