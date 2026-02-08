@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 ## Current Position
 
 Phase: 7 of 7 (JWT Authentication with Secure Routes)
-Plan: 3 of 5
+Plan: 4 of 5
 Status: In progress
-Last activity: 2026-02-08 - Completed 07-03-PLAN.md (Frontend auth system)
+Last activity: 2026-02-08 - Completed 07-04-PLAN.md (API route protection and auth UI)
 
 Progress: [████░░░░░░] 40%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
-- Average duration: 2.96 minutes
-- Total execution time: 0.44 hours
+- Total plans completed: 10
+- Average duration: 3.11 minutes
+- Total execution time: 0.52 hours
 
 **By Phase:**
 
@@ -29,11 +29,11 @@ Progress: [████░░░░░░] 40%
 |-------|-------|-------|----------|
 | 01-foundation-privacy | 2 | 7.9m | 3.95m |
 | 02-wishlist-core | 4 | 9.64m | 2.41m |
-| 07-jwt-authentication | 3 | 10.46m | 3.49m |
+| 07-jwt-authentication | 4 | 16.28m | 4.07m |
 
 **Recent Trend:**
-- Last 5 plans: 02-04 (2.68m), 07-01 (4.5m), 07-02 (2.45m), 07-03 (3.51m)
-- Trend: Phase 7 frontend auth completed in 3.51m, consistent velocity with complex React context implementation
+- Last 5 plans: 07-01 (4.5m), 07-02 (2.45m), 07-03 (3.51m), 07-04 (5.82m)
+- Trend: Phase 7 API protection completed in 5.82m, verification checkpoint added time but ensured quality
 
 *Updated after each plan completion*
 
@@ -72,6 +72,10 @@ Recent decisions affecting current work:
 - Auto-refresh every 14 minutes - Ensures users never experience token expiry during active sessions (Outcome: Good - seamless UX with no re-auth prompts)
 - Queue pattern for concurrent refresh requests - Prevents multiple simultaneous refresh calls and race conditions (Outcome: Good - single refresh handles multiple concurrent 401s)
 - Generic error messages on login/register - Security best practice to prevent user enumeration (Outcome: Good - shows "Invalid credentials" instead of "User not found")
+- Events GET routes use optionalAuth - Backward compatible during migration, allows unauthenticated access to listings (Outcome: Good - gradual migration path)
+- Wishlists require full authentication - Personal data should only be accessible to authenticated users (Outcome: Good - appropriate security for sensitive data)
+- Gifts use mixed auth strategy - GET public, mutations require auth (Outcome: Good - balances public visibility with mutation protection)
+- Auth-aware header UI - Conditional rendering based on user state (Outcome: Good - clear visual feedback for auth status)
 
 ### Pending Todos
 
@@ -88,5 +92,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Completed 07-03-PLAN.md (Frontend auth system)
+Stopped at: Completed 07-04-PLAN.md (API route protection and auth UI)
 Resume file: None
