@@ -2,6 +2,8 @@ import { json, urlencoded } from "body-parser";
 import express, { type Express } from "express";
 import morgan from "morgan";
 import cors from "cors";
+import cookieParser from "cookie-parser";
+import authRouter from "./routes/auth";
 import eventsRouter from "./routes/events";
 import giftsRouter from "./routes/gifts";
 import wishlistsRouter from "./routes/wishlists";
@@ -14,11 +16,16 @@ export const createServer = (): Express => {
     .use(morgan("dev"))
     .use(urlencoded({ extended: true, limit: "50mb" }))
     .use(json({ limit: "50mb" }))
-    .use(cors())
+    .use(cookieParser())
+    .use(cors({
+      origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+      credentials: true,
+    }))
     .get("/status", (_, res) => {
       return res.json({ ok: true });
     })
     // API routes
+    .use("/api/auth", authRouter)
     .use("/api/events", eventsRouter)
     .use("/api/events", giftsRouter)
     .use("/api/events", wishlistsRouter)
