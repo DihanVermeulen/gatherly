@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 ## Current Position
 
 Phase: 7 of 7 (JWT Authentication with Secure Routes)
-Plan: 2 of 5
+Plan: 3 of 5
 Status: In progress
-Last activity: 2026-02-08 - Completed 07-02-PLAN.md (Auth API routes)
+Last activity: 2026-02-08 - Completed 07-03-PLAN.md (Frontend auth system)
 
-Progress: [████░░░░░░] 36%
+Progress: [████░░░░░░] 40%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
-- Average duration: 2.88 minutes
-- Total execution time: 0.38 hours
+- Total plans completed: 9
+- Average duration: 2.96 minutes
+- Total execution time: 0.44 hours
 
 **By Phase:**
 
@@ -29,11 +29,11 @@ Progress: [████░░░░░░] 36%
 |-------|-------|-------|----------|
 | 01-foundation-privacy | 2 | 7.9m | 3.95m |
 | 02-wishlist-core | 4 | 9.64m | 2.41m |
-| 07-jwt-authentication | 2 | 6.95m | 3.48m |
+| 07-jwt-authentication | 3 | 10.46m | 3.49m |
 
 **Recent Trend:**
-- Last 5 plans: 02-03 (2.27m), 02-04 (2.68m), 07-01 (4.5m), 07-02 (2.45m)
-- Trend: Phase 7 auth routes completed in 2.45m, excellent velocity on API implementation
+- Last 5 plans: 02-04 (2.68m), 07-01 (4.5m), 07-02 (2.45m), 07-03 (3.51m)
+- Trend: Phase 7 frontend auth completed in 3.51m, consistent velocity with complex React context implementation
 
 *Updated after each plan completion*
 
@@ -68,6 +68,10 @@ Recent decisions affecting current work:
 - HttpOnly cookie path scoped to /api/auth - Refresh cookies only sent to auth endpoints, not all API routes (Outcome: Good - reduces attack surface)
 - bcrypt saltRounds = 12 - Industry standard for password hashing, balances security vs performance (Outcome: Good - adequate for 2026 security standards)
 - Logout always succeeds - Returns 200 even if token revocation fails (Outcome: Good - prevents client-side error handling complexity)
+- Access token stored in memory only (not localStorage) - Prevents XSS attacks from accessing tokens (Outcome: Good - more secure, restored via refresh on page reload)
+- Auto-refresh every 14 minutes - Ensures users never experience token expiry during active sessions (Outcome: Good - seamless UX with no re-auth prompts)
+- Queue pattern for concurrent refresh requests - Prevents multiple simultaneous refresh calls and race conditions (Outcome: Good - single refresh handles multiple concurrent 401s)
+- Generic error messages on login/register - Security best practice to prevent user enumeration (Outcome: Good - shows "Invalid credentials" instead of "User not found")
 
 ### Pending Todos
 
@@ -84,5 +88,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Completed 07-02-PLAN.md (Auth API routes)
+Stopped at: Completed 07-03-PLAN.md (Frontend auth system)
 Resume file: None
