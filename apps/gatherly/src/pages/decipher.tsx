@@ -1,4 +1,5 @@
 import { Container } from "components";
+import { Gift, Lock } from "lucide-react";
 import { useState } from "react";
 
 export const DecipherPage = () => {
@@ -22,8 +23,8 @@ export const DecipherPage = () => {
     <Container>
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-lg shadow-sm border border-red-100 p-8">
-          <h2 className="text-2xl font-bold text-red-800 mb-6 text-center">
-            🔐 Decipher Your Code
+          <h2 className="text-2xl font-bold text-primary mb-6 text-center">
+            <Lock /> Decipher Your Code
           </h2>
           <p className="text-gray-600 text-center mb-6">
             Paste your secret code below to reveal who you're buying gifts for
@@ -37,11 +38,11 @@ export const DecipherPage = () => {
               onKeyPress={(e) =>
                 e.key === "Enter" && e.ctrlKey && decipherCode()
               }
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-red-400 font-mono text-sm h-24 resize-none"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-primary/90 font-mono text-sm h-24 resize-none"
             />
             <button
               onClick={decipherCode}
-              className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg transition-colors font-medium"
+              className="w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-lg transition-colors font-medium"
             >
               Decipher Code
             </button>
@@ -58,9 +59,9 @@ export const DecipherPage = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                  <div className="bg-primary/10 border border-primary/20 rounded-lg p-6">
                     <p className="text-sm text-gray-600 mb-2">You are:</p>
-                    <p className="text-2xl font-bold text-green-800">
+                    <p className="text-2xl font-bold text-primary">
                       {decipheredResult.person}
                     </p>
                   </div>
@@ -74,7 +75,7 @@ export const DecipherPage = () => {
                           key={idx}
                           className="text-xl font-bold text-red-800 flex items-center gap-2"
                         >
-                          🎁 {receiver}
+                          <Gift /> {receiver}
                         </div>
                       ))}
                     </div>

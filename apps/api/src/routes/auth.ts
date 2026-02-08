@@ -1,13 +1,14 @@
-import { Router, Request, Response } from 'express';
-import bcrypt from 'bcrypt';
-import crypto from 'crypto';
-import { query } from '../db/connection.js';
+import { Router, Request, Response } from "express";
+import bcrypt from "bcrypt";
+import crypto from "crypto";
+import { query } from "../db/connection";
+import { asyncHandler } from "../middleware/asyncHandler";
 import {
   generateTokens,
   verifyRefreshToken,
   revokeRefreshToken,
   cleanExpiredTokens,
-} from '../services/tokenService.js';
+} from "../services/tokenService";
 
 const router: Router = Router();
 
@@ -16,43 +17,48 @@ const SALT_ROUNDS = 12;
 // Cookie configuration helper
 const getRefreshCookieOptions = () => ({
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict' as const,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "strict" as const,
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
-  path: '/api/auth',
+  path: "/api/auth",
 });
 
 /**
  * POST /register
  * Register a new user with email, password, and name
  */
-router.post('/register', async (req: Request, res: Response) => {
-  try {
+router.post(
+  "/register",
+  asyncHandler(async (req: Request, res: Response) => {
     const { email, password, name } = req.body;
 
     // Validation
     if (!email || !password || !name) {
-      return res.status(400).json({ error: 'Email, password, and name are required' });
+      return res
+        .status(400)
+        .json({ error: "Email, password, and name are required" });
     }
 
     // Basic email format check
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: 'Invalid email format' });
+      return res.status(400).json({ error: "Invalid email format" });
     }
 
     // Password minimum length check
     if (password.length < 8) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters' });
+      return res
+        .status(400)
+        .json({ error: "Password must be at least 8 characters" });
     }
 
     // Check if user already exists
-    const existingUser = await query('SELECT id FROM users WHERE email = $1', [
+    const existingUser = await query("SELECT id FROM users WHERE email = $1", [
       email.toLowerCase(),
     ]);
 
     if (existingUser.rows.length > 0) {
-      return res.status(409).json({ error: 'User already exists' });
+      return res.status(409).json({ error: "User already exists" });
     }
 
     // Hash password
@@ -60,8 +66,8 @@ router.post('/register', async (req: Request, res: Response) => {
 
     // Insert new user with default 'participant' role
     const result = await query(
-      'INSERT INTO users (email, name, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, email, name, role',
-      [email.toLowerCase(), name, passwordHash, 'participant']
+      "INSERT INTO users (email, name, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, email, name, role",
+      [email.toLowerCase(), name, passwordHash, "participant"],
     );
 
     const user = result.rows[0];
@@ -74,7 +80,7 @@ router.post('/register', async (req: Request, res: Response) => {
     });
 
     // Set refresh token in HttpOnly cookie
-    res.cookie('refreshToken', tokens.refreshToken, getRefreshCookieOptions());
+    res.cookie("refreshToken", tokens.refreshToken, getRefreshCookieOptions());
 
     // Return access token and user info
     return res.status(201).json({
@@ -86,33 +92,31 @@ router.post('/register', async (req: Request, res: Response) => {
         role: user.role,
       },
     });
-  } catch (error) {
-    console.error('Registration error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-});
+  }),
+);
 
 /**
  * POST /login
  * Authenticate user with email and password
  */
-router.post('/login', async (req: Request, res: Response) => {
-  try {
+router.post(
+  "/login",
+  asyncHandler(async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     // Validation
     if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+      return res.status(400).json({ error: "Email and password are required" });
     }
 
     // Query user by email
     const result = await query(
-      'SELECT id, email, name, role, password_hash FROM users WHERE email = $1',
-      [email.toLowerCase()]
+      "SELECT id, email, name, role, password_hash FROM users WHERE email = $1",
+      [email.toLowerCase()],
     );
 
     // Generic error message to prevent user enumeration
-    const invalidCredentialsError = { error: 'Invalid credentials' };
+    const invalidCredentialsError = { error: "Invalid credentials" };
 
     if (result.rows.length === 0) {
       return res.status(401).json(invalidCredentialsError);
@@ -135,7 +139,7 @@ router.post('/login', async (req: Request, res: Response) => {
     });
 
     // Set refresh token in HttpOnly cookie
-    res.cookie('refreshToken', tokens.refreshToken, getRefreshCookieOptions());
+    res.cookie("refreshToken", tokens.refreshToken, getRefreshCookieOptions());
 
     // Return access token and user info (without password_hash)
     return res.status(200).json({
@@ -147,23 +151,21 @@ router.post('/login', async (req: Request, res: Response) => {
         role: user.role,
       },
     });
-  } catch (error) {
-    console.error('Login error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-});
+  }),
+);
 
 /**
  * POST /refresh
  * Refresh access token using refresh token from HttpOnly cookie
  * Implements refresh token rotation for security
  */
-router.post('/refresh', async (req: Request, res: Response) => {
-  try {
+router.post(
+  "/refresh",
+  asyncHandler(async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
-      return res.status(401).json({ error: 'No refresh token' });
+      return res.status(401).json({ error: "No refresh token" });
     }
 
     // Verify refresh token (checks signature AND database)
@@ -171,14 +173,14 @@ router.post('/refresh', async (req: Request, res: Response) => {
     try {
       decoded = await verifyRefreshToken(refreshToken);
     } catch (error) {
-      return res.status(401).json({ error: 'Invalid refresh token' });
+      return res.status(401).json({ error: "Invalid refresh token" });
     }
 
     // Hash old token for revocation
     const oldTokenHash = crypto
-      .createHash('sha256')
+      .createHash("sha256")
       .update(refreshToken)
-      .digest('hex');
+      .digest("hex");
 
     // Revoke old refresh token (rotation)
     await revokeRefreshToken(oldTokenHash);
@@ -188,12 +190,12 @@ router.post('/refresh', async (req: Request, res: Response) => {
 
     // Query user from database to get current name/role (in case they changed)
     const userResult = await query(
-      'SELECT id, email, name, role FROM users WHERE id = $1',
-      [decoded.userId]
+      "SELECT id, email, name, role FROM users WHERE id = $1",
+      [decoded.userId],
     );
 
     if (userResult.rows.length === 0) {
-      return res.status(401).json({ error: 'User not found' });
+      return res.status(401).json({ error: "User not found" });
     }
 
     const user = userResult.rows[0];
@@ -206,7 +208,7 @@ router.post('/refresh', async (req: Request, res: Response) => {
     });
 
     // Set new refresh token in HttpOnly cookie
-    res.cookie('refreshToken', tokens.refreshToken, getRefreshCookieOptions());
+    res.cookie("refreshToken", tokens.refreshToken, getRefreshCookieOptions());
 
     // Return new access token and current user info
     return res.status(200).json({
@@ -218,45 +220,43 @@ router.post('/refresh', async (req: Request, res: Response) => {
         role: user.role,
       },
     });
-  } catch (error) {
-    console.error('Token refresh error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-});
+  }),
+);
 
 /**
  * POST /logout
  * Logout user by revoking refresh token and clearing cookie
  * Always succeeds even if no token present
  */
-router.post('/logout', async (req: Request, res: Response) => {
-  try {
+router.post(
+  "/logout",
+  asyncHandler(async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken;
 
     // If refresh token exists, revoke it from database
     if (refreshToken) {
       const tokenHash = crypto
-        .createHash('sha256')
+        .createHash("sha256")
         .update(refreshToken)
-        .digest('hex');
+        .digest("hex");
 
-      await revokeRefreshToken(tokenHash);
+      try {
+        await revokeRefreshToken(tokenHash);
+      } catch (error) {
+        console.error("Revocation error during logout:", error);
+      }
     }
 
     // Clear the refresh token cookie
-    res.clearCookie('refreshToken', {
+    res.clearCookie("refreshToken", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      path: '/api/auth',
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/api/auth",
     });
 
-    return res.status(200).json({ message: 'Logged out' });
-  } catch (error) {
-    console.error('Logout error:', error);
-    // Still return success even if revocation fails
-    return res.status(200).json({ message: 'Logged out' });
-  }
-});
+    return res.status(200).json({ message: "Logged out" });
+  }),
+);
 
 export default router;

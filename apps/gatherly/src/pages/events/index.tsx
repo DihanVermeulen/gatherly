@@ -1,4 +1,12 @@
 import { useEvents } from "contexts/EventsContext";
+import {
+  Calendar,
+  CheckCircle,
+  Gift,
+  Group,
+  PartyPopper,
+  Users,
+} from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
@@ -110,23 +118,23 @@ export const EventsPage = () => {
                           : "text-blue-500 bg-blue-500/10"
                       }`}
                     >
-                      <span className="material-symbols-outlined text-[14px]">
-                        {event.assignments ? "check_circle" : "edit_calendar"}
+                      <span className=" text-[14px]">
+                        {event.assignments ? <CheckCircle /> : <Calendar />}
                       </span>
                       {event.assignments ? "Codes Generated" : "Planning Phase"}
                     </div>
                   </div>
                   <div className="size-10 rounded-xl bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center text-orange-600 dark:text-orange-400">
-                    <span className="material-symbols-outlined">
-                      celebration
+                    <span className="">
+                      <PartyPopper />
                     </span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 mb-6">
                   <div className="flex flex-col items-center p-2 bg-background-light dark:bg-white/5 rounded-xl border border-slate-100 dark:border-slate-800/50">
-                    <span className="material-symbols-outlined text-[20px] mb-1 opacity-60">
-                      event
+                    <span className=" text-[20px] mb-1 opacity-60">
+                      <Calendar />
                     </span>
                     <p className="text-[10px] font-bold opacity-50 uppercase">
                       Date
@@ -139,8 +147,8 @@ export const EventsPage = () => {
                     </p>
                   </div>
                   <div className="flex flex-col items-center p-2 bg-background-light dark:bg-white/5 rounded-xl border border-slate-100 dark:border-slate-800/50">
-                    <span className="material-symbols-outlined text-[20px] mb-1 opacity-60">
-                      group
+                    <span className="text-[20px] mb-1 opacity-60">
+                      <Users />
                     </span>
                     <p className="text-[10px] font-bold opacity-50 uppercase">
                       Peeps
@@ -150,8 +158,8 @@ export const EventsPage = () => {
                     </p>
                   </div>
                   <div className="flex flex-col items-center p-2 bg-background-light dark:bg-white/5 rounded-xl border border-slate-100 dark:border-slate-800/50">
-                    <span className="material-symbols-outlined text-[20px] mb-1 opacity-60">
-                      featured_seasonal_and_gifts
+                    <span className="text-[20px] mb-1 opacity-60">
+                      <Gift />
                     </span>
                     <p className="text-[10px] font-bold opacity-50 uppercase">
                       Gifts

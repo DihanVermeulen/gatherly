@@ -1,6 +1,18 @@
 import { useEvents } from "contexts/EventsContext";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
+import {
+  ArrowRight,
+  Check,
+  Copy,
+  Dices,
+  Eye,
+  EyeOff,
+  Link2Off,
+  Minus,
+  Plus,
+  X,
+} from "lucide-react";
 
 export const EditEventPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -237,9 +249,9 @@ export const EditEventPage = () => {
                 <p className="text-sm font-semibold">{person}</p>
                 <span
                   onClick={() => removePersonFromEvent(person)}
-                  className="material-symbols-outlined text-[18px] cursor-pointer hover:text-red-500"
+                  className="text-[18px] cursor-pointer hover:text-red-500"
                 >
-                  close
+                  <X />
                 </span>
               </div>
             ))}
@@ -276,21 +288,27 @@ export const EditEventPage = () => {
               View and manage wishlist items for each participant
             </p>
             <div className="space-y-2">
-              {editingEvent.participantDetails && editingEvent.participantDetails.length > 0 ? (
-                editingEvent.participantDetails.map((participant: { id: number; name: string }) => (
+              {editingEvent.people && editingEvent.people.length > 0 ? (
+                editingEvent.people.map((participant: string) => (
                   <button
-                    key={participant.id}
-                    onClick={() => navigate(`/events/${editingEvent.id}/wishlist/${participant.id}`)}
+                    key={participant}
+                    onClick={() =>
+                      navigate(
+                        `/events/${editingEvent.id}/wishlist/${participant}`,
+                      )
+                    }
                     className="w-full flex items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-primary/50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-primary/20 dark:bg-primary/10 flex items-center justify-center text-primary font-bold">
-                        {participant.name.charAt(0).toUpperCase()}
+                        {participant.charAt(0).toUpperCase()}
                       </div>
-                      <span className="text-sm font-medium">{participant.name}'s Wishlist</span>
+                      <span className="text-sm font-medium">
+                        {participant}'s Wishlist
+                      </span>
                     </div>
-                    <span className="material-symbols-outlined text-slate-400">
-                      arrow_forward
+                    <span className="text-slate-400">
+                      <ArrowRight />
                     </span>
                   </button>
                 ))
@@ -316,8 +334,8 @@ export const EditEventPage = () => {
                   onClick={() => setGiftCount(Math.max(1, giftCount - 1))}
                   className="w-8 h-8 flex items-center justify-center rounded-md bg-white dark:bg-slate-700 shadow-sm hover:bg-slate-50"
                 >
-                  <span className="material-symbols-outlined text-sm">
-                    remove
+                  <span className="text-sm">
+                    <Minus />
                   </span>
                 </button>
                 <span className="w-4 text-center font-bold">{giftCount}</span>
@@ -332,7 +350,9 @@ export const EditEventPage = () => {
                   }
                   className="w-8 h-8 flex items-center justify-center rounded-md bg-white dark:bg-slate-700 shadow-sm hover:bg-slate-50"
                 >
-                  <span className="material-symbols-outlined text-sm">add</span>
+                  <span className="text-sm">
+                    <Plus />
+                  </span>
                 </button>
               </div>
             </div>
@@ -378,7 +398,7 @@ export const EditEventPage = () => {
                       }
                       className="material-symbols-outlined text-slate-400 text-sm cursor-pointer hover:text-red-500"
                     >
-                      link_off
+                      <Link2Off />
                     </span>
                     <div className="flex-1 text-xs font-semibold bg-white dark:bg-slate-900 p-2 rounded border border-slate-200 dark:border-slate-700 text-center">
                       {couple[1]}
@@ -437,7 +457,9 @@ export const EditEventPage = () => {
             onClick={generateAssignments}
             className="w-full bg-primary hover:opacity-90 text-black font-bold py-4 rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-transform active:scale-[0.98]"
           >
-            <span className="material-symbols-outlined">casino</span>
+            <span className="">
+              <Dices />
+            </span>
             Generate Secret Codes
           </button>
         </section>
@@ -473,8 +495,8 @@ export const EditEventPage = () => {
                         onClick={() => toggleCodeReveal(code)}
                         className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 transition-colors"
                       >
-                        <span className="material-symbols-outlined text-xl">
-                          {isRevealed ? "visibility_off" : "visibility"}
+                        <span className="text-xl">
+                          {isRevealed ? <EyeOff /> : <Eye />}
                         </span>
                       </button>
                       <button
@@ -482,7 +504,7 @@ export const EditEventPage = () => {
                         className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 transition-colors"
                       >
                         <span className="material-symbols-outlined text-xl">
-                          {copiedCode === code ? "check" : "content_copy"}
+                          {copiedCode === code ? <Check /> : <Copy />}
                         </span>
                       </button>
                     </div>
@@ -496,7 +518,7 @@ export const EditEventPage = () => {
 
       {/* Bottom Action Bar */}
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 p-4 safe-area-bottom">
-        <div className="max-w-md mx-auto flex gap-4">
+        <div className="max-w-md mx-auto sm:ml-auto sm:mr-0 flex gap-4">
           <button
             onClick={() => navigate("/events")}
             className="flex-1 py-3 px-4 rounded-xl font-bold text-sm text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-colors"

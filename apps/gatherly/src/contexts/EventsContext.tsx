@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useReducer, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  useState,
+} from "react";
 import { eventsApi, Event, WishlistItem } from "../api/events";
 
 type EventsState = {
@@ -14,10 +20,22 @@ type EventsAction =
   | { type: "SET_EVENTS"; payload: Event[] }
   | { type: "SET_LOADING"; payload: boolean }
   | { type: "SET_ERROR"; payload: string | null }
-  | { type: "ADD_WISHLIST_ITEM"; payload: { eventId: string; item: WishlistItem } }
-  | { type: "UPDATE_WISHLIST_ITEM"; payload: { eventId: string; item: WishlistItem } }
-  | { type: "DELETE_WISHLIST_ITEM"; payload: { eventId: string; itemId: number } }
-  | { type: "SET_WISHLISTS"; payload: { eventId: string; items: WishlistItem[] } };
+  | {
+      type: "ADD_WISHLIST_ITEM";
+      payload: { eventId: string; item: WishlistItem };
+    }
+  | {
+      type: "UPDATE_WISHLIST_ITEM";
+      payload: { eventId: string; item: WishlistItem };
+    }
+  | {
+      type: "DELETE_WISHLIST_ITEM";
+      payload: { eventId: string; itemId: number };
+    }
+  | {
+      type: "SET_WISHLISTS";
+      payload: { eventId: string; items: WishlistItem[] };
+    };
 
 const initialState: EventsState = {
   events: [],
@@ -39,15 +57,16 @@ const EventsContext = createContext<{
 
 const eventsReducer = (
   state: EventsState,
-  action: EventsAction
+  action: EventsAction,
 ): EventsState => {
   switch (action.type) {
     case "SET_EVENTS":
       return {
         ...state,
-        events: action.payload.map(event => ({
+        events: action.payload.map((event) => ({
           ...event,
           wishlists: event.wishlists || [],
+          gifts: event.gifts || {},
         })),
         loading: false,
       };
@@ -57,7 +76,7 @@ const eventsReducer = (
       return {
         ...state,
         events: state.events.map((event) =>
-          event.id === action.payload.id ? action.payload : event
+          event.id === action.payload.id ? action.payload : event,
         ),
       };
     case "DELETE_EVENT":
@@ -72,47 +91,52 @@ const eventsReducer = (
     case "ADD_WISHLIST_ITEM":
       return {
         ...state,
-        events: state.events.map(event =>
+        events: state.events.map((event) =>
           event.id === action.payload.eventId
-            ? { ...event, wishlists: [action.payload.item, ...(event.wishlists || [])] }
-            : event
+            ? {
+                ...event,
+                wishlists: [action.payload.item, ...(event.wishlists || [])],
+              }
+            : event,
         ),
       };
     case "UPDATE_WISHLIST_ITEM":
       return {
         ...state,
-        events: state.events.map(event =>
+        events: state.events.map((event) =>
           event.id === action.payload.eventId
             ? {
                 ...event,
-                wishlists: (event.wishlists || []).map(item =>
-                  item.id === action.payload.item.id ? action.payload.item : item
+                wishlists: (event.wishlists || []).map((item) =>
+                  item.id === action.payload.item.id
+                    ? action.payload.item
+                    : item,
                 ),
               }
-            : event
+            : event,
         ),
       };
     case "DELETE_WISHLIST_ITEM":
       return {
         ...state,
-        events: state.events.map(event =>
+        events: state.events.map((event) =>
           event.id === action.payload.eventId
             ? {
                 ...event,
                 wishlists: (event.wishlists || []).filter(
-                  item => item.id !== action.payload.itemId
+                  (item) => item.id !== action.payload.itemId,
                 ),
               }
-            : event
+            : event,
         ),
       };
     case "SET_WISHLISTS":
       return {
         ...state,
-        events: state.events.map(event =>
+        events: state.events.map((event) =>
           event.id === action.payload.eventId
             ? { ...event, wishlists: action.payload.items }
-            : event
+            : event,
         ),
       };
     default:
@@ -137,6 +161,7 @@ export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({
         const events = (parsed.events || []).map((e: Event) => ({
           ...e,
           wishlists: e.wishlists || [],
+          gifts: e.gifts || {},
         }));
         return { events, loading: false, error: null };
       }
@@ -182,7 +207,10 @@ export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({
   // Save to localStorage when not using API
   useEffect(() => {
     if (!useApi && typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ events: state.events }));
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ events: state.events }),
+      );
     }
   }, [state.events, useApi]);
 

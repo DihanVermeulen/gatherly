@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { log } from "@repo/logger";
 import { createServer } from "./server";
 
