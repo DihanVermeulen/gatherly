@@ -6,11 +6,15 @@ import { EditEventPage } from "pages/events/edit";
 import { EventGiftsPage } from "pages/events/gifts";
 import { WishlistPage } from "pages/events/wishlist";
 import { DecipherPage } from "pages/decipher";
+import { LoginPage } from "pages/auth/login";
+import { RegisterPage } from "pages/auth/register";
+import { ProtectedRoute } from "components/ProtectedRoute";
 
 export const router = createBrowserRouter([
   {
     element: <MainLayout />,
     children: [
+      // Public routes
       {
         path: "/",
         element: <Navigate to="/home" replace />,
@@ -20,24 +24,38 @@ export const router = createBrowserRouter([
         element: <HomePage />,
       },
       {
-        path: "/events",
-        element: <EventsPage />,
+        path: "/login",
+        element: <LoginPage />,
       },
       {
-        path: "/events/edit/:id",
-        element: <EditEventPage />,
-      },
-      {
-        path: "/events/:id/gifts",
-        element: <EventGiftsPage />,
-      },
-      {
-        path: "/events/:eventId/wishlist/:participantId",
-        element: <WishlistPage />,
+        path: "/register",
+        element: <RegisterPage />,
       },
       {
         path: "/decipher",
         element: <DecipherPage />,
+      },
+      // Protected routes
+      {
+        element: <ProtectedRoute />,
+        children: [
+          {
+            path: "/events",
+            element: <EventsPage />,
+          },
+          {
+            path: "/events/edit/:id",
+            element: <EditEventPage />,
+          },
+          {
+            path: "/events/:id/gifts",
+            element: <EventGiftsPage />,
+          },
+          {
+            path: "/events/:eventId/wishlist/:participantId",
+            element: <WishlistPage />,
+          },
+        ],
       },
     ],
   },
