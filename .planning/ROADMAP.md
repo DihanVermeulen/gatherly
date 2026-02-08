@@ -155,10 +155,10 @@ Plans:
 
 Plans:
 
-- [ ] 07-01-PLAN.md -- Backend auth foundation (deps, DB migration, token service, middleware)
-- [ ] 07-02-PLAN.md -- Auth API routes (register, login, refresh, logout)
-- [ ] 07-03-PLAN.md -- Frontend auth system (AuthContext, API interceptors, login/register pages, ProtectedRoute)
-- [ ] 07-04-PLAN.md -- Route protection wiring and auth-aware header
+- [x] 07-01-PLAN.md -- Backend auth foundation (deps, DB migration, token service, middleware)
+- [x] 07-02-PLAN.md -- Auth API routes (register, login, refresh, logout)
+- [x] 07-03-PLAN.md -- Frontend auth system (AuthContext, API interceptors, login/register pages, ProtectedRoute)
+- [x] 07-04-PLAN.md -- Route protection wiring and auth-aware header
 
 ## Progress
 
@@ -173,4 +173,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 4. Invite System              | 0/TBD          | Not started | -          |
 | 5. Mobile UI Redesign         | 0/TBD          | Not started | -          |
 | 6. Wishlist Priority & Polish | 0/TBD          | Not started | -          |
-| 7. JWT Authentication         | 0/4            | Not started | -          |
+| 7. JWT Authentication         | 4/4            | Complete    | 2026-02-08 |
