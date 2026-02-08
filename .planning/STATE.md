@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 ## Current Position
 
 Phase: 7 of 7 (JWT Authentication with Secure Routes)
-Plan: 1 of 5
+Plan: 2 of 5
 Status: In progress
-Last activity: 2026-02-08 - Completed 07-01-PLAN.md (JWT auth foundation)
+Last activity: 2026-02-08 - Completed 07-02-PLAN.md (Auth API routes)
 
-Progress: [████░░░░░░] 32%
+Progress: [████░░░░░░] 36%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
-- Average duration: 2.94 minutes
-- Total execution time: 0.34 hours
+- Total plans completed: 8
+- Average duration: 2.88 minutes
+- Total execution time: 0.38 hours
 
 **By Phase:**
 
@@ -29,11 +29,11 @@ Progress: [████░░░░░░] 32%
 |-------|-------|-------|----------|
 | 01-foundation-privacy | 2 | 7.9m | 3.95m |
 | 02-wishlist-core | 4 | 9.64m | 2.41m |
-| 07-jwt-authentication | 1 | 4.5m | 4.5m |
+| 07-jwt-authentication | 2 | 6.95m | 3.48m |
 
 **Recent Trend:**
-- Last 5 plans: 02-02 (2.82m), 02-03 (2.27m), 02-04 (2.68m), 07-01 (4.5m)
-- Trend: Started Phase 7 JWT authentication, 4.5min execution maintaining good velocity
+- Last 5 plans: 02-03 (2.27m), 02-04 (2.68m), 07-01 (4.5m), 07-02 (2.45m)
+- Trend: Phase 7 auth routes completed in 2.45m, excellent velocity on API implementation
 
 *Updated after each plan completion*
 
@@ -64,6 +64,10 @@ Recent decisions affecting current work:
 - 15-minute access token expiry - Short TTL minimizes attack window, balanced with 7-day refresh tokens (Outcome: Good - security/UX balance)
 - Skip access token blacklisting in Phase 7 - Rely on 15min TTL instead of Redis/PostgreSQL blacklist (Outcome: Good - simplifies implementation, can add later if needed)
 - SHA-256 hash refresh tokens before storage - Protects against database compromise (Outcome: Good - defense in depth)
+- Generic error messages for login - Return "Invalid credentials" for both user not found and wrong password to prevent user enumeration (Outcome: Good - security best practice)
+- HttpOnly cookie path scoped to /api/auth - Refresh cookies only sent to auth endpoints, not all API routes (Outcome: Good - reduces attack surface)
+- bcrypt saltRounds = 12 - Industry standard for password hashing, balances security vs performance (Outcome: Good - adequate for 2026 security standards)
+- Logout always succeeds - Returns 200 even if token revocation fails (Outcome: Good - prevents client-side error handling complexity)
 
 ### Pending Todos
 
@@ -80,5 +84,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Completed 07-01-PLAN.md (JWT auth foundation)
+Stopped at: Completed 07-02-PLAN.md (Auth API routes)
 Resume file: None
