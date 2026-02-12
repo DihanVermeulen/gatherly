@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-06)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** Phase 7 - JWT Authentication
+**Current focus:** Phase 4 - Invite System
 
 ## Current Position
 
-Phase: 7 of 7 (JWT Authentication with Secure Routes)
-Plan: 4 of 4
-Status: Phase complete
-Last activity: 2026-02-08 - Phase 7 complete: JWT authentication with secure routes
+Phase: 4 of 7 (Invite System)
+Plan: 2 of 3
+Status: In progress
+Last activity: 2026-02-12 - Completed 04-02-PLAN.md (Frontend invite infrastructure)
 
-Progress: [████░░░░░░] 43%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
-- Average duration: 3.11 minutes
-- Total execution time: 0.52 hours
+- Total plans completed: 12
+- Average duration: 3.37 minutes
+- Total execution time: 0.67 hours
 
 **By Phase:**
 
@@ -29,11 +29,12 @@ Progress: [████░░░░░░] 43%
 |-------|-------|-------|----------|
 | 01-foundation-privacy | 2 | 7.9m | 3.95m |
 | 02-wishlist-core | 4 | 9.64m | 2.41m |
+| 04-invite-system | 2 | 10.58m | 5.29m |
 | 07-jwt-authentication | 4 | 16.28m | 4.07m |
 
 **Recent Trend:**
-- Last 5 plans: 07-01 (4.5m), 07-02 (2.45m), 07-03 (3.51m), 07-04 (5.82m)
-- Trend: Phase 7 API protection completed in 5.82m, verification checkpoint added time but ensured quality
+- Last 5 plans: 07-03 (3.51m), 07-04 (5.82m), 04-01 (1.5m), 04-02 (9.08m)
+- Trend: Phase 4 frontend infrastructure took longer (9.08m) due to multi-state page complexity
 
 *Updated after each plan completion*
 
@@ -76,6 +77,15 @@ Recent decisions affecting current work:
 - Wishlists require full authentication - Personal data should only be accessible to authenticated users (Outcome: Good - appropriate security for sensitive data)
 - Gifts use mixed auth strategy - GET public, mutations require auth (Outcome: Good - balances public visibility with mutation protection)
 - Auth-aware header UI - Conditional rendering based on user state (Outcome: Good - clear visual feedback for auth status)
+- nanoid for invite codes - 21-character URL-safe codes vs 36-character UUIDs (Outcome: Good - shorter, cleaner invite URLs)
+- Rate limit public endpoints - 10 requests per 15 minutes per IP on validate/accept (Outcome: Good - prevents brute force attacks)
+- Link-only invites - Remove email/phone requirement for flexible sharing (Outcome: Good - enables sharing via any channel)
+- 30-day default expiration - Balances security with usability (Outcome: Good - time-limited access with configurable override)
+- Generic error messages for invites - Same message for invalid/expired codes (Outcome: Good - prevents enumeration attacks)
+- react-qr-code for QR generation - SVG rendering with M-level error correction for invite URLs (Outcome: Good - crisp QR codes on all screen sizes)
+- Clipboard API with fallback - Modern navigator.clipboard with document.execCommand fallback for non-HTTPS (Outcome: Good - works in all environments)
+- Five-state join page pattern - Separate states for validating, valid, invalid, rate-limited, success (Outcome: Good - clear UX for each async flow stage)
+- Public /join/:code route - Unauthenticated invite acceptance outside ProtectedRoute (Outcome: Good - participants can join before account creation)
 
 ### Pending Todos
 
@@ -91,6 +101,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-08
-Stopped at: Completed 07-04-PLAN.md (API route protection and auth UI)
+Last session: 2026-02-12
+Stopped at: Completed 04-02-PLAN.md (Frontend invite infrastructure)
 Resume file: None

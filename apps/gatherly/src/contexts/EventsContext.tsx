@@ -176,8 +176,16 @@ export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({
         const response = await fetch("http://localhost:5001/status");
         if (response.ok) {
           setUseApi(true);
-          // Load events from API
-          refreshEvents();
+          // Load events from API directly (can't use refreshEvents due to state timing)
+          try {
+            dispatch({ type: "SET_LOADING", payload: true });
+            const events = await eventsApi.getAll();
+            dispatch({ type: "SET_EVENTS", payload: events });
+          } catch (error) {
+            console.error("Error fetching events:", error);
+            dispatch({ type: "SET_ERROR", payload: "Failed to load events" });
+            setUseApi(false);
+          }
         }
       } catch (error) {
         console.log("API not available, using localStorage");

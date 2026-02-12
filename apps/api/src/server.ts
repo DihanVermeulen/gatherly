@@ -7,6 +7,7 @@ import eventsRouter from "./routes/events";
 import giftsRouter from "./routes/gifts";
 import wishlistsRouter from "./routes/wishlists";
 import decipherRouter from "./routes/decipher";
+import invitesRouter from "./routes/invites";
 
 export const createServer = (): Express => {
   const app = express();
@@ -27,6 +28,7 @@ export const createServer = (): Express => {
     })
     // API routes
     .use("/api/auth", authRouter)
+    .use("/api", invitesRouter)
     .use("/api/events", eventsRouter)
     .use("/api/events", giftsRouter)
     .use("/api/events", wishlistsRouter)

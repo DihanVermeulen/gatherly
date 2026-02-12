@@ -26,7 +26,7 @@ router.get(
       ) as couples,
       CASE WHEN COUNT(a.id) > 0 THEN
         json_object_agg(
-          DISTINCT giver.name,
+          giver.name,
           COALESCE(
             (SELECT json_agg(receiver.name)
              FROM assignments a2

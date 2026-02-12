@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 4: Invite System** - Shareable links and QR codes
 - [ ] **Phase 5: Mobile UI Redesign** - iOS-style interface with Konsta UI
 - [ ] **Phase 6: Wishlist Priority & Polish** - Drag-drop ordering and UX refinements
-- [ ] **Phase 7: JWT Authentication** - Secure routes following zero trust principle
+- [x] **Phase 7: JWT Authentication** - Secure routes following zero trust principle
 
 ## Phase Details
 
@@ -93,11 +93,14 @@ Plans:
 2. Organizer can generate QR codes for event invites
 3. Participants can join events by clicking invite link or scanning QR code
 4. Organizer can view invite status (pending/joined) for all participants
-   **Plans**: TBD
+
+**Plans**: 3 plans
 
 Plans:
 
-- [ ] 04-01: TBD during plan-phase
+- [ ] 04-01-PLAN.md -- Backend invite API routes with nanoid codes and rate limiting
+- [ ] 04-02-PLAN.md -- Frontend join flow (API client, QR/clipboard components, /join/:code page)
+- [ ] 04-03-PLAN.md -- Invite management UI for organizers with route wiring
 
 ### Phase 5: Mobile UI Redesign
 
@@ -170,7 +173,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 1. Foundation & Privacy       | 2/2            | Complete    | 2026-02-06 |
 | 2. Wishlist Core              | 0/5            | Not started | -          |
 | 3. Claiming System            | 0/TBD          | Not started | -          |
-| 4. Invite System              | 0/TBD          | Not started | -          |
+| 4. Invite System              | 0/3            | Not started | -          |
 | 5. Mobile UI Redesign         | 0/TBD          | Not started | -          |
 | 6. Wishlist Priority & Polish | 0/TBD          | Not started | -          |
 | 7. JWT Authentication         | 4/4            | Complete    | 2026-02-08 |

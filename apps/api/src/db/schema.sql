@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS invites (
     participant_id INTEGER REFERENCES participants(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT email_or_phone CHECK (email IS NOT NULL OR phone IS NOT NULL)
+    expires_at TIMESTAMP DEFAULT NULL
 );
 
 -- Users table (authenticated users with role-based access)
@@ -131,6 +131,7 @@ CREATE INDEX IF NOT EXISTS idx_wishlist_claims_claimed_by ON wishlist_claims(cla
 CREATE INDEX IF NOT EXISTS idx_invites_event_id ON invites(event_id);
 CREATE INDEX IF NOT EXISTS idx_invites_invite_code ON invites(invite_code);
 CREATE INDEX IF NOT EXISTS idx_invites_status ON invites(status);
+CREATE INDEX IF NOT EXISTS idx_invites_expires_at ON invites(expires_at);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token_hash ON refresh_tokens(token_hash);
