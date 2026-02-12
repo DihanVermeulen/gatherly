@@ -4,6 +4,7 @@ import { HomePage } from "pages/home";
 import { EventsPage } from "pages/events";
 import { EditEventPage } from "pages/events/edit";
 import { EventGiftsPage } from "pages/events/gifts";
+import { EventInvitesPage } from "pages/events/invites";
 import { WishlistPage } from "pages/events/wishlist";
 import { DecipherPage } from "pages/decipher";
 import { JoinPage } from "pages/join";
@@ -59,6 +60,10 @@ export const router = createBrowserRouter([
           {
             path: "/events/:eventId/wishlist/:participantId",
             element: <WishlistPage />,
+          },
+          {
+            path: "/events/:id/invites",
+            element: <EventInvitesPage />,
           },
         ],
       },

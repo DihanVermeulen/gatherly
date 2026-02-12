@@ -11,6 +11,7 @@ import {
   Link2Off,
   Minus,
   Plus,
+  Share2,
   X,
 } from "lucide-react";
 
@@ -318,6 +319,29 @@ export const EditEventPage = () => {
                 </p>
               )}
             </div>
+          </div>
+        </section>
+
+        {/* Invites Section */}
+        <section className="mt-6">
+          <h3 className="text-lg font-bold px-4 pb-2 pt-4">Share Event</h3>
+          <div className="px-4 py-2">
+            <button
+              onClick={() => navigate(`/events/${editingEvent.id}/invites`)}
+              className="w-full flex items-center justify-between bg-emerald-600 hover:bg-emerald-500 text-white p-4 rounded-xl shadow-sm transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                  <Share2 size={20} />
+                </div>
+                <span className="text-sm font-medium">
+                  Manage Invites
+                </span>
+              </div>
+              <span className="text-white/80">
+                <ArrowRight />
+              </span>
+            </button>
           </div>
         </section>
 
