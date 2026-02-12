@@ -9,36 +9,63 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { eventsApi } from "api/events";
 
 export const EventsPage = () => {
   const {
     state: { events },
     dispatch,
+    useApi,
+    refreshEvents,
   } = useEvents();
   const [newEventName, setNewEventName] = useState("");
   const navigate = useNavigate();
 
-  const createEvent = () => {
+  const createEvent = async () => {
     if (!newEventName.trim()) return;
-    const event = {
-      id: Date.now().toString(),
-      name: newEventName,
-      people: [],
-      couples: [],
-      assignments: null,
-      coupleCrossing: false,
-      gifts: {},
-      date: new Date().toISOString(),
-      participants: [],
-    };
-    dispatch({ type: "ADD_EVENT", payload: event });
-    setNewEventName("");
+
+    if (useApi) {
+      // Use API to create event
+      try {
+        await eventsApi.create(newEventName.trim(), false);
+        await refreshEvents(); // Refresh to get the new event from the server
+        setNewEventName("");
+      } catch (error) {
+        console.error("Failed to create event:", error);
+        alert("Failed to create event. Please try again.");
+      }
+    } else {
+      // Fallback to localStorage
+      const event = {
+        id: Date.now().toString(),
+        name: newEventName,
+        people: [],
+        couples: [],
+        assignments: null,
+        coupleCrossing: false,
+        gifts: {},
+        date: new Date().toISOString(),
+        participants: [],
+      };
+      dispatch({ type: "ADD_EVENT", payload: event });
+      setNewEventName("");
+    }
   };
 
-  const deleteEvent = (id: string, e: React.MouseEvent) => {
+  const deleteEvent = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (window.confirm("Are you sure you want to delete this event?")) {
-      dispatch({ type: "DELETE_EVENT", payload: id });
+      if (useApi) {
+        try {
+          await eventsApi.delete(id);
+          await refreshEvents();
+        } catch (error) {
+          console.error("Failed to delete event:", error);
+          alert("Failed to delete event. Please try again.");
+        }
+      } else {
+        dispatch({ type: "DELETE_EVENT", payload: id });
+      }
     }
   };
 
@@ -49,21 +76,31 @@ export const EventsPage = () => {
         <div className="flex items-center justify-between px-4 pb-4 pt-6">
           <h2 className="text-2xl font-bold tracking-tight">My Events</h2>
           <button
-            onClick={() => {
+            onClick={async () => {
               const name = prompt("Enter event name:");
-              if (name) {
-                const event = {
-                  id: Date.now().toString(),
-                  name: name,
-                  people: [],
-                  couples: [],
-                  assignments: null,
-                  coupleCrossing: false,
-                  gifts: {},
-                  date: new Date().toISOString(),
-                  participants: [],
-                };
-                dispatch({ type: "ADD_EVENT", payload: event });
+              if (name && name.trim()) {
+                if (useApi) {
+                  try {
+                    await eventsApi.create(name.trim(), false);
+                    await refreshEvents();
+                  } catch (error) {
+                    console.error("Failed to create event:", error);
+                    alert("Failed to create event. Please try again.");
+                  }
+                } else {
+                  const event = {
+                    id: Date.now().toString(),
+                    name: name,
+                    people: [],
+                    couples: [],
+                    assignments: null,
+                    coupleCrossing: false,
+                    gifts: {},
+                    date: new Date().toISOString(),
+                    participants: [],
+                  };
+                  dispatch({ type: "ADD_EVENT", payload: event });
+                }
               }
             }}
             className="flex items-center justify-center h-10 px-4 rounded-full bg-primary text-background-dark gap-2 shadow-lg shadow-primary/20 transition-transform active:scale-95"
