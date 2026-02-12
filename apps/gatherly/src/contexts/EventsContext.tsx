@@ -1,11 +1,12 @@
-import React, {
-  createContext,
-  useContext,
-  useReducer,
-  useEffect,
-  useState,
-} from "react";
-import { eventsApi, Event, WishlistItem } from "../api/events";
+import React, { createContext, useContext } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Event, WishlistItem } from "../api/events";
+import { useEventsQuery } from "../hooks/useEventQueries";
+import {
+  useCreateEvent,
+  useUpdateEvent,
+  useDeleteEvent,
+} from "../hooks/useEventMutations";
 
 type EventsState = {
   events: Event[];
@@ -55,172 +56,115 @@ const EventsContext = createContext<{
   useApi: false,
 });
 
-const eventsReducer = (
-  state: EventsState,
-  action: EventsAction,
-): EventsState => {
-  switch (action.type) {
-    case "SET_EVENTS":
-      return {
-        ...state,
-        events: action.payload.map((event) => ({
-          ...event,
-          wishlists: event.wishlists || [],
-          gifts: event.gifts || {},
-        })),
-        loading: false,
-      };
-    case "ADD_EVENT":
-      return { ...state, events: [...state.events, action.payload] };
-    case "UPDATE_EVENT":
-      return {
-        ...state,
-        events: state.events.map((event) =>
-          event.id === action.payload.id ? action.payload : event,
-        ),
-      };
-    case "DELETE_EVENT":
-      return {
-        ...state,
-        events: state.events.filter((event) => event.id !== action.payload),
-      };
-    case "SET_LOADING":
-      return { ...state, loading: action.payload };
-    case "SET_ERROR":
-      return { ...state, error: action.payload, loading: false };
-    case "ADD_WISHLIST_ITEM":
-      return {
-        ...state,
-        events: state.events.map((event) =>
-          event.id === action.payload.eventId
-            ? {
-                ...event,
-                wishlists: [action.payload.item, ...(event.wishlists || [])],
-              }
-            : event,
-        ),
-      };
-    case "UPDATE_WISHLIST_ITEM":
-      return {
-        ...state,
-        events: state.events.map((event) =>
-          event.id === action.payload.eventId
-            ? {
-                ...event,
-                wishlists: (event.wishlists || []).map((item) =>
-                  item.id === action.payload.item.id
-                    ? action.payload.item
-                    : item,
-                ),
-              }
-            : event,
-        ),
-      };
-    case "DELETE_WISHLIST_ITEM":
-      return {
-        ...state,
-        events: state.events.map((event) =>
-          event.id === action.payload.eventId
-            ? {
-                ...event,
-                wishlists: (event.wishlists || []).filter(
-                  (item) => item.id !== action.payload.itemId,
-                ),
-              }
-            : event,
-        ),
-      };
-    case "SET_WISHLISTS":
-      return {
-        ...state,
-        events: state.events.map((event) =>
-          event.id === action.payload.eventId
-            ? { ...event, wishlists: action.payload.items }
-            : event,
-        ),
-      };
-    default:
-      return state;
-  }
-};
-
-const STORAGE_KEY = "secret_santa_events";
-
 export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [useApi, setUseApi] = useState(false);
+  const queryClient = useQueryClient();
 
-  // Initialize with localStorage
-  const [state, dispatch] = useReducer(eventsReducer, initialState, () => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Ensure backward compatibility: add missing fields
-        const events = (parsed.events || []).map((e: Event) => ({
-          ...e,
-          wishlists: e.wishlists || [],
-          gifts: e.gifts || {},
-        }));
-        return { events, loading: false, error: null };
+  // Query for events data
+  const { data: events, isLoading, error, refetch } = useEventsQuery();
+
+  // Mutations for CRUD operations
+  const createMutation = useCreateEvent();
+  const updateMutation = useUpdateEvent();
+  const deleteMutation = useDeleteEvent();
+
+  // Build state object from query data
+  const state: EventsState = {
+    events: (events || []).map((e) => ({
+      ...e,
+      wishlists: e.wishlists || [],
+      gifts: e.gifts || {},
+    })),
+    loading: isLoading,
+    error: error ? error.message : null,
+  };
+
+  // TanStack Query handles offline-first transparently, so useApi is always true
+  const useApi = true;
+
+  // Wishlist action handler - updates cache directly
+  const handleWishlistAction = (action: EventsAction) => {
+    queryClient.setQueryData<Event[]>(["events"], (old = []) => {
+      switch (action.type) {
+        case "ADD_WISHLIST_ITEM":
+          return old.map((e) =>
+            e.id === action.payload.eventId
+              ? {
+                  ...e,
+                  wishlists: [action.payload.item, ...(e.wishlists || [])],
+                }
+              : e,
+          );
+        case "UPDATE_WISHLIST_ITEM":
+          return old.map((e) =>
+            e.id === action.payload.eventId
+              ? {
+                  ...e,
+                  wishlists: (e.wishlists || []).map((item) =>
+                    item.id === action.payload.item.id
+                      ? action.payload.item
+                      : item,
+                  ),
+                }
+              : e,
+          );
+        case "DELETE_WISHLIST_ITEM":
+          return old.map((e) =>
+            e.id === action.payload.eventId
+              ? {
+                  ...e,
+                  wishlists: (e.wishlists || []).filter(
+                    (item) => item.id !== action.payload.itemId,
+                  ),
+                }
+              : e,
+          );
+        case "SET_WISHLISTS":
+          return old.map((e) =>
+            e.id === action.payload.eventId
+              ? { ...e, wishlists: action.payload.items }
+              : e,
+          );
+        default:
+          return old;
       }
-    }
-    return initialState;
-  });
+    });
+  };
 
-  // Check if API is available on mount
-  useEffect(() => {
-    const checkApi = async () => {
-      try {
-        const response = await fetch("http://localhost:5001/status");
-        if (response.ok) {
-          setUseApi(true);
-          // Load events from API directly (can't use refreshEvents due to state timing)
-          try {
-            dispatch({ type: "SET_LOADING", payload: true });
-            const events = await eventsApi.getAll();
-            dispatch({ type: "SET_EVENTS", payload: events });
-          } catch (error) {
-            console.error("Error fetching events:", error);
-            dispatch({ type: "SET_ERROR", payload: "Failed to load events" });
-            setUseApi(false);
-          }
-        }
-      } catch (error) {
-        console.log("API not available, using localStorage");
-        setUseApi(false);
-      }
-    };
-
-    checkApi();
-  }, []);
-
-  // Refresh events from API
-  const refreshEvents = async () => {
-    if (!useApi) return;
-
-    try {
-      dispatch({ type: "SET_LOADING", payload: true });
-      const events = await eventsApi.getAll();
-      dispatch({ type: "SET_EVENTS", payload: events });
-    } catch (error) {
-      console.error("Error fetching events:", error);
-      dispatch({ type: "SET_ERROR", payload: "Failed to load events" });
-      // Fallback to localStorage
-      setUseApi(false);
+  // Dispatch wrapper - maps actions to mutations
+  const dispatch = (action: EventsAction) => {
+    switch (action.type) {
+      case "ADD_EVENT":
+        createMutation.mutate({
+          name: action.payload.name,
+          coupleCrossing: action.payload.coupleCrossing || false,
+        });
+        break;
+      case "UPDATE_EVENT":
+        updateMutation.mutate(action.payload);
+        break;
+      case "DELETE_EVENT":
+        deleteMutation.mutate(action.payload);
+        break;
+      case "SET_EVENTS":
+      case "SET_LOADING":
+      case "SET_ERROR":
+        // These are handled by TanStack Query state - ignore
+        break;
+      case "ADD_WISHLIST_ITEM":
+      case "UPDATE_WISHLIST_ITEM":
+      case "DELETE_WISHLIST_ITEM":
+      case "SET_WISHLISTS":
+        handleWishlistAction(action);
+        break;
     }
   };
 
-  // Save to localStorage when not using API
-  useEffect(() => {
-    if (!useApi && typeof window !== "undefined") {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ events: state.events }),
-      );
-    }
-  }, [state.events, useApi]);
+  // Refresh events wrapper
+  const refreshEvents = async () => {
+    await refetch();
+  };
 
   return (
     <EventsContext.Provider value={{ state, dispatch, refreshEvents, useApi }}>
