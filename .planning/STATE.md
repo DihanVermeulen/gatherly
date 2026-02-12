@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 
 ## Current Position
 
-Phase: 4 of 7 (Invite System)
-Plan: 2 of 3
+Phase: 8 of 8 (Sync Events - Offline-First)
+Plan: 1 of 5
 Status: In progress
-Last activity: 2026-02-12 - Completed 04-02-PLAN.md (Frontend invite infrastructure)
+Last activity: 2026-02-12 - Completed 08-01-PLAN.md (TanStack Query infrastructure)
 
-Progress: [█████░░░░░] 50%
+Progress: [██████░░░░] 54%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12
-- Average duration: 3.37 minutes
-- Total execution time: 0.67 hours
+- Total plans completed: 13
+- Average duration: 3.41 minutes
+- Total execution time: 0.74 hours
 
 **By Phase:**
 
@@ -31,10 +31,11 @@ Progress: [█████░░░░░] 50%
 | 02-wishlist-core | 4 | 9.64m | 2.41m |
 | 04-invite-system | 2 | 10.58m | 5.29m |
 | 07-jwt-authentication | 4 | 16.28m | 4.07m |
+| 08-sync-events | 1 | 4.12m | 4.12m |
 
 **Recent Trend:**
-- Last 5 plans: 07-03 (3.51m), 07-04 (5.82m), 04-01 (1.5m), 04-02 (9.08m)
-- Trend: Phase 4 frontend infrastructure took longer (9.08m) due to multi-state page complexity
+- Last 5 plans: 07-04 (5.82m), 04-01 (1.5m), 04-02 (9.08m), 08-01 (4.12m)
+- Trend: Query infrastructure setup slightly faster than auth phase average
 
 *Updated after each plan completion*
 
@@ -86,6 +87,14 @@ Recent decisions affecting current work:
 - Clipboard API with fallback - Modern navigator.clipboard with document.execCommand fallback for non-HTTPS (Outcome: Good - works in all environments)
 - Five-state join page pattern - Separate states for validating, valid, invalid, rate-limited, success (Outcome: Good - clear UX for each async flow stage)
 - Public /join/:code route - Unauthenticated invite acceptance outside ProtectedRoute (Outcome: Good - participants can join before account creation)
+- TanStack Query v5 as sole query library - Removed react-query v3 completely (Outcome: Good - eliminates version conflicts and bundle bloat)
+- 24h garbage collection time for query cache - Balances localStorage size with offline access duration (Outcome: Good - events infrequently created, long cache acceptable)
+- 5min stale time for queries - Reduces refetches while ensuring freshness for multi-user events (Outcome: Good - balances network efficiency with data freshness)
+- offlineFirst network mode - Enables optimistic updates even when offline (Outcome: Good - foundation for offline-first architecture)
+- Exponential backoff retry - 3 attempts with up to 30s delay for failed mutations (Outcome: Good - resilient to temporary network issues)
+- Migration preserves old localStorage key - Safety during transition, users can revert if issues (Outcome: Good - never delete user data without backup)
+- Migration runs before React renders - Ensures data available when cache hydrates (Outcome: Good - no race conditions)
+- QueryClient at module scope - Fixed bug where new client created on every render (Outcome: Good - critical fix for cache persistence)
 
 ### Pending Todos
 
@@ -98,9 +107,10 @@ None yet.
 ### Roadmap Evolution
 
 - Phase 7 added: JWT authentication with secure routes following the zero trust principle
+- Phase 8 added: Sync events to local storage first then to the database.
 
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed 04-02-PLAN.md (Frontend invite infrastructure)
+Stopped at: Completed 08-01-PLAN.md (TanStack Query infrastructure)
 Resume file: None
