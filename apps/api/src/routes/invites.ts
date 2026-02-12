@@ -28,7 +28,7 @@ router.post(
   "/events/:eventId/invites",
   authenticateJWT,
   asyncHandler(async (req: Request, res: Response) => {
-    const { eventId } = req.params;
+    const eventId = parseInt(req.params.eventId, 10);
     const { email, expiresInDays } = req.body;
 
     // Verify event exists
@@ -90,7 +90,7 @@ router.get(
   "/events/:eventId/invites",
   authenticateJWT,
   asyncHandler(async (req: Request, res: Response) => {
-    const { eventId } = req.params;
+    const eventId = parseInt(req.params.eventId, 10);
 
     // Verify event exists
     const eventResult = await query(
@@ -274,7 +274,8 @@ router.delete(
   "/events/:eventId/invites/:inviteId",
   authenticateJWT,
   asyncHandler(async (req: Request, res: Response) => {
-    const { eventId, inviteId } = req.params;
+    const eventId = parseInt(req.params.eventId, 10);
+    const inviteId = parseInt(req.params.inviteId, 10);
 
     // Verify invite belongs to the event before deleting
     const result = await query(

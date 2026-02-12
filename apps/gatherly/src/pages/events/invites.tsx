@@ -30,14 +30,29 @@ export const EventInvitesPage = () => {
   const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
-    const foundEvent = events.find((e) => e.id === id);
+    const foundEvent = events.find((e) => String(e.id) === id);
     if (foundEvent) {
       setEvent(foundEvent);
+
+      // Check if this is a localStorage-only event (uses timestamp as ID)
+      // PostgreSQL INTEGER max is 2147483647, timestamps are much larger
+      const eventIdNum = parseInt(id, 10);
+      if (eventIdNum > 2147483647) {
+        setError("Invites are only available for events synced with the server. This event exists only in local storage.");
+        setLoading(false);
+      }
     }
   }, [id, events]);
 
   useEffect(() => {
     if (!id) return;
+
+    // Don't try to load invites for localStorage-only events
+    const eventIdNum = parseInt(id, 10);
+    if (eventIdNum > 2147483647) {
+      return; // Error already set in previous useEffect
+    }
+
     loadInvites();
   }, [id]);
 
@@ -59,10 +74,16 @@ export const EventInvitesPage = () => {
 
   const handleGenerateInvite = async () => {
     if (!id) return;
+
+    const eventId = parseInt(id, 10);
+    if (eventId > 2147483647) {
+      setError("Invites are only available for events synced with the server.");
+      return;
+    }
+
     try {
       setGenerating(true);
       setError(null);
-      const eventId = parseInt(id, 10);
       const newInvite = await invitesApi.createInvite(eventId);
       setInvites([newInvite, ...invites]);
       // Optionally show QR code modal immediately
@@ -77,13 +98,19 @@ export const EventInvitesPage = () => {
 
   const handleRevoke = async (inviteId: number) => {
     if (!id) return;
+
+    const eventId = parseInt(id, 10);
+    if (eventId > 2147483647) {
+      setError("Invites are only available for events synced with the server.");
+      return;
+    }
+
     const confirmed = window.confirm(
-      "Are you sure you want to revoke this invite? It will no longer be usable."
+      "Are you sure you want to revoke this invite? It will no longer be usable.",
     );
     if (!confirmed) return;
 
     try {
-      const eventId = parseInt(id, 10);
       await invitesApi.revokeInvite(eventId, inviteId);
       setInvites(invites.filter((inv) => inv.id !== inviteId));
     } catch (err: any) {
@@ -207,7 +234,7 @@ export const EventInvitesPage = () => {
             <button
               onClick={handleGenerateInvite}
               disabled={generating}
-              className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-400 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors font-medium mx-auto"
+              className="bg-primary hover:bg-primary/80 disabled:bg-slate-400 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors font-medium mx-auto"
             >
               <Plus size={18} />
               Generate Invite
