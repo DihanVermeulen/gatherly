@@ -71,12 +71,16 @@ router.post(
 
     return res.status(201).json({
       id: invite.id,
-      inviteCode: invite.invite_code,
-      inviteUrl,
+      event_id: invite.event_id,
+      invite_code: invite.invite_code,
+      invite_url: inviteUrl,
       email: invite.email,
       status: invite.status,
-      expiresAt: invite.expires_at,
-      createdAt: invite.created_at,
+      participant_id: null,
+      participant_name: null,
+      expires_at: invite.expires_at,
+      created_at: invite.created_at,
+      updated_at: invite.created_at,
     });
   })
 );
@@ -114,6 +118,7 @@ router.get(
         invites.expires_at,
         invites.created_at,
         invites.updated_at,
+        invites.participant_id,
         participants.name as participant_name
       FROM invites
       LEFT JOIN participants ON invites.participant_id = participants.id
@@ -122,7 +127,14 @@ router.get(
       [eventId]
     );
 
-    return res.status(200).json({ invites: result.rows });
+    // Build invite URLs for each invite
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const invitesWithUrls = result.rows.map((invite) => ({
+      ...invite,
+      invite_url: `${frontendUrl}/join/${invite.invite_code}`,
+    }));
+
+    return res.status(200).json({ invites: invitesWithUrls });
   })
 );
 

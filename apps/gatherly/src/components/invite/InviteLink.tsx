@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Copy, Check } from 'lucide-react';
+import React, { useState } from "react";
+import { Copy, Check } from "lucide-react";
 
 interface InviteLinkProps {
   inviteUrl: string;
@@ -16,13 +16,13 @@ export const InviteLink: React.FC<InviteLinkProps> = ({ inviteUrl }) => {
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       // Fallback for non-HTTPS environments
-      const textArea = document.createElement('textarea');
+      const textArea = document.createElement("textarea");
       textArea.value = inviteUrl;
-      textArea.style.position = 'fixed';
-      textArea.style.opacity = '0';
+      textArea.style.position = "fixed";
+      textArea.style.opacity = "0";
       document.body.appendChild(textArea);
       textArea.select();
-      document.execCommand('copy');
+      document.execCommand("copy");
       document.body.removeChild(textArea);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -35,7 +35,7 @@ export const InviteLink: React.FC<InviteLinkProps> = ({ inviteUrl }) => {
         type="text"
         value={inviteUrl}
         readOnly
-        className="bg-zinc-800 text-zinc-300 rounded-l-lg px-3 py-2 flex-1 truncate border border-zinc-700 focus:outline-none"
+        className="rounded-l-lg px-3 py-2 flex-1 truncate border focus:outline-none"
       />
       <button
         onClick={handleCopy}
