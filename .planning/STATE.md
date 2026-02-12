@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 ## Current Position
 
 Phase: 8 of 8 (Sync Events - Offline-First)
-Plan: 1 of 5
+Plan: 2 of 5
 Status: In progress
-Last activity: 2026-02-12 - Completed 08-01-PLAN.md (TanStack Query infrastructure)
+Last activity: 2026-02-12 - Completed 08-02-PLAN.md (Offline-first event CRUD)
 
-Progress: [██████░░░░] 54%
+Progress: [██████░░░░] 58%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
-- Average duration: 3.41 minutes
-- Total execution time: 0.74 hours
+- Total plans completed: 14
+- Average duration: 3.36 minutes
+- Total execution time: 0.78 hours
 
 **By Phase:**
 
@@ -31,11 +31,11 @@ Progress: [██████░░░░] 54%
 | 02-wishlist-core | 4 | 9.64m | 2.41m |
 | 04-invite-system | 2 | 10.58m | 5.29m |
 | 07-jwt-authentication | 4 | 16.28m | 4.07m |
-| 08-sync-events | 1 | 4.12m | 4.12m |
+| 08-sync-events | 2 | 7.12m | 3.56m |
 
 **Recent Trend:**
-- Last 5 plans: 07-04 (5.82m), 04-01 (1.5m), 04-02 (9.08m), 08-01 (4.12m)
-- Trend: Query infrastructure setup slightly faster than auth phase average
+- Last 5 plans: 04-01 (1.5m), 04-02 (9.08m), 08-01 (4.12m), 08-02 (3m)
+- Trend: Phase 8 maintaining consistent velocity, under 4min average
 
 *Updated after each plan completion*
 
@@ -95,6 +95,10 @@ Recent decisions affecting current work:
 - Migration preserves old localStorage key - Safety during transition, users can revert if issues (Outcome: Good - never delete user data without backup)
 - Migration runs before React renders - Ensures data available when cache hydrates (Outcome: Good - no race conditions)
 - QueryClient at module scope - Fixed bug where new client created on every render (Outcome: Good - critical fix for cache persistence)
+- useApi always true - TanStack Query handles offline-first transparently via networkMode (Outcome: Good - simplifies context, no manual API availability checks)
+- Wishlist actions update cache directly - Preserve existing page API pattern without new mutation hooks (Outcome: Good - backward compatible, cache-only updates)
+- Temp event IDs use 'temp-' prefix - Enables detecting optimistic vs confirmed events (Outcome: Good - clear pattern for optimistic creates)
+- All mutations with networkMode: offlineFirst - Mutations run immediately even when offline (Outcome: Good - foundation for offline-first UX)
 
 ### Pending Todos
 
@@ -112,5 +116,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed 08-01-PLAN.md (TanStack Query infrastructure)
+Stopped at: Completed 08-02-PLAN.md (Offline-first event CRUD)
 Resume file: None
