@@ -6,6 +6,7 @@ import { EditEventPage } from "pages/events/edit";
 import { EventGiftsPage } from "pages/events/gifts";
 import { WishlistPage } from "pages/events/wishlist";
 import { DecipherPage } from "pages/decipher";
+import { JoinPage } from "pages/join";
 import { LoginPage } from "pages/auth/login";
 import { RegisterPage } from "pages/auth/register";
 import { ProtectedRoute } from "components/ProtectedRoute";
@@ -34,6 +35,10 @@ export const router = createBrowserRouter([
       {
         path: "/decipher",
         element: <DecipherPage />,
+      },
+      {
+        path: "/join/:code",
+        element: <JoinPage />,
       },
       // Protected routes
       {
