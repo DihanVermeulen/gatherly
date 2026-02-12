@@ -16,10 +16,11 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation & Privacy** - Database schema, authorization, Tailwind upgrade
 - [x] **Phase 2: Wishlist Core** - CRUD operations with images and links
 - [ ] **Phase 3: Claiming System** - Anonymous claiming with race condition protection
-- [ ] **Phase 4: Invite System** - Shareable links and QR codes
+- [x] **Phase 4: Invite System** - Shareable links and QR codes
 - [ ] **Phase 5: Mobile UI Redesign** - iOS-style interface with Konsta UI
 - [ ] **Phase 6: Wishlist Priority & Polish** - Drag-drop ordering and UX refinements
 - [x] **Phase 7: JWT Authentication** - Secure routes following zero trust principle
+- [ ] **Phase 8: Offline-First Sync** - Local-first events with background database sync
 
 ## Phase Details
 
@@ -163,17 +164,40 @@ Plans:
 - [x] 07-03-PLAN.md -- Frontend auth system (AuthContext, API interceptors, login/register pages, ProtectedRoute)
 - [x] 07-04-PLAN.md -- Route protection wiring and auth-aware header
 
+### Phase 8: Sync Events to Local Storage First Then to the Database
+
+**Goal**: Events sync to localStorage first for instant UI, then to the database in the background, with optimistic updates, offline queuing, and visual sync status feedback
+**Depends on**: Phase 7
+**Success Criteria** (what must be TRUE):
+
+1. Events load instantly from local cache before API fetch completes
+2. Create/update/delete operations show in UI immediately (optimistic updates)
+3. Mutations queue automatically when offline and sync when reconnected
+4. Failed mutations roll back the optimistic UI change
+5. Visual sync indicator shows current state (synced, syncing, offline, error with retry)
+6. Existing event data migrated from old localStorage format
+7. All existing pages work without modification (backward compatible)
+
+**Plans**: 3 plans
+
+Plans:
+
+- [ ] 08-01-PLAN.md -- TanStack Query v5 setup, persistent cache, localStorage migration
+- [ ] 08-02-PLAN.md -- Event mutation hooks with optimistic updates, EventsContext adapter
+- [ ] 08-03-PLAN.md -- SyncIndicator component, layout integration, end-to-end verification
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
-| Phase                         | Plans Complete | Status      | Completed  |
-| ----------------------------- | -------------- | ----------- | ---------- |
-| 1. Foundation & Privacy       | 2/2            | Complete    | 2026-02-06 |
-| 2. Wishlist Core              | 0/5            | Not started | -          |
-| 3. Claiming System            | 0/TBD          | Not started | -          |
-| 4. Invite System              | 0/3            | Not started | -          |
-| 5. Mobile UI Redesign         | 0/TBD          | Not started | -          |
-| 6. Wishlist Priority & Polish | 0/TBD          | Not started | -          |
-| 7. JWT Authentication         | 4/4            | Complete    | 2026-02-08 |
+| Phase                                         | Plans Complete | Status      | Completed  |
+| --------------------------------------------- | -------------- | ----------- | ---------- |
+| 1. Foundation & Privacy                       | 2/2            | Complete    | 2026-02-06 |
+| 2. Wishlist Core                              | 0/5            | Not started | -          |
+| 3. Claiming System                            | 0/TBD          | Not started | -          |
+| 4. Invite System                              | 0/3            | Not started | -          |
+| 5. Mobile UI Redesign                         | 0/TBD          | Not started | -          |
+| 6. Wishlist Priority & Polish                 | 0/TBD          | Not started | -          |
+| 7. JWT Authentication                         | 4/4            | Complete    | 2026-02-08 |
+| 8. Offline-First Sync                         | 0/3            | Not started | -          |
