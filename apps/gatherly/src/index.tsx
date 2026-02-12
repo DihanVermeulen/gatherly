@@ -3,6 +3,10 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { StrictMode } from "react";
+import { migrateFromV1 } from "./lib/migrateStorage";
+
+// Migrate old localStorage data before React renders
+migrateFromV1();
 
 const root = createRoot(document.getElementById("root")!);
 

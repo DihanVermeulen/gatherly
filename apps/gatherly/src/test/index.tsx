@@ -5,7 +5,7 @@ import {
 } from "@testing-library/react";
 import { ReactElement } from "react";
 
-import { QueryClient, QueryClientProvider } from "react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 /**
  * Custom renderer example with @testing-library/react

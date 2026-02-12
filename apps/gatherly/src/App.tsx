@@ -1,4 +1,6 @@
-import { QueryClient, QueryClientProvider } from "react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { queryClient } from "lib/queryClient";
+import { persister } from "lib/queryPersister";
 import "styles/global.css";
 import "./i18n";
 import { RouterProvider } from "react-router";
@@ -8,9 +10,16 @@ import { EventsProvider } from "contexts/EventsContext";
 import { GiftsProvider } from "contexts/GiftsContext";
 
 function App() {
-  const queryClient = new QueryClient();
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{ persister }}
+      onSuccess={() => {
+        queryClient.resumePausedMutations().then(() => {
+          queryClient.invalidateQueries();
+        });
+      }}
+    >
       <AuthProvider>
         <EventsProvider>
           <GiftsProvider>
@@ -20,7 +29,7 @@ function App() {
           </GiftsProvider>
         </EventsProvider>
       </AuthProvider>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   );
 }
 
