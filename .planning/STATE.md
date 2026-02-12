@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 ## Current Position
 
 Phase: 4 of 7 (Invite System)
-Plan: 1 of 3
+Plan: 2 of 3
 Status: In progress
-Last activity: 2026-02-12 - Completed 04-01-PLAN.md (Backend invite API)
+Last activity: 2026-02-12 - Completed 04-02-PLAN.md (Frontend invite infrastructure)
 
-Progress: [█████░░░░░] 46%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11
-- Average duration: 3.03 minutes
-- Total execution time: 0.55 hours
+- Total plans completed: 12
+- Average duration: 3.37 minutes
+- Total execution time: 0.67 hours
 
 **By Phase:**
 
@@ -29,12 +29,12 @@ Progress: [█████░░░░░] 46%
 |-------|-------|-------|----------|
 | 01-foundation-privacy | 2 | 7.9m | 3.95m |
 | 02-wishlist-core | 4 | 9.64m | 2.41m |
-| 04-invite-system | 1 | 1.5m | 1.5m |
+| 04-invite-system | 2 | 10.58m | 5.29m |
 | 07-jwt-authentication | 4 | 16.28m | 4.07m |
 
 **Recent Trend:**
-- Last 5 plans: 07-02 (2.45m), 07-03 (3.51m), 07-04 (5.82m), 04-01 (1.5m)
-- Trend: Phase 4 backend invite API completed in 1.5m, fastest plan yet due to pre-work
+- Last 5 plans: 07-03 (3.51m), 07-04 (5.82m), 04-01 (1.5m), 04-02 (9.08m)
+- Trend: Phase 4 frontend infrastructure took longer (9.08m) due to multi-state page complexity
 
 *Updated after each plan completion*
 
@@ -82,6 +82,10 @@ Recent decisions affecting current work:
 - Link-only invites - Remove email/phone requirement for flexible sharing (Outcome: Good - enables sharing via any channel)
 - 30-day default expiration - Balances security with usability (Outcome: Good - time-limited access with configurable override)
 - Generic error messages for invites - Same message for invalid/expired codes (Outcome: Good - prevents enumeration attacks)
+- react-qr-code for QR generation - SVG rendering with M-level error correction for invite URLs (Outcome: Good - crisp QR codes on all screen sizes)
+- Clipboard API with fallback - Modern navigator.clipboard with document.execCommand fallback for non-HTTPS (Outcome: Good - works in all environments)
+- Five-state join page pattern - Separate states for validating, valid, invalid, rate-limited, success (Outcome: Good - clear UX for each async flow stage)
+- Public /join/:code route - Unauthenticated invite acceptance outside ProtectedRoute (Outcome: Good - participants can join before account creation)
 
 ### Pending Todos
 
@@ -98,5 +102,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed 04-01-PLAN.md (Backend invite API)
+Stopped at: Completed 04-02-PLAN.md (Frontend invite infrastructure)
 Resume file: None
