@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 ## Current Position
 
 Phase: 8 of 8 (Sync Events - Offline-First)
-Plan: 2 of 5
-Status: In progress
-Last activity: 2026-02-12 - Completed 08-02-PLAN.md (Offline-first event CRUD)
+Plan: 3 of 3
+Status: Complete
+Last activity: 2026-02-13 - Completed 08-03-PLAN.md (SyncIndicator + offline-first verification)
 
-Progress: [██████░░░░] 58%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
-- Average duration: 3.36 minutes
-- Total execution time: 0.78 hours
+- Total plans completed: 15
+- Average duration: 4.21 minutes
+- Total execution time: 1.05 hours
 
 **By Phase:**
 
@@ -31,11 +31,11 @@ Progress: [██████░░░░] 58%
 | 02-wishlist-core | 4 | 9.64m | 2.41m |
 | 04-invite-system | 2 | 10.58m | 5.29m |
 | 07-jwt-authentication | 4 | 16.28m | 4.07m |
-| 08-sync-events | 2 | 7.12m | 3.56m |
+| 08-sync-events | 3 | 19.12m | 6.37m |
 
 **Recent Trend:**
-- Last 5 plans: 04-01 (1.5m), 04-02 (9.08m), 08-01 (4.12m), 08-02 (3m)
-- Trend: Phase 8 maintaining consistent velocity, under 4min average
+- Last 5 plans: 04-02 (9.08m), 08-01 (4.12m), 08-02 (3m), 08-03 (12m)
+- Trend: Phase 8 complete; 08-03 longer due to four bug fixes found during human verification
 
 *Updated after each plan completion*
 
@@ -99,6 +99,10 @@ Recent decisions affecting current work:
 - Wishlist actions update cache directly - Preserve existing page API pattern without new mutation hooks (Outcome: Good - backward compatible, cache-only updates)
 - Temp event IDs use 'temp-' prefix - Enables detecting optimistic vs confirmed events (Outcome: Good - clear pattern for optimistic creates)
 - All mutations with networkMode: offlineFirst - Mutations run immediately even when offline (Outcome: Good - foundation for offline-first UX)
+- SyncIndicator uses useRef for prevStatus - Avoids stale closure on syncing→synced transition (Outcome: Good - reliable state detection)
+- Route all event mutations through dispatch() - Never call eventsApi directly from pages (Outcome: Good - enables TanStack Query offline queue and sync indicator)
+- Preserve wishlist cache on refetch - queryFn merges cached wishlists into refetched events (Outcome: Good - wishlists survive background invalidation)
+- useEventByIdQuery in edit page for participantDetails - Gets numeric IDs for wishlist navigation (Outcome: Good - fixes participantId required error)
 
 ### Pending Todos
 
@@ -115,6 +119,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-12
-Stopped at: Completed 08-02-PLAN.md (Offline-first event CRUD)
+Last session: 2026-02-13
+Stopped at: Completed 08-03-PLAN.md (SyncIndicator + offline-first verification)
 Resume file: None
