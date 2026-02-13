@@ -1,6 +1,7 @@
 import { Outlet } from "react-router";
 import { Header } from "components";
 import { useState } from "react";
+import { SyncIndicator } from "components/SyncIndicator";
 
 export const MainLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -17,6 +18,7 @@ export const MainLayout = () => {
         <main className="p-0">
           <Outlet />
         </main>
+        <SyncIndicator />
       </div>
     </div>
   );
