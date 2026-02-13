@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CloudOff, Loader2, AlertTriangle, Check } from "lucide-react";
 import { useSyncStatus } from "../hooks/useSyncStatus";
 
@@ -15,25 +15,30 @@ import { useSyncStatus } from "../hooks/useSyncStatus";
 export function SyncIndicator() {
   const { status, mutatingCount, retryFailedMutations } = useSyncStatus();
   const [visible, setVisible] = useState(false);
-  const [prevStatus, setPrevStatus] = useState(status);
+  // Use a ref for prevStatus so it never causes effect re-runs and avoids
+  // stale-closure issues that arise when prevStatus is in the dependency array
+  const prevStatusRef = useRef(status);
 
   useEffect(() => {
-    // When transitioning to "synced" from another state, show briefly then hide
-    if (prevStatus !== "synced" && status === "synced") {
+    const prevStatus = prevStatusRef.current;
+    prevStatusRef.current = status;
+
+    if (status === "synced") {
+      // Only show the brief "All synced" confirmation when transitioning from
+      // an active state (syncing / offline / error) → synced
+      if (prevStatus !== "synced") {
+        setVisible(true);
+        const timer = setTimeout(() => setVisible(false), 3000);
+        return () => clearTimeout(timer);
+      }
+      // Already was synced and still synced - keep whatever visible state is set
+    } else {
+      // Non-synced state: always show the indicator
       setVisible(true);
-      const timer = setTimeout(() => setVisible(false), 3000);
-      return () => clearTimeout(timer);
     }
+  }, [status]);
 
-    // For all non-synced states, keep visible
-    if (status !== "synced") {
-      setVisible(true);
-    }
-
-    setPrevStatus(status);
-  }, [status, prevStatus]);
-
-  // Render nothing when synced and not in brief show window
+  // Render nothing when synced and not in the brief show window
   if (status === "synced" && !visible) {
     return null;
   }
