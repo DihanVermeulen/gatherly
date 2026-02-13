@@ -8,7 +8,7 @@ export const MainLayout = () => {
 
   return (
     <div className="bg-background-light dark:bg-background-dark transition-colors duration-300">
-      <div className="min-h-screen max-w-7xl mx-auto">
+      <div id="main-content" className="min-h-screen max-w-7xl mx-auto">
         <Header
           currentView={""}
           setCurrentView={() => {}}

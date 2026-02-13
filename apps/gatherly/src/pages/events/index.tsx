@@ -26,7 +26,10 @@ export const EventsPage = () => {
   };
 
   return (
-    <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen pb-24 font-sans">
+    <div
+      id="events"
+      className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 pb-24 font-sans"
+    >
       <main className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="flex items-center justify-between px-4 pb-4 pt-6">

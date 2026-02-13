@@ -20,6 +20,14 @@ module.exports = {
           blue: "#4A90E2",
           coral: "#FF6B6B",
         },
+        background: {
+          light: "#F5F5F5",
+          dark: "#1A1A1A",
+        },
+        surface: {
+          light: "#FFFFFF",
+          dark: "#1A1A1A",
+        },
       },
       fontFamily: {
         sans: [
