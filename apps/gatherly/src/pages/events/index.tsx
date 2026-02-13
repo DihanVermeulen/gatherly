@@ -3,13 +3,17 @@ import {
   Calendar,
   CalendarOff,
   CheckCircle,
+  Delete,
   Gift,
   PartyPopper,
   Plus,
   Search,
+  Trash,
   Users,
 } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
+import { CreateEventForm } from "components/events/CreateEventForm";
 
 export const EventsPage = () => {
   const {
@@ -17,6 +21,27 @@ export const EventsPage = () => {
     dispatch,
   } = useEvents();
   const navigate = useNavigate();
+  const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
+
+  const handleCreateEvent = (name: string, description: string) => {
+    dispatch({
+      type: "ADD_EVENT",
+      payload: {
+        id: `temp-${Date.now()}`,
+        name,
+        // description,
+        people: [],
+        couples: [],
+        assignments: null,
+        coupleCrossing: false,
+        gifts: {},
+        date: new Date().toISOString(),
+        participants: [],
+        wishlists: [],
+      },
+    });
+    setIsCreateFormOpen(false);
+  };
 
   const deleteEvent = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -35,26 +60,7 @@ export const EventsPage = () => {
         <div className="flex items-center justify-between px-4 pb-4 pt-6">
           <h2 className="text-2xl font-bold tracking-tight">My Events</h2>
           <button
-            onClick={() => {
-              const name = prompt("Enter event name:");
-              if (name && name.trim()) {
-                dispatch({
-                  type: "ADD_EVENT",
-                  payload: {
-                    id: `temp-${Date.now()}`,
-                    name: name.trim(),
-                    people: [],
-                    couples: [],
-                    assignments: null,
-                    coupleCrossing: false,
-                    gifts: {},
-                    date: new Date().toISOString(),
-                    participants: [],
-                    wishlists: [],
-                  },
-                });
-              }
-            }}
+            onClick={() => setIsCreateFormOpen(true)}
             className="flex items-center justify-center h-10 px-4 rounded-full bg-primary text-background-dark gap-2 shadow-lg shadow-primary/20 transition-transform active:scale-95"
           >
             <Plus />
@@ -180,7 +186,7 @@ export const EventsPage = () => {
                     onClick={(e) => deleteEvent(event.id, e)}
                     className="size-11 flex items-center justify-center text-slate-400 hover:text-red-500 active:scale-95 transition-transform"
                   >
-                    <span className="material-symbols-outlined">delete</span>
+                    <Trash />
                   </button>
                 </div>
               </div>
@@ -188,6 +194,12 @@ export const EventsPage = () => {
           )}
         </div>
       </main>
+
+      <CreateEventForm
+        isOpen={isCreateFormOpen}
+        onClose={() => setIsCreateFormOpen(false)}
+        onSubmit={handleCreateEvent}
+      />
     </div>
   );
 };
