@@ -1,4 +1,5 @@
 import { useEvents } from "contexts/EventsContext";
+import { useEventByIdQuery } from "hooks/useEventQueries";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import {
@@ -23,6 +24,7 @@ export const EditEventPage = () => {
     dispatch,
   } = useEvents();
 
+  const { data: fullEvent } = useEventByIdQuery(id || "");
   const [editingEvent, setEditingEvent] = useState<any>(null);
   const [selectedCouples, setSelectedCouples] = useState<string[][]>([]);
   const [coupleCrossing, setCoupleCrossing] = useState(false);
@@ -289,23 +291,23 @@ export const EditEventPage = () => {
               View and manage wishlist items for each participant
             </p>
             <div className="space-y-2">
-              {editingEvent.people && editingEvent.people.length > 0 ? (
-                editingEvent.people.map((participant: string) => (
+              {fullEvent?.participantDetails && fullEvent.participantDetails.length > 0 ? (
+                fullEvent.participantDetails.map((participant) => (
                   <button
-                    key={participant}
+                    key={participant.id}
                     onClick={() =>
                       navigate(
-                        `/events/${editingEvent.id}/wishlist/${participant}`,
+                        `/events/${editingEvent.id}/wishlist/${participant.id}`,
                       )
                     }
                     className="w-full flex items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-primary/50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-primary/20 dark:bg-primary/10 flex items-center justify-center text-primary font-bold">
-                        {participant.charAt(0).toUpperCase()}
+                        {participant.name.charAt(0).toUpperCase()}
                       </div>
                       <span className="text-sm font-medium">
-                        {participant}'s Wishlist
+                        {participant.name}'s Wishlist
                       </span>
                     </div>
                     <span className="text-slate-400">
