@@ -20,7 +20,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 5: Mobile UI Redesign** - iOS-style interface with Konsta UI
 - [ ] **Phase 6: Wishlist Priority & Polish** - Drag-drop ordering and UX refinements
 - [x] **Phase 7: JWT Authentication** - Secure routes following zero trust principle
-- [ ] **Phase 8: Offline-First Sync** - Local-first events with background database sync
+- [x] **Phase 8: Offline-First Sync** - Local-first events with background database sync
 
 ## Phase Details
 
@@ -182,9 +182,9 @@ Plans:
 
 Plans:
 
-- [ ] 08-01-PLAN.md -- TanStack Query v5 setup, persistent cache, localStorage migration
-- [ ] 08-02-PLAN.md -- Event mutation hooks with optimistic updates, EventsContext adapter
-- [ ] 08-03-PLAN.md -- SyncIndicator component, layout integration, end-to-end verification
+- [x] 08-01-PLAN.md -- TanStack Query v5 setup, persistent cache, localStorage migration
+- [x] 08-02-PLAN.md -- Event mutation hooks with optimistic updates, EventsContext adapter
+- [x] 08-03-PLAN.md -- SyncIndicator component, layout integration, end-to-end verification
 
 ## Progress
 
@@ -200,4 +200,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 5. Mobile UI Redesign                         | 0/TBD          | Not started | -          |
 | 6. Wishlist Priority & Polish                 | 0/TBD          | Not started | -          |
 | 7. JWT Authentication                         | 4/4            | Complete    | 2026-02-08 |
-| 8. Offline-First Sync                         | 0/3            | Not started | -          |
+| 8. Offline-First Sync                         | 3/3            | Complete    | 2026-02-13 |
