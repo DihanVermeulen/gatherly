@@ -112,6 +112,12 @@ None yet.
 
 None yet.
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 001 | Add My Gifts navigates to user's wishlist page | 2026-02-14 | 1bb33d8 | [001-add-my-gifts-navigate-to-wishlist](./quick/001-add-my-gifts-navigate-to-wishlist/) |
+
 ### Roadmap Evolution
 
 - Phase 7 added: JWT authentication with secure routes following the zero trust principle
