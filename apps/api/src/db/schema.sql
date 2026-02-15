@@ -109,9 +109,24 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Refresh tokens table (stores hashed refresh tokens for JWT rotation)
+-- Supports both user sessions (user_id set) and participant magic-link sessions (participant_id set)
 CREATE TABLE IF NOT EXISTS refresh_tokens (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    participant_id INTEGER REFERENCES participants(id) ON DELETE CASCADE,
+    token_hash VARCHAR(255) UNIQUE NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT refresh_tokens_owner_check CHECK (
+        (user_id IS NOT NULL AND participant_id IS NULL) OR
+        (user_id IS NULL AND participant_id IS NOT NULL)
+    )
+);
+
+-- Magic link tokens table (single-use, time-limited)
+CREATE TABLE IF NOT EXISTS magic_link_tokens (
+    id SERIAL PRIMARY KEY,
+    invite_id INTEGER NOT NULL REFERENCES invites(id) ON DELETE CASCADE,
     token_hash VARCHAR(255) UNIQUE NOT NULL,
     expires_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -136,6 +151,9 @@ CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token_hash ON refresh_tokens(token_hash);
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires_at ON refresh_tokens(expires_at);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_participant_id ON refresh_tokens(participant_id);
+CREATE INDEX IF NOT EXISTS idx_magic_link_tokens_token_hash ON magic_link_tokens(token_hash);
+CREATE INDEX IF NOT EXISTS idx_magic_link_tokens_expires_at ON magic_link_tokens(expires_at);
 
 -- Update timestamp trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
