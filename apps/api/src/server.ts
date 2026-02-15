@@ -8,6 +8,7 @@ import giftsRouter from "./routes/gifts";
 import wishlistsRouter from "./routes/wishlists";
 import decipherRouter from "./routes/decipher";
 import invitesRouter from "./routes/invites";
+import magicLinkRouter from "./routes/magicLink";
 
 export const createServer = (): Express => {
   const app = express();
@@ -33,6 +34,7 @@ export const createServer = (): Express => {
     .use("/api/events", giftsRouter)
     .use("/api/events", wishlistsRouter)
     .use("/api/decipher", decipherRouter)
+    .use("/api/auth/magic-link", magicLinkRouter)
     // Legacy route
     .get("/message/:name", (req, res) => {
       return res.json({ message: `hello ${req.params.name}` });
