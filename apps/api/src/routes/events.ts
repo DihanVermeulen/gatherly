@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { query, getClient } from "../db/connection";
 import { asyncHandler } from "../middleware/asyncHandler";
 import { authenticateJWT, optionalAuth } from "../middleware/auth";
+import { requireOrganizer } from "../middleware/requireOrganizer.js";
 
 const router: Router = Router();
 
@@ -163,6 +164,7 @@ router.get(
 router.post(
   "/",
   authenticateJWT,
+  requireOrganizer,
   asyncHandler(async (req: Request, res: Response) => {
     const { name, coupleCrossing = false } = req.body;
 
@@ -194,6 +196,7 @@ router.post(
 router.put(
   "/:id",
   authenticateJWT,
+  requireOrganizer,
   asyncHandler(async (req: Request, res: Response) => {
     const client = await getClient();
     try {
@@ -312,6 +315,7 @@ router.put(
 router.delete(
   "/:id",
   authenticateJWT,
+  requireOrganizer,
   asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
 
@@ -329,7 +333,7 @@ router.delete(
 );
 
 // POST /api/events/:id/participants - Add participant
-router.post("/:id/participants", authenticateJWT, async (req: Request, res: Response) => {
+router.post("/:id/participants", authenticateJWT, requireOrganizer, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { name } = req.body;
@@ -354,6 +358,7 @@ router.post("/:id/participants", authenticateJWT, async (req: Request, res: Resp
 router.delete(
   "/:id/participants/:name",
   authenticateJWT,
+  requireOrganizer,
   async (req: Request, res: Response) => {
     try {
       const { id, name } = req.params;
@@ -376,7 +381,7 @@ router.delete(
 );
 
 // POST /api/events/:id/couples - Create couple
-router.post("/:id/couples", authenticateJWT, async (req: Request, res: Response) => {
+router.post("/:id/couples", authenticateJWT, requireOrganizer, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { person1, person2 } = req.body;
@@ -407,7 +412,7 @@ router.post("/:id/couples", authenticateJWT, async (req: Request, res: Response)
 });
 
 // DELETE /api/events/:id/couples/:coupleId - Remove couple
-router.delete("/:id/couples/:coupleId", authenticateJWT, async (req: Request, res: Response) => {
+router.delete("/:id/couples/:coupleId", authenticateJWT, requireOrganizer, async (req: Request, res: Response) => {
   try {
     const { id, coupleId } = req.params;
 
@@ -428,7 +433,7 @@ router.delete("/:id/couples/:coupleId", authenticateJWT, async (req: Request, re
 });
 
 // POST /api/events/:id/generate - Generate assignments
-router.post("/:id/generate", authenticateJWT, async (req: Request, res: Response) => {
+router.post("/:id/generate", authenticateJWT, requireOrganizer, async (req: Request, res: Response) => {
   const client = await getClient();
   try {
     await client.query("BEGIN");
@@ -591,7 +596,7 @@ router.post("/:id/generate", authenticateJWT, async (req: Request, res: Response
 });
 
 // GET /api/events/:id/codes - Get all codes for event
-router.get("/:id/codes", authenticateJWT, async (req: Request, res: Response) => {
+router.get("/:id/codes", authenticateJWT, requireOrganizer, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 

@@ -5,6 +5,7 @@ import { nanoid } from "nanoid";
 import { query, getClient } from "../db/connection.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { authenticateJWT } from "../middleware/auth.js";
+import { requireOrganizer } from "../middleware/requireOrganizer.js";
 import { sendMagicLinkEmail } from "../services/emailService.js";
 
 const router: Router = Router();
@@ -29,6 +30,7 @@ const inviteValidationLimiter = rateLimit({
 router.post(
   "/events/:eventId/invites",
   authenticateJWT,
+  requireOrganizer,
   asyncHandler(async (req: Request, res: Response) => {
     const eventId = parseInt(req.params.eventId, 10);
     const { email, expiresInDays } = req.body;
@@ -118,6 +120,7 @@ router.post(
 router.get(
   "/events/:eventId/invites",
   authenticateJWT,
+  requireOrganizer,
   asyncHandler(async (req: Request, res: Response) => {
     const eventId = parseInt(req.params.eventId, 10);
 
@@ -310,6 +313,7 @@ router.post(
 router.delete(
   "/events/:eventId/invites/:inviteId",
   authenticateJWT,
+  requireOrganizer,
   asyncHandler(async (req: Request, res: Response) => {
     const eventId = parseInt(req.params.eventId, 10);
     const inviteId = parseInt(req.params.inviteId, 10);
