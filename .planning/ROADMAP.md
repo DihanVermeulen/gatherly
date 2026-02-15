@@ -21,6 +21,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 6: Wishlist Priority & Polish** - Drag-drop ordering and UX refinements
 - [x] **Phase 7: JWT Authentication** - Secure routes following zero trust principle
 - [x] **Phase 8: Offline-First Sync** - Local-first events with background database sync
+- [x] **Phase 9: Magic Link Access for Invited Members** - Email-based magic links for restricted participant access
 
 ## Phase Details
 
@@ -186,6 +187,31 @@ Plans:
 - [x] 08-02-PLAN.md -- Event mutation hooks with optimistic updates, EventsContext adapter
 - [x] 08-03-PLAN.md -- SyncIndicator component, layout integration, end-to-end verification
 
+### Phase 9: Magic Link Access for Invited Members
+
+**Goal:** Invited members receive magic links via email and gain restricted access to events — they can view events and event details, manage their own wishlist items, and claim gifts, but cannot perform admin operations (create/edit/delete events or manage participants)
+**Depends on:** Phase 8
+**Requirements:** TBD
+**Success Criteria** (what must be TRUE):
+
+1. Invited participants receive a magic link email when added to an event
+2. Clicking the magic link authenticates the participant without a password
+3. Magic link tokens expire after a configurable window (e.g. 24 hours)
+4. Authenticated participants can view event listings and event details
+5. Authenticated participants can add, edit, and delete their own wishlist items
+6. Authenticated participants can claim and unclaim gifts in the registry
+7. Participants cannot create, edit, or delete events
+8. Participants cannot manage other participants or event settings
+9. Admin routes and UI controls are hidden/blocked for participant-role users
+
+**Plans:** 3 plans (complete 2026-02-15)
+
+Plans:
+
+- [x] 09-01-PLAN.md -- DB schema (magic_link_tokens), refresh_tokens extension, generateParticipantTokens, nodemailer
+- [x] 09-02-PLAN.md -- Email service, POST /api/auth/magic-link/redeem, invite creation wired to generate tokens
+- [x] 09-03-PLAN.md -- requireOrganizer middleware, event/invite mutation routes protected
+
 ## Progress
 
 **Execution Order:**
@@ -201,3 +227,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 6. Wishlist Priority & Polish                 | 0/TBD          | Not started | -          |
 | 7. JWT Authentication                         | 4/4            | Complete    | 2026-02-08 |
 | 8. Offline-First Sync                         | 3/3            | Complete    | 2026-02-13 |
+| 9. Magic Link Access for Invited Members      | 0/TBD          | Not started | -          |
