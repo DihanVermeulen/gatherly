@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 ## Current Position
 
 Phase: 9 of 9 (Magic Link Access for Invited Members)
-Plan: 1 of 3
+Plan: 2 of 3
 Status: In progress
-Last activity: 2026-02-15 - Completed 09-01-PLAN.md (magic-link-db-token-infrastructure)
+Last activity: 2026-02-15 - Completed 09-02-PLAN.md (magic-link-email-redemption)
 
-Progress: [████████░░] 80% (16/18 plans - counting phase 9 plans)
+Progress: [█████████░] 89% (17/18 plans - counting phase 9 plans)
 
 ## Performance Metrics
 
@@ -107,6 +107,9 @@ Recent decisions affecting current work:
 - CHECK constraint in refresh_tokens - Mutual exclusivity of user_id and participant_id enforced at DB level (Outcome: Good - data integrity guarantee)
 - verifyRefreshToken token_hash-only lookup - Works for both user and participant tokens without schema changes (Outcome: Good - backward compatible)
 - Participant JWT claims: participantId + eventId in payload - Route handlers can identify participant scope from token (Outcome: Good - enables permission checks)
+- Fire-and-dont-block email sending - Email failure cannot block invite creation, magic_link_url always returned (Outcome: Good - resilient to SMTP failures)
+- 48-char nanoid for magic tokens - Higher entropy than 21-char invite codes for single-use sensitive tokens (Outcome: Good - appropriate for one-time use credentials)
+- Email prefix as participant name on first magic link redemption - Reasonable default derived from invite email (Outcome: Good - auto-provisions participant without extra UI step)
 
 ### Pending Todos
 
@@ -131,5 +134,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-15
-Stopped at: Completed 09-01-PLAN.md (magic-link-db-token-infrastructure)
+Stopped at: Completed 09-02-PLAN.md (magic-link-email-redemption)
 Resume file: None
