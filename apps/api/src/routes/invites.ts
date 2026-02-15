@@ -1,9 +1,11 @@
 import { Router, Request, Response } from "express";
 import rateLimit from "express-rate-limit";
+import crypto from "crypto";
 import { nanoid } from "nanoid";
 import { query, getClient } from "../db/connection.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { authenticateJWT } from "../middleware/auth.js";
+import { sendMagicLinkEmail } from "../services/emailService.js";
 
 const router: Router = Router();
 
@@ -69,11 +71,34 @@ router.post(
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
     const inviteUrl = `${frontendUrl}/join/${inviteCode}`;
 
+    // Generate magic link token (raw token for email, hash stored in DB)
+    const magicToken = nanoid(48);
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(magicToken)
+      .digest("hex");
+    const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    // Store token hash in magic_link_tokens table
+    await query(
+      "INSERT INTO magic_link_tokens (invite_id, token_hash, expires_at) VALUES ($1, $2, $3)",
+      [invite.id, tokenHash, tokenExpiresAt],
+    );
+
+    // Build magic link URL
+    const magicLinkUrl = `${frontendUrl}/magic-link/${magicToken}`;
+
+    // Fire-and-forget email if invite has an email address
+    if (invite.email) {
+      sendMagicLinkEmail(invite.email, magicLinkUrl, event.name);
+    }
+
     return res.status(201).json({
       id: invite.id,
       event_id: invite.event_id,
       invite_code: invite.invite_code,
       invite_url: inviteUrl,
+      magic_link_url: magicLinkUrl,
       email: invite.email,
       status: invite.status,
       participant_id: null,
