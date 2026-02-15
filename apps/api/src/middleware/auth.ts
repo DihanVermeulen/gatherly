@@ -10,6 +10,8 @@ declare global {
         userId: number;
         email: string;
         role: 'organizer' | 'participant';
+        participantId?: number; // Set for magic-link participant sessions
+        eventId?: number;       // Set for magic-link participant sessions
       };
     }
   }
@@ -46,6 +48,8 @@ export function authenticateJWT(
       userId: payload.userId,
       email: payload.email,
       role: payload.role,
+      ...(payload.participantId !== undefined && { participantId: payload.participantId }),
+      ...(payload.eventId !== undefined && { eventId: payload.eventId }),
     };
     next();
   } catch (error) {
@@ -97,6 +101,8 @@ export function optionalAuth(
       userId: payload.userId,
       email: payload.email,
       role: payload.role,
+      ...(payload.participantId !== undefined && { participantId: payload.participantId }),
+      ...(payload.eventId !== undefined && { eventId: payload.eventId }),
     };
   } catch (error) {
     // Token invalid or expired - swallow error and proceed without authentication

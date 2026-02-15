@@ -6,6 +6,8 @@ export interface TokenPayload {
   userId: number;
   email: string;
   role: "organizer" | "participant";
+  participantId?: number; // Set for magic-link participants
+  eventId?: number; // Set for magic-link participants
 }
 
 // Load secrets from environment variables (with type assertions after validation)
@@ -59,6 +61,60 @@ export async function generateTokens(payload: TokenPayload): Promise<{
 }
 
 /**
+ * Generate access and refresh token pair for a magic-link participant
+ * Participant tokens use userId: 0, role: 'participant', and include participantId + eventId claims
+ * Refresh token is stored with participant_id (not user_id) for participant-scoped sessions
+ */
+export async function generateParticipantTokens(params: {
+  participantId: number;
+  eventId: number;
+  participantName: string;
+}): Promise<{
+  accessToken: string;
+  refreshToken: string;
+}> {
+  const { participantId, eventId } = params;
+
+  // Build payload with participant-specific claims
+  const payload: TokenPayload = {
+    userId: 0, // No real user account
+    email: "", // No email for participants
+    role: "participant",
+    participantId,
+    eventId,
+  };
+
+  // Generate access token (short-lived, 15 minutes)
+  const accessToken = jwt.sign(payload, JWT_SECRET, {
+    expiresIn: "15m",
+    algorithm: "HS256",
+  });
+
+  // Generate refresh token (long-lived, 7 days) with unique jti
+  const jti = crypto.randomUUID();
+  const refreshToken = jwt.sign(payload, REFRESH_SECRET, {
+    expiresIn: "7d",
+    algorithm: "HS256",
+    jwtid: jti,
+  });
+
+  // Hash the refresh token for storage
+  const tokenHash = crypto
+    .createHash("sha256")
+    .update(refreshToken)
+    .digest("hex");
+
+  // Store refresh token hash with participant_id (not user_id)
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
+  await query(
+    "INSERT INTO refresh_tokens (participant_id, token_hash, expires_at) VALUES ($1, $2, $3)",
+    [participantId, tokenHash, expiresAt],
+  );
+
+  return { accessToken, refreshToken };
+}
+
+/**
  * Verify access token and return payload
  * Throws error if token is invalid or expired
  */
@@ -73,6 +129,7 @@ export function verifyAccessToken(token: string): TokenPayload {
 /**
  * Verify refresh token and check if it exists in database
  * Throws error if token is invalid, expired, or not found in DB
+ * Works for both user tokens and participant tokens (queries by token_hash only)
  */
 export async function verifyRefreshToken(token: string): Promise<TokenPayload> {
   // Verify JWT signature and expiration
@@ -84,6 +141,7 @@ export async function verifyRefreshToken(token: string): Promise<TokenPayload> {
   const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
 
   // Check if token exists in database and is not expired
+  // Works for both user and participant tokens since it only checks token_hash
   const result = await query(
     "SELECT * FROM refresh_tokens WHERE token_hash = $1 AND expires_at > NOW()",
     [tokenHash],
@@ -110,6 +168,18 @@ export async function revokeRefreshToken(tokenHash: string): Promise<void> {
  */
 export async function revokeAllUserTokens(userId: number): Promise<void> {
   await query("DELETE FROM refresh_tokens WHERE user_id = $1", [userId]);
+}
+
+/**
+ * Revoke all refresh tokens for a specific participant
+ * Used when a participant's magic-link session should be invalidated
+ */
+export async function revokeParticipantTokens(
+  participantId: number,
+): Promise<void> {
+  await query("DELETE FROM refresh_tokens WHERE participant_id = $1", [
+    participantId,
+  ]);
 }
 
 /**
