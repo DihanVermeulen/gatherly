@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 ## Current Position
 
 Phase: 9 of 9 (Magic Link Access for Invited Members)
-Plan: 2 of 3
-Status: In progress
-Last activity: 2026-02-15 - Completed 09-02-PLAN.md (magic-link-email-redemption)
+Plan: 3 of 3
+Status: Phase complete
+Last activity: 2026-02-15 - Completed 09-03-PLAN.md (permission-enforcement)
 
-Progress: [█████████░] 89% (17/18 plans - counting phase 9 plans)
+Progress: [██████████] 100% (18/18 plans - counting phase 9 plans)
 
 ## Performance Metrics
 
@@ -110,6 +110,8 @@ Recent decisions affecting current work:
 - Fire-and-dont-block email sending - Email failure cannot block invite creation, magic_link_url always returned (Outcome: Good - resilient to SMTP failures)
 - 48-char nanoid for magic tokens - Higher entropy than 21-char invite codes for single-use sensitive tokens (Outcome: Good - appropriate for one-time use credentials)
 - Email prefix as participant name on first magic link redemption - Reasonable default derived from invite email (Outcome: Good - auto-provisions participant without extra UI step)
+- requireOrganizer middleware pattern: placed after authenticateJWT, returns 403 for participant role - Clean separation between identity (401) and authorization (403) (Outcome: Good - standard HTTP semantics)
+- Gift routes and event read routes not protected by requireOrganizer - Participants should be able to view events and claim gifts per design intent (Outcome: Good - matches product spec)
 
 ### Pending Todos
 
@@ -134,5 +136,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-15
-Stopped at: Completed 09-02-PLAN.md (magic-link-email-redemption)
+Stopped at: Completed 09-03-PLAN.md (permission-enforcement) - Phase 9 complete
 Resume file: None
