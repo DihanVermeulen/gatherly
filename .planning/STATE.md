@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-06)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** Phase 4 - Invite System
+**Current focus:** Phase 9 - Magic Link Access for Invited Members
 
 ## Current Position
 
-Phase: 8 of 8 (Sync Events - Offline-First)
-Plan: 3 of 3
-Status: Complete
-Last activity: 2026-02-14 - Completed quick-001-PLAN.md (Add My Gifts navigate to wishlist)
+Phase: 9 of 9 (Magic Link Access for Invited Members)
+Plan: 1 of 3
+Status: In progress
+Last activity: 2026-02-15 - Completed 09-01-PLAN.md (magic-link-db-token-infrastructure)
 
-Progress: [██████████] 100%
+Progress: [████████░░] 80% (16/18 plans - counting phase 9 plans)
 
 ## Performance Metrics
 
@@ -103,6 +103,10 @@ Recent decisions affecting current work:
 - Route all event mutations through dispatch() - Never call eventsApi directly from pages (Outcome: Good - enables TanStack Query offline queue and sync indicator)
 - Preserve wishlist cache on refetch - queryFn merges cached wishlists into refetched events (Outcome: Good - wishlists survive background invalidation)
 - useEventByIdQuery in edit page for participantDetails - Gets numeric IDs for wishlist navigation (Outcome: Good - fixes participantId required error)
+- userId=0 for participant tokens - No real user account, distinguishable from real sessions (userId starts at 1 via SERIAL) (Outcome: Good - clear distinction)
+- CHECK constraint in refresh_tokens - Mutual exclusivity of user_id and participant_id enforced at DB level (Outcome: Good - data integrity guarantee)
+- verifyRefreshToken token_hash-only lookup - Works for both user and participant tokens without schema changes (Outcome: Good - backward compatible)
+- Participant JWT claims: participantId + eventId in payload - Route handlers can identify participant scope from token (Outcome: Good - enables permission checks)
 
 ### Pending Todos
 
@@ -122,9 +126,10 @@ None yet.
 
 - Phase 7 added: JWT authentication with secure routes following the zero trust principle
 - Phase 8 added: Sync events to local storage first then to the database.
+- Phase 9 added: Magic link access for invited members with restricted permissions (view events, manage own wishlist, claim gifts — no admin privileges)
 
 ## Session Continuity
 
-Last session: 2026-02-14
-Stopped at: Completed quick-001-PLAN.md (Add My Gifts navigate to wishlist)
+Last session: 2026-02-15
+Stopped at: Completed 09-01-PLAN.md (magic-link-db-token-infrastructure)
 Resume file: None
