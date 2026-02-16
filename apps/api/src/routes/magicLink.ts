@@ -108,9 +108,13 @@ router.post(
             : invite.invite_email
           : "Participant";
 
-        // Create participant record
+        // Create participant record, or return the existing one if the name is
+        // already taken in this event (e.g. organizer added them manually, or
+        // they redeemed a different invite for the same event earlier).
         const newParticipantResult = await client.query(
-          "INSERT INTO participants (event_id, name) VALUES ($1, $2) RETURNING id, name",
+          `INSERT INTO participants (event_id, name) VALUES ($1, $2)
+           ON CONFLICT (event_id, name) DO UPDATE SET name = EXCLUDED.name
+           RETURNING id, name`,
           [invite.event_id, emailPrefix],
         );
 
