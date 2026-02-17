@@ -22,6 +22,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 7: JWT Authentication** - Secure routes following zero trust principle
 - [x] **Phase 8: Offline-First Sync** - Local-first events with background database sync
 - [x] **Phase 9: Magic Link Access for Invited Members** - Email-based magic links for restricted participant access
+- [ ] **Phase 10: Inline Assignment Reveal** - Replace decipher code mechanic with gated inline reveal using JWT identity
 
 ## Phase Details
 
@@ -212,10 +213,19 @@ Plans:
 - [x] 09-02-PLAN.md -- Email service, POST /api/auth/magic-link/redeem, invite creation wired to generate tokens
 - [x] 09-03-PLAN.md -- requireOrganizer middleware, event/invite mutation routes protected
 
+### Phase 10: Inline Assignment Reveal
+
+**Goal:** Replace the decipher code mechanic with a gated inline reveal on the event details page — authenticated participants tap "Reveal My Assignment" and see their receivers fetched directly via JWT, with no Base64 code required. The `/decipher` page is retained as a legacy path for organizers distributing printed codes at physical events.
+**Depends on:** Phase 9
+**Plans:** 1 plan
+
+Plans:
+- [ ] 10-01-PLAN.md -- Inline assignment reveal (API endpoint + frontend reveal UI)
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10
 
 | Phase                                         | Plans Complete | Status      | Completed  |
 | --------------------------------------------- | -------------- | ----------- | ---------- |
@@ -228,3 +238,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 7. JWT Authentication                         | 4/4            | Complete    | 2026-02-08 |
 | 8. Offline-First Sync                         | 3/3            | Complete    | 2026-02-13 |
 | 9. Magic Link Access for Invited Members      | 0/TBD          | Not started | -          |
+| 10. Inline Assignment Reveal                  | 0/TBD          | Not started | -          |
