@@ -53,10 +53,12 @@ export const invitesApi = {
   // Accept an invite and join the event (public endpoint, rate-limited)
   acceptInvite: async (
     code: string,
-    participantName: string
+    participantName: string,
+    email?: string
   ): Promise<InviteAcceptResult> => {
     const response = await apiClient.post(`/api/invites/${code}/accept`, {
       participantName,
+      ...(email ? { email } : {}),
     });
     return response.data;
   },

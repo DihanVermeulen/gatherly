@@ -28,6 +28,7 @@ export const EventInvitesPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [qrModalInvite, setQrModalInvite] = useState<Invite | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [emailInput, setEmailInput] = useState("");
 
   useEffect(() => {
     const foundEvent = events.find((e) => String(e.id) === id);
@@ -86,7 +87,9 @@ export const EventInvitesPage = () => {
     try {
       setGenerating(true);
       setError(null);
-      const newInvite = await invitesApi.createInvite(eventId);
+      const email = emailInput.trim() || undefined;
+      const newInvite = await invitesApi.createInvite(eventId, { email });
+      setEmailInput("");
       setInvites([newInvite, ...invites]);
       // Optionally show QR code modal immediately
       setQrModalInvite(newInvite);
@@ -188,8 +191,8 @@ export const EventInvitesPage = () => {
     <div className="min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 pb-32">
       {/* Header */}
       <div className="bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10">
-        <div className="flex items-center justify-between p-4 max-w-2xl mx-auto">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 p-4 max-w-2xl mx-auto">
+          <div className="flex items-center gap-3 flex-shrink-0">
             <button
               onClick={() => navigate(`/events/edit/${id}`)}
               className="hover:bg-slate-200 dark:hover:bg-slate-800 p-1 rounded-full transition-colors"
@@ -203,10 +206,18 @@ export const EventInvitesPage = () => {
               <p className="text-xs text-slate-500">Invites</p>
             </div>
           </div>
+          <input
+            type="email"
+            value={emailInput}
+            onChange={(e) => setEmailInput(e.target.value)}
+            placeholder="Email address (optional)"
+            maxLength={255}
+            className="flex-1 min-w-[180px] px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500 transition-colors"
+          />
           <button
             onClick={handleGenerateInvite}
             disabled={generating}
-            className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-400 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors font-medium"
+            className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-400 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors font-medium flex-shrink-0"
           >
             <Plus size={18} />
             Generate

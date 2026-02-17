@@ -1,3 +1,4 @@
+import { CirclePlus, LockOpen } from "lucide-react";
 import { useNavigate } from "react-router";
 
 export const HomePage = () => {
@@ -7,10 +8,6 @@ export const HomePage = () => {
     <div className="max-w-6xl mx-auto p-6 md:p-12">
       {/* Hero Section */}
       <div className="text-center py-16 md:py-24 mb-12">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest mb-6">
-          <span className="material-symbols-outlined text-[14px]">stars</span>
-          New: Secret Code Encryption
-        </div>
         <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight">
           Events Made <span className="text-primary">Simple</span>
         </h1>
@@ -23,14 +20,15 @@ export const HomePage = () => {
             onClick={() => navigate("/events")}
             className="bg-primary hover:opacity-90 text-black px-10 py-5 rounded-2xl text-lg font-bold transition-all shadow-xl shadow-primary/20 active:scale-95 flex items-center justify-center gap-2"
           >
-            <span className="material-symbols-outlined">add_circle</span>
             Get Started
           </button>
           <button
             onClick={() => navigate("/decipher")}
             className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white px-10 py-5 rounded-2xl text-lg font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 flex items-center justify-center gap-2"
           >
-            <span className="material-symbols-outlined">lock_open</span>
+            <span className="material-symbols-outlined">
+              <LockOpen />
+            </span>
             Decipher Code
           </button>
         </div>

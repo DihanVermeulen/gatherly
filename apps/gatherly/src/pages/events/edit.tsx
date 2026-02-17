@@ -264,7 +264,7 @@ export const EditEventPage = () => {
               </p>
             )}
           </div>
-          <div className="px-4 py-2">
+          {/* <div className="px-4 py-2">
             <div className="flex w-full items-stretch rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
               <input
                 className="flex-1 bg-transparent border-none focus:ring-0 px-4 py-3 text-sm dark:text-white"
@@ -280,7 +280,7 @@ export const EditEventPage = () => {
                 <span className="material-symbols-outlined font-bold">add</span>
               </button>
             </div>
-          </div>
+          </div> */}
         </section>
 
         {/* Wishlists Section */}
@@ -291,7 +291,8 @@ export const EditEventPage = () => {
               View and manage wishlist items for each participant
             </p>
             <div className="space-y-2">
-              {fullEvent?.participantDetails && fullEvent.participantDetails.length > 0 ? (
+              {fullEvent?.participantDetails &&
+              fullEvent.participantDetails.length > 0 ? (
                 fullEvent.participantDetails.map((participant) => (
                   <button
                     key={participant.id}
@@ -336,9 +337,7 @@ export const EditEventPage = () => {
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
                   <Share2 size={20} />
                 </div>
-                <span className="text-sm font-medium">
-                  Manage Invites
-                </span>
+                <span className="text-sm font-medium">Manage Invites</span>
               </div>
               <span className="text-white/80">
                 <ArrowRight />

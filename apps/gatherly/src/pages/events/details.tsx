@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useEvents } from "contexts/EventsContext";
 import { useEventByIdQuery } from "hooks/useEventQueries";
@@ -22,6 +23,12 @@ export const EventDetailsPage = () => {
   } = useEvents();
   const { data: fullEvent } = useEventByIdQuery(id || "");
 
+  useEffect(() => {
+    if (user?.role === "participant" && user?.eventId && id !== String(user.eventId)) {
+      navigate(`/events/${user.eventId}`, { replace: true });
+    }
+  }, [user, id, navigate]);
+
   const event = fullEvent || events.find((e) => e.id === id);
 
   if (!event) {
@@ -29,7 +36,7 @@ export const EventDetailsPage = () => {
       <div className="bg-background-light dark:bg-background-dark min-h-screen p-6 text-center">
         <p className="text-slate-500">Event not found</p>
         <button
-          onClick={() => navigate("/events")}
+          onClick={() => navigate(user?.role === "participant" && user?.eventId ? `/events/${user.eventId}` : "/events")}
           className="mt-4 text-primary font-bold"
         >
           Back to Events
@@ -44,7 +51,7 @@ export const EventDetailsPage = () => {
       : event.people.map((name, i) => ({ id: i, name }));
 
   const currentParticipant = event.participantDetails?.find(
-    (p) => p.name === user?.name
+    (p) => p.name === user?.name,
   );
 
   const hasAssignments = !!event.assignments;
@@ -210,7 +217,9 @@ export const EventDetailsPage = () => {
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 p-4 safe-area-bottom">
         <div className="sm:mx-auto md:ml-auto md:mr-0 flex gap-3">
           <button
-            onClick={() => navigate(`/events/${event.id}/gifts`)}
+            onClick={() =>
+              navigate(`/events/${event.id}/wishlist/${currentParticipant?.id}`)
+            }
             className="flex-1 py-3 px-4 rounded-xl font-bold text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
           >
             View All Gifts
@@ -219,7 +228,7 @@ export const EventDetailsPage = () => {
             onClick={() =>
               currentParticipant
                 ? navigate(
-                    `/events/${event.id}/wishlist/${currentParticipant.id}`
+                    `/events/${event.id}/wishlist/${currentParticipant.id}`,
                   )
                 : undefined
             }

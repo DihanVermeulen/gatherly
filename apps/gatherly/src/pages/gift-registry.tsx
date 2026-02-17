@@ -38,13 +38,16 @@ export const GiftRegistryPage: React.FC = () => {
         setSaving(false);
       }, 300);
     },
-    [dispatch, editingGift]
+    [dispatch, editingGift],
   );
 
-  const handleEdit = useCallback((gift: Gift) => {
-    setEditingGift(gift);
-    scrollToCreate();
-  }, [scrollToCreate]);
+  const handleEdit = useCallback(
+    (gift: Gift) => {
+      setEditingGift(gift);
+      scrollToCreate();
+    },
+    [scrollToCreate],
+  );
 
   const dismissSuccess = useCallback(() => {
     setSuccessMessage(null);

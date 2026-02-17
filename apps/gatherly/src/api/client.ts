@@ -72,11 +72,19 @@ apiClient.interceptors.response.use(
       _retry?: boolean;
     };
 
+    // Auth endpoints should never trigger auto-refresh (they ARE the auth flow)
+    const isAuthEndpoint =
+      originalRequest?.url?.includes("/api/auth/refresh") ||
+      originalRequest?.url?.includes("/api/auth/login") ||
+      originalRequest?.url?.includes("/api/auth/register") ||
+      originalRequest?.url?.includes("/api/auth/magic-link/redeem");
+
     // Handle 401 errors with auto-refresh
     if (
       error.response?.status === 401 &&
       originalRequest &&
-      !originalRequest._retry
+      !originalRequest._retry &&
+      !isAuthEndpoint
     ) {
       if (isRefreshing) {
         // Queue this request while refresh is in progress

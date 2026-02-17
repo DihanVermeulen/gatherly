@@ -5,6 +5,7 @@ import { query } from "../db/connection";
 import { asyncHandler } from "../middleware/asyncHandler";
 import {
   generateTokens,
+  generateParticipantTokens,
   verifyRefreshToken,
   revokeRefreshToken,
   cleanExpiredTokens,
@@ -188,7 +189,45 @@ router.post(
     // Clean up expired tokens opportunistically
     await cleanExpiredTokens();
 
-    // Query user from database to get current name/role (in case they changed)
+    // Participant token: regenerate without querying the users table
+    if (decoded.participantId) {
+      const participantResult = await query(
+        `SELECT p.id, p.name, p.event_id, e.name as event_name
+         FROM participants p
+         JOIN events e ON p.event_id = e.id
+         WHERE p.id = $1`,
+        [decoded.participantId],
+      );
+
+      if (participantResult.rows.length === 0) {
+        return res.status(401).json({ error: "Participant not found" });
+      }
+
+      const participant = participantResult.rows[0];
+
+      const tokens = await generateParticipantTokens({
+        participantId: participant.id,
+        eventId: participant.event_id,
+        participantName: participant.name,
+      });
+
+      res.cookie("refreshToken", tokens.refreshToken, getRefreshCookieOptions());
+
+      return res.status(200).json({
+        accessToken: tokens.accessToken,
+        user: {
+          id: participant.id,
+          email: "",
+          name: participant.name,
+          role: "participant",
+          participantId: participant.id,
+          eventId: participant.event_id,
+          eventName: participant.event_name,
+        },
+      });
+    }
+
+    // Regular user token: query current user info from DB
     const userResult = await query(
       "SELECT id, email, name, role FROM users WHERE id = $1",
       [decoded.userId],

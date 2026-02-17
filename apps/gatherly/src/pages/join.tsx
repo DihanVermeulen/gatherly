@@ -19,6 +19,7 @@ export const JoinPage: React.FC = () => {
   const [eventId, setEventId] = useState<number>(0);
   const [inviteId, setInviteId] = useState<number>(0);
   const [participantName, setParticipantName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -74,6 +75,7 @@ export const JoinPage: React.FC = () => {
       const result = await invitesApi.acceptInvite(
         code,
         participantName.trim(),
+        email.trim() || undefined,
       );
       setEventName(result.eventName);
       setEventId(result.eventId);
@@ -136,9 +138,7 @@ export const JoinPage: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="max-w-md w-full rounded-xl p-6 text-center">
           <AlertCircle className="mx-auto mb-4 text-yellow-500" size={48} />
-          <h2 className="text-xl font-semibold text-white mb-2">
-            Too Many Attempts
-          </h2>
+          <h2 className="text-xl font-semibold mb-2">Too Many Attempts</h2>
           <p className=" mb-6">Please try again later. Rate limit exceeded.</p>
           <button
             onClick={() => navigate("/home")}
@@ -157,10 +157,18 @@ export const JoinPage: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="max-w-md w-full rounded-xl p-6 text-center">
           <CheckCircle className="mx-auto mb-4 text-emerald-500" size={64} />
-          <h2 className="text-2xl font-bold text-white mb-2">
-            Welcome to {eventName}!
-          </h2>
-          <p className=" mb-6">You've successfully joined the event.</p>
+          <h2 className="text-2xl font-bold mb-2">Welcome to {eventName}!</h2>
+          {email.trim() ? (
+            <p className=" mb-6">
+              Check <strong>{email.trim()}</strong> for a magic link to sign in
+              to {eventName}.
+            </p>
+          ) : (
+            <p className=" mb-6">
+              You've successfully joined the event. Ask the organizer for a
+              magic link to sign in.
+            </p>
+          )}
           <div className="space-y-3">
             <button
               onClick={() => navigate("/events")}
@@ -212,6 +220,24 @@ export const JoinPage: React.FC = () => {
             <p className="text-xs text-zinc-500 mt-1">
               {participantName.length}/50 characters
             </p>
+          </div>
+
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-zinc-300 mb-2"
+            >
+              Email (optional) — we'll send you a magic link to sign in
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="your@email.com"
+              maxLength={255}
+              className="w-full px-4 py-3 rounded-lg border border-zinc-600 focus:outline-none focus:border-primary transition-colors"
+            />
           </div>
 
           {error && (

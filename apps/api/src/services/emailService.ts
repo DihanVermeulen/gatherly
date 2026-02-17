@@ -1,19 +1,5 @@
 import nodemailer from "nodemailer";
-
-// Create nodemailer transporter using environment variables
-// Defaults suitable for MailHog/Mailpit local development (host=localhost, port=1025)
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "localhost",
-  port: parseInt(process.env.SMTP_PORT || "1025", 10),
-  secure: false, // true for 465, false for other ports
-  auth:
-    process.env.SMTP_USER && process.env.SMTP_PASS
-      ? {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        }
-      : undefined,
-});
+import { logger } from "tsdown";
 
 const SMTP_FROM = process.env.SMTP_FROM || "Gatherly <noreply@gatherly.local>";
 
@@ -28,8 +14,26 @@ export async function sendMagicLinkEmail(
   eventName: string,
 ): Promise<void> {
   try {
-    await transporter.sendMail({
-      from: SMTP_FROM,
+    const testAccount = await nodemailer.createTestAccount();
+
+    // Create nodemailer transporter using environment variables
+    // Defaults suitable for MailHog/Mailpit local development (host=localhost, port=1025)
+    const transporter = nodemailer.createTransport({
+      host: testAccount.smtp.host,
+      port: testAccount.smtp.port,
+      secure: testAccount.smtp.secure,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass,
+      },
+    });
+
+    logger.log("Sending email to ", to);
+    logger.log("Sending email from ", SMTP_FROM);
+    logger.log("Test account: ", testAccount);
+
+    const info = await transporter.sendMail({
+      from: `"Gatherly" <${testAccount.user}>`,
       to,
       subject: `You're invited to ${eventName} on Gatherly`,
       html: `
@@ -69,7 +73,8 @@ export async function sendMagicLinkEmail(
         </html>
       `,
     });
-    console.log(`Magic link email sent to ${to}`);
+    logger.log(`Magic link email sent to ${to}`);
+    logger.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
   } catch (error) {
     console.error(`Failed to send magic link email to ${to}:`, error);
     // Do NOT rethrow - fire-and-don't-block pattern

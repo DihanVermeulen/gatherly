@@ -14,6 +14,7 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
+  loginWithMagicLink: (token: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -92,8 +93,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
+  const loginWithMagicLink = useCallback(async (token: string) => {
+    const response = await authApi.redeemMagicLink(token);
+    setAccessToken(response.accessToken);
+    setUser(response.user);
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, isLoading, login, register, logout, loginWithMagicLink }}
+    >
       {children}
     </AuthContext.Provider>
   );

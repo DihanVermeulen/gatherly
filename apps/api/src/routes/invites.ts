@@ -7,6 +7,7 @@ import { asyncHandler } from "../middleware/asyncHandler.js";
 import { authenticateJWT } from "../middleware/auth.js";
 import { requireOrganizer } from "../middleware/requireOrganizer.js";
 import { sendMagicLinkEmail } from "../services/emailService.js";
+import { logger } from "tsdown";
 
 const router: Router = Router();
 
@@ -18,7 +19,9 @@ const inviteValidationLimiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   handler: (req, res) => {
-    res.status(429).json({ error: "Too many requests, please try again later" });
+    res
+      .status(429)
+      .json({ error: "Too many requests, please try again later" });
   },
 });
 
@@ -38,7 +41,7 @@ router.post(
     // Verify event exists
     const eventResult = await query(
       "SELECT id, name FROM events WHERE id = $1",
-      [eventId]
+      [eventId],
     );
 
     if (eventResult.rows.length === 0) {
@@ -64,7 +67,7 @@ router.post(
       `INSERT INTO invites (event_id, email, invite_code, status, expires_at)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING id, event_id, email, invite_code, status, expires_at, created_at`,
-      [eventId, email || null, inviteCode, "pending", expiresAt]
+      [eventId, email || null, inviteCode, "pending", expiresAt],
     );
 
     const invite = result.rows[0];
@@ -86,6 +89,8 @@ router.post(
       "INSERT INTO magic_link_tokens (invite_id, token_hash, expires_at) VALUES ($1, $2, $3)",
       [invite.id, tokenHash, tokenExpiresAt],
     );
+
+    logger.log(invite);
 
     // Build magic link URL
     const magicLinkUrl = `${frontendUrl}/magic-link/${magicToken}`;
@@ -109,7 +114,7 @@ router.post(
       created_at: invite.created_at,
       updated_at: invite.created_at,
     });
-  })
+  }),
 );
 
 /**
@@ -125,10 +130,9 @@ router.get(
     const eventId = parseInt(req.params.eventId, 10);
 
     // Verify event exists
-    const eventResult = await query(
-      "SELECT id FROM events WHERE id = $1",
-      [eventId]
-    );
+    const eventResult = await query("SELECT id FROM events WHERE id = $1", [
+      eventId,
+    ]);
 
     if (eventResult.rows.length === 0) {
       return res.status(404).json({ error: "Event not found" });
@@ -152,7 +156,7 @@ router.get(
       LEFT JOIN participants ON invites.participant_id = participants.id
       WHERE invites.event_id = $1
       ORDER BY invites.created_at DESC`,
-      [eventId]
+      [eventId],
     );
 
     // Build invite URLs for each invite
@@ -163,7 +167,7 @@ router.get(
     }));
 
     return res.status(200).json({ invites: invitesWithUrls });
-  })
+  }),
 );
 
 /**
@@ -193,7 +197,7 @@ router.post(
       WHERE invites.invite_code = $1
         AND invites.status = 'pending'
         AND (invites.expires_at IS NULL OR invites.expires_at > NOW())`,
-      [code]
+      [code],
     );
 
     if (result.rows.length === 0) {
@@ -208,7 +212,7 @@ router.post(
       eventName: invite.event_name,
       inviteId: invite.invite_id,
     });
-  })
+  }),
 );
 
 /**
@@ -221,7 +225,7 @@ router.post(
   inviteValidationLimiter,
   asyncHandler(async (req: Request, res: Response) => {
     const { code } = req.params;
-    const { participantName } = req.body;
+    const { participantName, email } = req.body;
 
     // Validate input
     if (!participantName || participantName.trim().length === 0) {
@@ -250,7 +254,7 @@ router.post(
         WHERE invites.invite_code = $1
           AND invites.status = 'pending'
           AND (invites.expires_at IS NULL OR invites.expires_at > NOW())`,
-        [code]
+        [code],
       );
 
       if (inviteResult.rows.length === 0) {
@@ -265,7 +269,7 @@ router.post(
       // Check if participant with this name already exists in the event
       const existingParticipantResult = await client.query(
         "SELECT id FROM participants WHERE event_id = $1 AND name = $2",
-        [eventId, participantName.trim()]
+        [eventId, participantName.trim()],
       );
 
       let participantId: number;
@@ -277,7 +281,7 @@ router.post(
         // Create new participant
         const newParticipantResult = await client.query(
           "INSERT INTO participants (event_id, name) VALUES ($1, $2) RETURNING id",
-          [eventId, participantName.trim()]
+          [eventId, participantName.trim()],
         );
         participantId = newParticipantResult.rows[0].id;
       }
@@ -285,10 +289,31 @@ router.post(
       // Update invite to accepted and link to participant
       await client.query(
         "UPDATE invites SET status = $1, participant_id = $2 WHERE invite_code = $3",
-        ["accepted", participantId, code]
+        ["accepted", participantId, code],
       );
 
       await client.query("COMMIT");
+
+      // After transaction commits: generate magic link if email provided
+      const emailAddress =
+        typeof email === "string" ? email.trim() : null;
+      if (emailAddress) {
+        const magicToken = nanoid(48);
+        const tokenHash = crypto
+          .createHash("sha256")
+          .update(magicToken)
+          .digest("hex");
+        const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+        await query(
+          "INSERT INTO magic_link_tokens (invite_id, token_hash, expires_at) VALUES ($1, $2, $3)",
+          [invite.id, tokenHash, tokenExpiresAt],
+        );
+
+        const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+        const magicLinkUrl = `${frontendUrl}/magic-link/${magicToken}`;
+        sendMagicLinkEmail(emailAddress, magicLinkUrl, eventName);
+      }
 
       return res.status(200).json({
         eventId,
@@ -302,7 +327,7 @@ router.post(
     } finally {
       client.release();
     }
-  })
+  }),
 );
 
 /**
@@ -321,7 +346,7 @@ router.delete(
     // Verify invite belongs to the event before deleting
     const result = await query(
       "DELETE FROM invites WHERE id = $1 AND event_id = $2 RETURNING id",
-      [inviteId, eventId]
+      [inviteId, eventId],
     );
 
     if (result.rows.length === 0) {
@@ -329,7 +354,7 @@ router.delete(
     }
 
     return res.status(200).json({ message: "Invite revoked" });
-  })
+  }),
 );
 
 export default router;

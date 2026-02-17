@@ -5,11 +5,27 @@ export interface User {
   email: string;
   name: string;
   role: "organizer" | "participant";
+  participantId?: number;
+  eventId?: number;
+  eventName?: string;
 }
 
 export interface AuthResponse {
   accessToken: string;
   user: User;
+}
+
+interface MagicLinkUser {
+  participantId: number;
+  eventId: number;
+  participantName: string;
+  eventName: string;
+  role: "participant";
+}
+
+interface MagicLinkResponse {
+  accessToken: string;
+  user: MagicLinkUser;
 }
 
 export const authApi = {
@@ -41,5 +57,25 @@ export const authApi = {
 
   async logout(): Promise<void> {
     await apiClient.post("/api/auth/logout");
+  },
+
+  async redeemMagicLink(token: string): Promise<AuthResponse> {
+    const response = await apiClient.post<MagicLinkResponse>(
+      "/api/auth/magic-link/redeem",
+      { token },
+    );
+    const { accessToken, user } = response.data;
+    return {
+      accessToken,
+      user: {
+        id: user.participantId,
+        name: user.participantName,
+        email: "",
+        role: "participant",
+        participantId: user.participantId,
+        eventId: user.eventId,
+        eventName: user.eventName,
+      },
+    };
   },
 };

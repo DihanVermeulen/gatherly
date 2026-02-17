@@ -3,17 +3,20 @@ import {
   Calendar,
   CalendarOff,
   CheckCircle,
-  Delete,
   Gift,
+  MoreVertical,
   PartyPopper,
   Plus,
   Search,
-  Trash,
+  Settings,
+  Share2,
+  Trash2,
   Users,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { CreateEventForm } from "components/events/CreateEventForm";
+import { useAuth } from "contexts/AuthContext";
 
 export const EventsPage = () => {
   const {
@@ -21,7 +24,28 @@ export const EventsPage = () => {
     dispatch,
   } = useEvents();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (user?.role === "participant" && user?.eventId) {
+      navigate(`/events/${user.eventId}`);
+    }
+  }, [user, navigate]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpenMenuId(null);
+      }
+    };
+    if (openMenuId) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [openMenuId]);
 
   const handleCreateEvent = (name: string, description: string) => {
     dispatch({
@@ -94,12 +118,11 @@ export const EventsPage = () => {
             events.map((event) => (
               <div
                 key={event.id}
-                onClick={() => navigate(`/events/edit/${event.id}`)}
-                className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-800 cursor-pointer hover:shadow-md transition-all active:scale-[0.99] group"
+                className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-800 cursor-pointer hover:shadow-md transition-all group"
               >
                 <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-lg font-bold mb-1 group-hover:text-primary transition-colors">
+                  <div className="flex-1 min-w-0 pr-2">
+                    <h3 className="text-lg font-bold mb-1 group-hover:text-primary transition-colors truncate">
                       {event.name}
                     </h3>
                     <div
@@ -109,16 +132,71 @@ export const EventsPage = () => {
                           : "text-blue-500 bg-blue-500/10"
                       }`}
                     >
-                      <span className=" text-[14px]">
+                      <span className="text-[14px]">
                         {event.assignments ? <CheckCircle /> : <Calendar />}
                       </span>
                       {event.assignments ? "Codes Generated" : "Planning Phase"}
                     </div>
                   </div>
-                  <div className="size-10 rounded-xl bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center text-orange-600 dark:text-orange-400">
-                    <span className="">
+                  <div className="flex items-center gap-2 shrink-0">
+                    <div className="size-10 rounded-xl bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center text-orange-600 dark:text-orange-400">
                       <PartyPopper />
-                    </span>
+                    </div>
+                    {/* 3-dot menu */}
+                    <div
+                      className="relative"
+                      ref={openMenuId === event.id ? menuRef : undefined}
+                    >
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenMenuId(
+                            openMenuId === event.id ? null : event.id,
+                          );
+                        }}
+                        className="size-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        aria-label="Event options"
+                      >
+                        <MoreVertical size={18} />
+                      </button>
+                      {openMenuId === event.id && (
+                        <div className="absolute right-0 top-10 z-50 min-w-[180px] bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-level-3 overflow-hidden">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenMenuId(null);
+                              navigate(`/events/edit/${event.id}`);
+                            }}
+                            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                          >
+                            <Settings size={15} className="text-slate-400" />
+                            Configure Event
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation(); /* Share logic */
+                            }}
+                            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                          >
+                            <Share2 size={15} className="text-slate-400" />
+                            Share
+                          </button>
+
+                          <div className="h-px bg-slate-100 dark:bg-slate-800" />
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenMenuId(null);
+                              deleteEvent(event.id, e);
+                            }}
+                            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                          >
+                            <Trash2 size={15} className="text-red-400" />
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -168,25 +246,11 @@ export const EventsPage = () => {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate(`/events/edit/${event.id}`);
+                      navigate(`/events/${event.id}`);
                     }}
                     className="flex-1 py-2.5 bg-primary text-background-dark rounded-xl text-sm font-bold shadow-sm active:scale-95 transition-transform"
                   >
-                    Manage
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation(); /* Share logic */
-                    }}
-                    className="flex-1 py-2.5 bg-white dark:bg-white/10 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold active:scale-95 transition-transform"
-                  >
-                    Share
-                  </button>
-                  <button
-                    onClick={(e) => deleteEvent(event.id, e)}
-                    className="size-11 flex items-center justify-center text-slate-400 hover:text-red-500 active:scale-95 transition-transform"
-                  >
-                    <Trash />
+                    View Event
                   </button>
                 </div>
               </div>
