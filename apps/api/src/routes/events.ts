@@ -595,6 +595,53 @@ router.post("/:id/generate", authenticateJWT, requireOrganizer, async (req: Requ
   }
 });
 
+// GET /api/events/:id/my-assignments - Get the current participant's receivers
+router.get(
+  "/:id/my-assignments",
+  authenticateJWT,
+  asyncHandler(async (req: Request, res: Response) => {
+    const eventId = parseInt(req.params.id, 10);
+    const participantId = req.user?.participantId;
+
+    if (!participantId) {
+      return res
+        .status(403)
+        .json({ error: "Participant access required" });
+    }
+
+    // Verify the participant belongs to this event
+    const memberCheck = await query(
+      "SELECT id FROM participants WHERE id = $1 AND event_id = $2",
+      [participantId, eventId],
+    );
+
+    if (memberCheck.rows.length === 0) {
+      return res
+        .status(403)
+        .json({ error: "You are not a participant in this event" });
+    }
+
+    // Fetch this participant's receivers from the assignments table
+    const assignmentsResult = await query(
+      `SELECT receiver.name as receiver_name
+       FROM assignments a
+       JOIN participants receiver ON a.receiver_id = receiver.id
+       WHERE a.event_id = $1 AND a.giver_id = $2`,
+      [eventId, participantId],
+    );
+
+    if (assignmentsResult.rows.length === 0) {
+      return res.status(404).json({ error: "No assignments found yet" });
+    }
+
+    const receivers = assignmentsResult.rows.map(
+      (row) => row.receiver_name as string,
+    );
+
+    return res.json({ receivers });
+  }),
+);
+
 // GET /api/events/:id/codes - Get all codes for event
 router.get("/:id/codes", authenticateJWT, requireOrganizer, async (req: Request, res: Response) => {
   try {

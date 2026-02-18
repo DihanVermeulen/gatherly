@@ -114,6 +114,12 @@ export const eventsApi = {
     const response = await apiClient.get(`/api/events/${eventId}/codes`);
     return response.data;
   },
+
+  // Get the current participant's assignment receivers (JWT-scoped)
+  getMyAssignments: async (eventId: string): Promise<{ receivers: string[] }> => {
+    const response = await apiClient.get(`/api/events/${eventId}/my-assignments`);
+    return response.data;
+  },
 };
 
 export default eventsApi;
