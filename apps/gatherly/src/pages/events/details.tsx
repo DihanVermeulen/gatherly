@@ -1,18 +1,23 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useEvents } from "contexts/EventsContext";
 import { useEventByIdQuery } from "hooks/useEventQueries";
 import { useAuth } from "contexts/AuthContext";
+import { eventsApi } from "../../api/events";
 import {
   ArrowLeft,
   Calendar,
   CheckCircle,
   Eye,
   Gift,
+  Loader,
+  Lock,
   MoreVertical,
   Plus,
   Users,
 } from "lucide-react";
+
+type RevealState = "idle" | "loading" | "revealed" | "error" | "no-assignments";
 
 export const EventDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -23,8 +28,33 @@ export const EventDetailsPage = () => {
   } = useEvents();
   const { data: fullEvent } = useEventByIdQuery(id || "");
 
+  const [revealState, setRevealState] = useState<RevealState>("idle");
+  const [myReceivers, setMyReceivers] = useState<string[]>([]);
+
+  const isParticipant = user?.role === "participant" && !!user?.participantId;
+
+  const handleReveal = async () => {
+    if (!id) return;
+    setRevealState("loading");
+    try {
+      const data = await eventsApi.getMyAssignments(id);
+      setMyReceivers(data.receivers);
+      setRevealState("revealed");
+    } catch (err: any) {
+      if (err.response?.status === 404) {
+        setRevealState("no-assignments");
+      } else {
+        setRevealState("error");
+      }
+    }
+  };
+
   useEffect(() => {
-    if (user?.role === "participant" && user?.eventId && id !== String(user.eventId)) {
+    if (
+      user?.role === "participant" &&
+      user?.eventId &&
+      id !== String(user.eventId)
+    ) {
       navigate(`/events/${user.eventId}`, { replace: true });
     }
   }, [user, id, navigate]);
@@ -36,7 +66,13 @@ export const EventDetailsPage = () => {
       <div className="bg-background-light dark:bg-background-dark min-h-screen p-6 text-center">
         <p className="text-slate-500">Event not found</p>
         <button
-          onClick={() => navigate(user?.role === "participant" && user?.eventId ? `/events/${user.eventId}` : "/events")}
+          onClick={() =>
+            navigate(
+              user?.role === "participant" && user?.eventId
+                ? `/events/${user.eventId}`
+                : "/events",
+            )
+          }
           className="mt-4 text-primary font-bold"
         >
           Back to Events
@@ -157,19 +193,111 @@ export const EventDetailsPage = () => {
 
         {/* Secret Assignment Section */}
         <div className="mt-4 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-level-1">
-          <h3 className="text-base font-bold mb-1">Your Secret Assignment</h3>
-          <p className="text-sm text-slate-500 mb-4 leading-relaxed">
-            {hasAssignments
-              ? "The draw is complete! Reveal who you are surprising this year."
-              : "Assignments haven't been generated yet. Configure this event to generate secret codes."}
-          </p>
-          <button
-            onClick={() => navigate("/decipher")}
-            className="w-full flex items-center justify-center gap-2 bg-primary text-black font-bold py-3 rounded-xl shadow-sm shadow-primary/20 active:scale-95 transition-transform"
-          >
-            <Eye size={18} />
-            View My Assignment
-          </button>
+          {isParticipant ? (
+            <>
+              {revealState === "idle" && (
+                <>
+                  <h3 className="text-base font-bold mb-1">
+                    Your Secret Assignment
+                  </h3>
+                  <p className="text-sm text-slate-500 mb-4 leading-relaxed">
+                    Tap below to reveal who you're buying for!
+                  </p>
+                  <button
+                    onClick={handleReveal}
+                    className="w-full flex items-center justify-center gap-2 bg-primary-0 text-on-primary-0 font-bold py-3 rounded-xl shadow-sm shadow-primary/20 active:scale-95 transition-transform"
+                  >
+                    <Eye size={18} />
+                    Reveal My Assignment
+                  </button>
+                </>
+              )}
+
+              {revealState === "loading" && (
+                <>
+                  <h3 className="text-base font-bold mb-1">
+                    Your Secret Assignment
+                  </h3>
+                  <p className="text-sm text-slate-500 mb-4 leading-relaxed">
+                    Tap below to reveal who you're buying for!
+                  </p>
+                  <button
+                    disabled
+                    className="w-full flex items-center justify-center gap-2 bg-primary-0 text-on-primary-0 font-bold py-3 rounded-xl shadow-sm shadow-primary/20 opacity-70 cursor-not-allowed"
+                  >
+                    <Loader size={18} className="animate-spin" />
+                    Revealing...
+                  </button>
+                </>
+              )}
+
+              {revealState === "revealed" && (
+                <>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Lock size={16} className="text-primary shrink-0" />
+                    <h3 className="text-base font-bold">You're Buying For:</h3>
+                  </div>
+                  <div className="space-y-2 mb-4">
+                    {myReceivers.map((name) => (
+                      <div
+                        key={name}
+                        className="bg-primary/10 text-primary font-bold px-4 py-3 rounded-xl text-center text-lg"
+                      >
+                        {name}
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-slate-400 text-center italic">
+                    Keep it secret! Don't let them know.
+                  </p>
+                </>
+              )}
+
+              {revealState === "no-assignments" && (
+                <>
+                  <h3 className="text-base font-bold mb-1">
+                    Your Secret Assignment
+                  </h3>
+                  <p className="text-sm text-slate-400 leading-relaxed">
+                    Assignments haven't been generated yet. Check back later!
+                  </p>
+                </>
+              )}
+
+              {revealState === "error" && (
+                <>
+                  <h3 className="text-base font-bold mb-1">
+                    Your Secret Assignment
+                  </h3>
+                  <p className="text-sm text-red-500 mb-4 leading-relaxed">
+                    Something went wrong. Please try again.
+                  </p>
+                  <button
+                    onClick={() => setRevealState("idle")}
+                    className="w-full flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold py-3 rounded-xl active:scale-95 transition-transform"
+                  >
+                    Try Again
+                  </button>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <h3 className="text-base font-bold mb-1">Your Secret Assignment</h3>
+              <p className="text-sm text-slate-500 mb-4 leading-relaxed">
+                {hasAssignments
+                  ? "The draw is complete! Reveal who you are surprising this year."
+                  : "Assignments haven't been generated yet. Configure this event to generate secret codes."}
+              </p>
+              <button
+                onClick={() => navigate("/decipher")}
+                className="w-full flex items-center justify-center gap-2 bg-primary-0 text-on-primary-0 font-bold py-3 rounded-xl shadow-sm shadow-primary/20 active:scale-95 transition-transform"
+              >
+                <Eye size={18} />
+                View My Assignment
+              </button>
+            </>
+          )}
         </div>
 
         {/* Participants Section */}
@@ -233,7 +361,7 @@ export const EventDetailsPage = () => {
                 : undefined
             }
             disabled={!currentParticipant}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm bg-primary text-black shadow-sm shadow-primary/20 active:scale-95 transition-transform ${!currentParticipant ? "opacity-50 cursor-not-allowed" : ""}`}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm bg-primary-0 text-on-primary-0 shadow-sm shadow-primary/20 active:scale-95 transition-transform ${!currentParticipant ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <Plus size={16} />
             Add My Gifts
