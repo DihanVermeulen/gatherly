@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-06)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** Phase 9 - Magic Link Access for Invited Members
+**Current focus:** Phase 10 - Inline Assignment Reveal
 
 ## Current Position
 
-Phase: 9 of 9 (Magic Link Access for Invited Members)
-Plan: 3 of 3
-Status: Phase complete
-Last activity: 2026-02-15 - Completed 09-03-PLAN.md (permission-enforcement)
+Phase: 10 of 10 (Inline Assignment Reveal)
+Plan: 1 of 1 in current phase
+Status: In progress
+Last activity: 2026-02-18 - Completed 10-01-PLAN.md (inline-assignment-reveal)
 
-Progress: [██████████] 100% (18/18 plans - counting phase 9 plans)
+Progress: [████████████████████░] 95% (20/21 plans)
 
 ## Performance Metrics
 
@@ -112,6 +112,8 @@ Recent decisions affecting current work:
 - Email prefix as participant name on first magic link redemption - Reasonable default derived from invite email (Outcome: Good - auto-provisions participant without extra UI step)
 - requireOrganizer middleware pattern: placed after authenticateJWT, returns 403 for participant role - Clean separation between identity (401) and authorization (403) (Outcome: Good - standard HTTP semantics)
 - Gift routes and event read routes not protected by requireOrganizer - Participants should be able to view events and claim gifts per design intent (Outcome: Good - matches product spec)
+- my-assignments uses authenticateJWT only (no requireOrganizer) - participants need access, organizer middleware would block them (Outcome: Good - endpoint is participant-specific)
+- Five-state reveal machine: idle/loading/revealed/no-assignments/error - clear UX for each async flow stage (Outcome: Good - eliminates decipher code mechanic for participants)
 
 ### Pending Todos
 
@@ -132,9 +134,10 @@ None yet.
 - Phase 7 added: JWT authentication with secure routes following the zero trust principle
 - Phase 8 added: Sync events to local storage first then to the database.
 - Phase 9 added: Magic link access for invited members with restricted permissions (view events, manage own wishlist, claim gifts — no admin privileges)
+- Phase 10 added: Inline assignment reveal — replace decipher code mechanic with gated inline reveal on event details page using JWT participant identity
 
 ## Session Continuity
 
-Last session: 2026-02-15
-Stopped at: Completed 09-03-PLAN.md (permission-enforcement) - Phase 9 complete
+Last session: 2026-02-18
+Stopped at: Completed 10-01-PLAN.md (inline-assignment-reveal)
 Resume file: None
