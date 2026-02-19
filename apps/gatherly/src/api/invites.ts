@@ -67,6 +67,17 @@ export const invitesApi = {
   revokeInvite: async (eventId: number, inviteId: number): Promise<void> => {
     await apiClient.delete(`/api/events/${eventId}/invites/${inviteId}`);
   },
+
+  // Resend magic link for an invite (protected, requires auth)
+  resendMagicLink: async (
+    eventId: number,
+    inviteId: number
+  ): Promise<{ magic_link_url: string; email_sent: boolean }> => {
+    const response = await apiClient.post(
+      `/api/events/${eventId}/invites/${inviteId}/resend-magic-link`
+    );
+    return response.data;
+  },
 };
 
 export default invitesApi;
