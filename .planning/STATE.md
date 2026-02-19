@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 ## Current Position
 
 Phase: 10 of 10 (Inline Assignment Reveal)
-Plan: 2 of 3 in current phase (gap-closure plans)
-Status: In progress
-Last activity: 2026-02-19 - Completed 10-02-PLAN.md (magic link reusability — SELECT instead of DELETE, 7-day expiry)
+Plan: 3 of 3 in current phase (gap-closure plans)
+Status: Phase complete
+Last activity: 2026-02-19 - Completed 10-03-PLAN.md (resend magic link endpoint + button in edit.tsx)
 
 Progress: [█████████████████████] 100% (21/21 plans)
 
@@ -116,6 +116,9 @@ Recent decisions affecting current work:
 - Five-state reveal machine: idle/loading/revealed/no-assignments/error - clear UX for each async flow stage (Outcome: Good - eliminates decipher code mechanic for participants)
 - SELECT instead of DELETE for magic link redemption - tokens persist in DB so participants can re-click the same link within 7-day expiry window (Outcome: Good - matches user mental model for emailed links)
 - 7-day magic link token expiry on all creation paths - consistent with JWT refresh window, 24h was too short for real-world email workflows (Outcome: Good - aligns expiry with refresh token lifecycle)
+- Delete-before-insert token rotation for resend: DELETE FROM magic_link_tokens WHERE invite_id before INSERT new token — ensures no stale tokens remain after resend (Outcome: Good - clean atomic revocation)
+- Silent fail on invite load in edit.tsx: .catch(() => {}) so organizer edit page works even when invite API unavailable or user unauthenticated (Outcome: Good - supplementary data cannot break core functionality)
+- localStorage guard in edit.tsx invite useEffect: parseInt(id) > 2147483647 skips API call for synthetic localStorage IDs (Outcome: Good - consistent with established pattern)
 
 ### Pending Todos
 
@@ -141,5 +144,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Completed 10-02-PLAN.md (magic link reusability fix)
+Stopped at: Completed 10-03-PLAN.md (resend magic link endpoint + edit.tsx button) — Phase 10 complete
 Resume file: None
