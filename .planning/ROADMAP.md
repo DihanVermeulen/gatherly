@@ -217,10 +217,12 @@ Plans:
 
 **Goal:** Replace the decipher code mechanic with a gated inline reveal on the event details page — authenticated participants tap "Reveal My Assignment" and see their receivers fetched directly via JWT, with no Base64 code required. The `/decipher` page is retained as a legacy path for organizers distributing printed codes at physical events.
 **Depends on:** Phase 9
-**Plans:** 1 plan
+**Plans:** 3 plans
 
 Plans:
 - [x] 10-01-PLAN.md -- Inline assignment reveal (API endpoint + frontend reveal UI)
+- [ ] 10-02-PLAN.md -- Fix magic link reusability (SELECT instead of DELETE, 7-day expiry)
+- [ ] 10-03-PLAN.md -- Resend magic link endpoint and edit page UI integration
 
 ## Progress
 
@@ -238,4 +240,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7. JWT Authentication                         | 4/4            | Complete    | 2026-02-08 |
 | 8. Offline-First Sync                         | 3/3            | Complete    | 2026-02-13 |
 | 9. Magic Link Access for Invited Members      | 0/TBD          | Not started | -          |
-| 10. Inline Assignment Reveal                  | 1/1            | Complete    | 2026-02-19 |
+| 10. Inline Assignment Reveal                  | 1/3            | In Progress | -          |
