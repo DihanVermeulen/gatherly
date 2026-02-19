@@ -27,10 +27,10 @@ const redeemRateLimiter = rateLimit({
  *
  * Security properties:
  * - POST-only: email pre-fetch bots cannot consume tokens (they only GET links)
- * - Single-use: atomic DELETE + RETURNING ensures each token is consumed exactly once
+ * - Reusable: token persists in DB and can be redeemed multiple times within 7-day expiry window
  * - Token stored as SHA-256 hash: raw token never touches the database
  * - Rate limited: 10 requests per 15 minutes per IP
- * - Expiry enforced in SQL: tokens older than 24h automatically rejected
+ * - Expiry enforced in SQL: tokens older than 7 days automatically rejected
  */
 router.post(
   "/redeem",
@@ -49,20 +49,18 @@ router.post(
       .update(token)
       .digest("hex");
 
-    // Atomically consume the token using DELETE + RETURNING
-    // This ensures the token is single-use: if two requests race, only one wins
-    const consumeResult = await query(
-      `DELETE FROM magic_link_tokens
-       WHERE token_hash = $1 AND expires_at > NOW()
-       RETURNING invite_id`,
+    // Look up the token non-destructively — token persists for reuse within 7-day window
+    const lookupResult = await query(
+      `SELECT invite_id FROM magic_link_tokens
+       WHERE token_hash = $1 AND expires_at > NOW()`,
       [tokenHash],
     );
 
-    if (consumeResult.rows.length === 0) {
+    if (lookupResult.rows.length === 0) {
       return res.status(401).json({ error: "Invalid or expired magic link" });
     }
 
-    const inviteId = consumeResult.rows[0].invite_id;
+    const inviteId = lookupResult.rows[0].invite_id;
 
     // Look up the invite (handles both pending and accepted status)
     const inviteResult = await query(
