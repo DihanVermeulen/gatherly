@@ -220,7 +220,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 10-01-PLAN.md -- Inline assignment reveal (API endpoint + frontend reveal UI)
+- [x] 10-01-PLAN.md -- Inline assignment reveal (API endpoint + frontend reveal UI)
 
 ## Progress
 
@@ -238,4 +238,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7. JWT Authentication                         | 4/4            | Complete    | 2026-02-08 |
 | 8. Offline-First Sync                         | 3/3            | Complete    | 2026-02-13 |
 | 9. Magic Link Access for Invited Members      | 0/TBD          | Not started | -          |
-| 10. Inline Assignment Reveal                  | 0/TBD          | Not started | -          |
+| 10. Inline Assignment Reveal                  | 1/1            | Complete    | 2026-02-19 |
