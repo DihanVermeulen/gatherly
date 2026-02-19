@@ -331,6 +331,70 @@ router.post(
 );
 
 /**
+ * POST /events/:eventId/invites/:inviteId/resend-magic-link
+ * Generate a fresh 7-day magic link token for an existing invite (organizer only)
+ * Invalidates any existing tokens for the invite before creating a new one.
+ * Requires JWT authentication
+ */
+router.post(
+  "/events/:eventId/invites/:inviteId/resend-magic-link",
+  authenticateJWT,
+  requireOrganizer,
+  asyncHandler(async (req: Request, res: Response) => {
+    const eventId = parseInt(req.params.eventId, 10);
+    const inviteId = parseInt(req.params.inviteId, 10);
+
+    // Look up the invite and its event name
+    const inviteResult = await query(
+      `SELECT i.id, i.email, e.name as event_name
+       FROM invites i
+       JOIN events e ON i.event_id = e.id
+       WHERE i.id = $1 AND i.event_id = $2`,
+      [inviteId, eventId],
+    );
+
+    if (inviteResult.rows.length === 0) {
+      return res.status(404).json({ error: "Invite not found" });
+    }
+
+    const invite = inviteResult.rows[0];
+
+    // Invalidate all existing tokens for this invite
+    await query("DELETE FROM magic_link_tokens WHERE invite_id = $1", [
+      inviteId,
+    ]);
+
+    // Generate a fresh magic link token
+    const magicToken = nanoid(48);
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(magicToken)
+      .digest("hex");
+    const tokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+    // Store the new token hash
+    await query(
+      "INSERT INTO magic_link_tokens (invite_id, token_hash, expires_at) VALUES ($1, $2, $3)",
+      [inviteId, tokenHash, tokenExpiresAt],
+    );
+
+    // Build magic link URL
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const magicLinkUrl = `${frontendUrl}/magic-link/${magicToken}`;
+
+    // Fire-and-forget email if invite has an email address
+    if (invite.email) {
+      sendMagicLinkEmail(invite.email, magicLinkUrl, invite.event_name);
+    }
+
+    return res.status(200).json({
+      magic_link_url: magicLinkUrl,
+      email_sent: !!invite.email,
+    });
+  }),
+);
+
+/**
  * DELETE /events/:eventId/invites/:inviteId
  * Revoke/delete an invite (organizer only)
  * Requires JWT authentication
