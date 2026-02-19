@@ -22,7 +22,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 7: JWT Authentication** - Secure routes following zero trust principle
 - [x] **Phase 8: Offline-First Sync** - Local-first events with background database sync
 - [x] **Phase 9: Magic Link Access for Invited Members** - Email-based magic links for restricted participant access
-- [ ] **Phase 10: Inline Assignment Reveal** - Replace decipher code mechanic with gated inline reveal using JWT identity
+- [x] **Phase 10: Inline Assignment Reveal** - Replace decipher code mechanic with gated inline reveal using JWT identity
 
 ## Phase Details
 
@@ -221,8 +221,8 @@ Plans:
 
 Plans:
 - [x] 10-01-PLAN.md -- Inline assignment reveal (API endpoint + frontend reveal UI)
-- [ ] 10-02-PLAN.md -- Fix magic link reusability (SELECT instead of DELETE, 7-day expiry)
-- [ ] 10-03-PLAN.md -- Resend magic link endpoint and edit page UI integration
+- [x] 10-02-PLAN.md -- Fix magic link reusability (SELECT instead of DELETE, 7-day expiry)
+- [x] 10-03-PLAN.md -- Resend magic link endpoint and edit page UI integration
 
 ## Progress
 
@@ -240,4 +240,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7. JWT Authentication                         | 4/4            | Complete    | 2026-02-08 |
 | 8. Offline-First Sync                         | 3/3            | Complete    | 2026-02-13 |
 | 9. Magic Link Access for Invited Members      | 0/TBD          | Not started | -          |
-| 10. Inline Assignment Reveal                  | 1/3            | In Progress | -          |
+| 10. Inline Assignment Reveal                  | 3/3            | Complete    | 2026-02-19 |
