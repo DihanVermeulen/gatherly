@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 ## Current Position
 
 Phase: 10 of 10 (Inline Assignment Reveal)
-Plan: 1 of 1 in current phase
-Status: Complete
-Last activity: 2026-02-19 - Verified 10-VERIFICATION.md (inline-assignment-reveal) — 5/5 must-haves passed
+Plan: 2 of 3 in current phase (gap-closure plans)
+Status: In progress
+Last activity: 2026-02-19 - Completed 10-02-PLAN.md (magic link reusability — SELECT instead of DELETE, 7-day expiry)
 
 Progress: [█████████████████████] 100% (21/21 plans)
 
@@ -114,6 +114,8 @@ Recent decisions affecting current work:
 - Gift routes and event read routes not protected by requireOrganizer - Participants should be able to view events and claim gifts per design intent (Outcome: Good - matches product spec)
 - my-assignments uses authenticateJWT only (no requireOrganizer) - participants need access, organizer middleware would block them (Outcome: Good - endpoint is participant-specific)
 - Five-state reveal machine: idle/loading/revealed/no-assignments/error - clear UX for each async flow stage (Outcome: Good - eliminates decipher code mechanic for participants)
+- SELECT instead of DELETE for magic link redemption - tokens persist in DB so participants can re-click the same link within 7-day expiry window (Outcome: Good - matches user mental model for emailed links)
+- 7-day magic link token expiry on all creation paths - consistent with JWT refresh window, 24h was too short for real-world email workflows (Outcome: Good - aligns expiry with refresh token lifecycle)
 
 ### Pending Todos
 
@@ -139,5 +141,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Phase 10 complete — verification passed, all 21 plans done
+Stopped at: Completed 10-02-PLAN.md (magic link reusability fix)
 Resume file: None
