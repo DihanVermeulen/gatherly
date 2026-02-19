@@ -12,9 +12,11 @@ import {
   Link2Off,
   Minus,
   Plus,
+  Send,
   Share2,
   X,
 } from "lucide-react";
+import { invitesApi, Invite } from "api/invites";
 
 export const EditEventPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -37,6 +39,9 @@ export const EditEventPage = () => {
     {},
   );
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [invites, setInvites] = useState<Invite[]>([]);
+  const [resendingInviteId, setResendingInviteId] = useState<number | null>(null);
+  const [resendSuccess, setResendSuccess] = useState<number | null>(null);
 
   useEffect(() => {
     const event = events.find((e) => e.id === id);
@@ -47,6 +52,17 @@ export const EditEventPage = () => {
       // Assuming giftCount isn't stored in the original model but we can derive it or keep it in local state
     }
   }, [id, events]);
+
+  useEffect(() => {
+    if (!id) return;
+    const eventIdNum = parseInt(id, 10);
+    if (eventIdNum > 2147483647) return; // localStorage-only event
+    invitesApi.getInvites(eventIdNum).then((res) => {
+      setInvites(res.invites);
+    }).catch(() => {
+      // Silent fail — invites are supplementary info on edit page
+    });
+  }, [id]);
 
   const saveEvent = () => {
     if (editingEvent) {
@@ -203,6 +219,28 @@ export const EditEventPage = () => {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
+  const handleResendMagicLink = async (inviteId: number) => {
+    if (!id) return;
+    const eventIdNum = parseInt(id, 10);
+    setResendingInviteId(inviteId);
+    try {
+      await invitesApi.resendMagicLink(eventIdNum, inviteId);
+      setResendSuccess(inviteId);
+      setTimeout(() => setResendSuccess(null), 3000);
+    } catch (err) {
+      console.error("Failed to resend magic link:", err);
+      alert("Failed to resend magic link. Please try again.");
+    } finally {
+      setResendingInviteId(null);
+    }
+  };
+
+  const getInviteForParticipant = (personName: string): Invite | undefined => {
+    return invites.find(
+      (inv) => inv.status === "accepted" && inv.participant_name === personName
+    );
+  };
+
   if (!editingEvent) {
     return (
       <div className="bg-background-light dark:bg-background-dark min-h-screen p-6 text-center">
@@ -244,20 +282,41 @@ export const EditEventPage = () => {
         <section className="mt-4">
           <h3 className="text-lg font-bold px-4 pb-2 pt-4">Participants</h3>
           <div className="flex gap-2 p-4 flex-wrap">
-            {editingEvent.people.map((person: string) => (
-              <div
-                key={person}
-                className="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary/20 dark:bg-primary/10 border border-primary/30 pl-3 pr-2"
-              >
-                <p className="text-sm font-semibold">{person}</p>
-                <span
-                  onClick={() => removePersonFromEvent(person)}
-                  className="text-[18px] cursor-pointer hover:text-red-500"
+            {editingEvent.people.map((person: string) => {
+              const invite = getInviteForParticipant(person);
+              return (
+                <div
+                  key={person}
+                  className="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary/20 dark:bg-primary/10 border border-primary/30 pl-3 pr-2"
                 >
-                  <X />
-                </span>
-              </div>
-            ))}
+                  <p className="text-sm font-semibold">{person}</p>
+                  {invite && (
+                    <button
+                      onClick={() => handleResendMagicLink(invite.id)}
+                      disabled={resendingInviteId === invite.id}
+                      className={`p-0.5 rounded transition-colors ${
+                        resendSuccess === invite.id
+                          ? "text-green-500"
+                          : "text-slate-400 hover:text-primary"
+                      }`}
+                      title={resendSuccess === invite.id ? "Link sent!" : "Resend magic link"}
+                    >
+                      {resendSuccess === invite.id ? (
+                        <Check size={14} />
+                      ) : (
+                        <Send size={14} />
+                      )}
+                    </button>
+                  )}
+                  <span
+                    onClick={() => removePersonFromEvent(person)}
+                    className="text-[18px] cursor-pointer hover:text-red-500"
+                  >
+                    <X />
+                  </span>
+                </div>
+              );
+            })}
             {editingEvent.people.length === 0 && (
               <p className="text-slate-400 italic text-sm px-2">
                 No participants yet
