@@ -82,7 +82,7 @@ router.post(
       .createHash("sha256")
       .update(magicToken)
       .digest("hex");
-    const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    const tokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
     // Store token hash in magic_link_tokens table
     await query(
@@ -303,7 +303,7 @@ router.post(
           .createHash("sha256")
           .update(magicToken)
           .digest("hex");
-        const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        const tokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
         await query(
           "INSERT INTO magic_link_tokens (invite_id, token_hash, expires_at) VALUES ($1, $2, $3)",
