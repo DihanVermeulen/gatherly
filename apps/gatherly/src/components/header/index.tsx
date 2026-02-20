@@ -1,7 +1,7 @@
 import React from "react";
 
 import { useNavigate, useLocation } from "react-router";
-import { LogOut, User as UserIcon } from "lucide-react";
+import { LogOut, Menu, User as UserIcon, X } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 
 const navItems = [
@@ -63,8 +63,8 @@ export const Header: React.FC<{
                 onClick={() => handleNavClick(item.route)}
                 className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                   isActive(item.route)
-                    ? "bg-primary text-black shadow-lg shadow-primary/20"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    ? "bg-primary-0 text-on-primary-0 shadow-lg shadow-primary/20"
+                    : "text-typography-0 dark:text-typography-dark hover:bg-slate-50 dark:hover:bg-slate-800"
                 }`}
               >
                 {item.label}
@@ -104,9 +104,7 @@ export const Header: React.FC<{
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="md:hidden size-10 flex items-center justify-center bg-slate-50 dark:bg-slate-800 rounded-full text-slate-600 dark:text-slate-400"
           >
-            <span className="material-symbols-outlined">
-              {isMobileMenuOpen ? "close" : "menu"}
-            </span>
+            <span className="">{isMobileMenuOpen ? <X /> : <Menu />}</span>
           </button>
         </div>
 

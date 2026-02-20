@@ -439,7 +439,7 @@ export function WishlistForm({
           <button
             type="submit"
             disabled={isSaving || uploading}
-            className="w-full h-12 rounded-xl bg-primary text-[#0d1b12] font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
+            className="w-full h-12 rounded-xl bg-primary-0 text-on-primary-0 font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
           >
             {isSaving ? "Saving..." : editItem ? "Save Changes" : "Add Item"}
           </button>

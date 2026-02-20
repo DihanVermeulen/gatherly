@@ -70,7 +70,7 @@ export const LoginPage: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full h-12 px-4 bg-white border border-neutral-border rounded-md text-neutral-dark text-sm placeholder-neutral-medium focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                className="w-full h-12 px-4 bg-white border border-neutral-border rounded-md text-neutral-dark text-sm placeholder-neutral-medium focus:outline-none focus:ring-2 focus:ring-primary-0/10 focus:border-primary transition-all"
                 placeholder="you@example.com"
               />
             </div>
@@ -88,7 +88,7 @@ export const LoginPage: React.FC = () => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full h-12 px-4 bg-white border border-neutral-border rounded-md text-neutral-dark text-sm placeholder-neutral-medium focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                className="w-full h-12 px-4 bg-white border border-neutral-border rounded-md text-neutral-dark text-sm placeholder-neutral-medium focus:outline-none focus:ring-2 focus:ring-primary-0/10 focus:border-primary transition-all"
                 placeholder="Enter your password"
               />
             </div>
@@ -96,7 +96,7 @@ export const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-12 bg-primary hover:bg-primary-hover active:bg-primary-active disabled:bg-neutral-border disabled:cursor-not-allowed text-white text-base font-semibold rounded-md transition-colors duration-200 shadow-level-1"
+              className="w-full h-12 bg-primary-0 hover:bg-primary-hover active:bg-primary-active disabled:bg-neutral-border disabled:cursor-not-allowed text-on-primary-0 text-base font-semibold rounded-md transition-colors duration-200 shadow-level-1"
             >
               {isSubmitting ? "Signing in..." : "Sign In"}
             </button>

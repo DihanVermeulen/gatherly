@@ -85,7 +85,7 @@ export const RegisterPage: React.FC = () => {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full h-12 px-4 bg-white border border-neutral-border rounded-md text-neutral-dark text-sm placeholder-neutral-medium focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                className="w-full h-12 px-4 bg-white border border-neutral-border rounded-md text-neutral-dark text-sm placeholder-neutral-medium focus:outline-none focus:ring-2 focus:ring-primary-0/10 focus:border-primary transition-all"
                 placeholder="Your full name"
               />
             </div>
@@ -103,7 +103,7 @@ export const RegisterPage: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full h-12 px-4 bg-white border border-neutral-border rounded-md text-neutral-dark text-sm placeholder-neutral-medium focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                className="w-full h-12 px-4 bg-white border border-neutral-border rounded-md text-neutral-dark text-sm placeholder-neutral-medium focus:outline-none focus:ring-2 focus:ring-primary-0/10 focus:border-primary transition-all"
                 placeholder="you@example.com"
               />
             </div>
@@ -121,7 +121,7 @@ export const RegisterPage: React.FC = () => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full h-12 px-4 bg-white border border-neutral-border rounded-md text-neutral-dark text-sm placeholder-neutral-medium focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                className="w-full h-12 px-4 bg-white border border-neutral-border rounded-md text-neutral-dark text-sm placeholder-neutral-medium focus:outline-none focus:ring-2 focus:ring-primary-0/10 focus:border-primary transition-all"
                 placeholder="At least 8 characters"
               />
             </div>
@@ -139,7 +139,7 @@ export const RegisterPage: React.FC = () => {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full h-12 px-4 bg-white border border-neutral-border rounded-md text-neutral-dark text-sm placeholder-neutral-medium focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                className="w-full h-12 px-4 bg-white border border-neutral-border rounded-md text-neutral-dark text-sm placeholder-neutral-medium focus:outline-none focus:ring-2 focus:ring-primary-0/10 focus:border-primary transition-all"
                 placeholder="Re-enter your password"
               />
             </div>

@@ -85,7 +85,7 @@ export const EventsPage = () => {
           <h2 className="text-2xl font-bold tracking-tight">My Events</h2>
           <button
             onClick={() => setIsCreateFormOpen(true)}
-            className="flex items-center justify-center h-10 px-4 rounded-full bg-primary text-background-dark gap-2 shadow-lg shadow-primary/20 transition-transform active:scale-95"
+            className="flex items-center justify-center h-10 px-4 rounded-xl bg-primary-0 text-on-primary-0 gap-2 shadow-lg shadow-primary/20 transition-transform active:scale-95"
           >
             <Plus />
             <span className="text-sm font-bold truncate">New Event</span>
@@ -139,9 +139,6 @@ export const EventsPage = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <div className="size-10 rounded-xl bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center text-orange-600 dark:text-orange-400">
-                      <PartyPopper />
-                    </div>
                     {/* 3-dot menu */}
                     <div
                       className="relative"
@@ -248,7 +245,7 @@ export const EventsPage = () => {
                       e.stopPropagation();
                       navigate(`/events/${event.id}`);
                     }}
-                    className="flex-1 py-2.5 bg-primary text-background-dark rounded-xl text-sm font-bold shadow-sm active:scale-95 transition-transform"
+                    className="flex-1 py-2.5 bg-background-500 text-on-primary-0 rounded-xl text-sm font-bold shadow-sm active:scale-95 transition-transform"
                   >
                     View Event
                   </button>

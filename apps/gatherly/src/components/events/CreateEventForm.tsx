@@ -59,7 +59,7 @@ export function CreateEventForm({
           >
             <X className="w-6 h-6 text-neutral-dark dark:text-white" />
           </button>
-          <h2 className="text-lg font-bold text-neutral-dark dark:text-white flex-1 text-center pr-12">
+          <h2 className="text-lg font-bold flex-1 text-center pr-12">
             Create New Event
           </h2>
         </div>
@@ -120,7 +120,7 @@ export function CreateEventForm({
             <button
               type="submit"
               disabled={!name.trim() || isSubmitting}
-              className="w-full h-14 rounded-xl bg-primary text-neutral-dark font-bold text-lg shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-14 rounded-xl bg-primary-0 text-on-primary-0 font-bold text-lg shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "Creating..." : "Create Event"}
             </button>

@@ -100,9 +100,7 @@ export const JoinPage: React.FC = () => {
             className="animate-spin mx-auto mb-4 text-emerald-500"
             size={48}
           />
-          <h2 className="text-xl font-semibold text-white mb-2">
-            Validating Invite
-          </h2>
+          <h2 className="text-xl font-semibold mb-2">Validating Invite</h2>
           <p className="">Please wait...</p>
         </div>
       </div>
@@ -115,9 +113,7 @@ export const JoinPage: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="max-w-md w-full rounded-xl p-6 text-center">
           <AlertCircle className="mx-auto mb-4 text-red-500" size={48} />
-          <h2 className="text-xl font-semibold text-white mb-2">
-            Invalid Invite
-          </h2>
+          <h2 className="text-xl font-semibold mb-2">Invalid Invite</h2>
           <p className=" mb-6">
             {error || "This invite is invalid or has expired."}
           </p>
@@ -142,7 +138,7 @@ export const JoinPage: React.FC = () => {
           <p className=" mb-6">Please try again later. Rate limit exceeded.</p>
           <button
             onClick={() => navigate("/home")}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-lg transition-colors"
+            className="bg-secondary-0 text-on-secondary-0 px-6 py-2 rounded-lg transition-colors"
           >
             Go to Home
           </button>
@@ -172,13 +168,13 @@ export const JoinPage: React.FC = () => {
           <div className="space-y-3">
             <button
               onClick={() => navigate("/events")}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-lg transition-colors font-medium"
+              className="w-full bg-secondary-0 text-on-secondary-0 px-6 py-3 rounded-lg transition-colors font-medium"
             >
               View My Events
             </button>
             <button
               onClick={() => navigate("/home")}
-              className="w-full bg-zinc-700 hover:bg-zinc-600 text-white px-6 py-3 rounded-lg transition-colors"
+              className="w-full bg-secondary-0 text-on-secondary-0 px-6 py-3 rounded-lg transition-colors"
             >
               Go to Home
             </button>
@@ -195,7 +191,7 @@ export const JoinPage: React.FC = () => {
         <h2 className="text-2xl font-bold mb-2 text-center">Join Event</h2>
         <p className=" mb-6 text-center">
           You've been invited to:{" "}
-          <span className="text-emerald-400 font-semibold">{eventName}</span>
+          <span className="text-primary-0 font-semibold">{eventName}</span>
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -249,7 +245,7 @@ export const JoinPage: React.FC = () => {
           <button
             type="submit"
             disabled={isSubmitting || participantName.trim().length < 2}
-            className="w-full bg-primary hover:bg-primary/80 disabled:bg-zinc-600 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg transition-colors font-medium flex items-center justify-center gap-2"
+            className="w-full bg-primary-0 hover:bg-primary/80 disabled:bg-zinc-600 disabled:cursor-not-allowed text-on-primary-0 px-6 py-3 rounded-lg transition-colors font-medium flex items-center justify-center gap-2"
           >
             {isSubmitting ? (
               <>

@@ -390,7 +390,7 @@ export function WishlistPage() {
         <div className="px-4 py-4">
           <button
             onClick={handleAdd}
-            className="flex w-full cursor-pointer items-center justify-center rounded-xl h-12 px-4 bg-primary text-[#0d1b12] gap-2 text-sm font-bold shadow-lg shadow-primary/20"
+            className="flex w-full cursor-pointer items-center justify-center rounded-xl h-12 px-4 bg-primary-0 text-on-primary-0 gap-2 text-sm font-bold shadow-lg shadow-primary/20"
           >
             <Plus className="w-5 h-5" />
             <span>
