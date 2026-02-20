@@ -79,11 +79,13 @@ Plans:
 3. System prevents duplicate claims even under concurrent access (race condition handled)
 4. Claimed status is visible only to the claimer, not to the wishlist owner
 5. Optimistic updates provide instant feedback with rollback on conflict
-   **Plans**: TBD
+
+**Plans**: 2 plans
 
 Plans:
 
-- [ ] 03-01: TBD during plan-phase
+- [ ] 03-01-PLAN.md -- Backend claim/unclaim endpoints with atomic INSERT ON CONFLICT, privacy-aware GET response
+- [ ] 03-02-PLAN.md -- Frontend mutation hooks, three-state claim button, wishlist page wiring
 
 ### Phase 4: Invite System
 
@@ -233,7 +235,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | --------------------------------------------- | -------------- | ----------- | ---------- |
 | 1. Foundation & Privacy                       | 2/2            | Complete    | 2026-02-06 |
 | 2. Wishlist Core                              | 0/5            | Not started | -          |
-| 3. Claiming System                            | 0/TBD          | Not started | -          |
+| 3. Claiming System                            | 0/2            | Not started | -          |
 | 4. Invite System                              | 0/3            | Not started | -          |
 | 5. Mobile UI Redesign                         | 0/TBD          | Not started | -          |
 | 6. Wishlist Priority & Polish                 | 0/TBD          | Not started | -          |
