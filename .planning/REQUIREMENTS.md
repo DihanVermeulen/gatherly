@@ -19,10 +19,10 @@ Requirements for v2.0 milestone. Each maps to roadmap phases.
 
 ### Gift Claiming
 
-- [ ] **CLAIM-01**: Participant can anonymously claim a gift from another participant's wishlist
-- [ ] **CLAIM-02**: Participant can unclaim a gift if plans change
-- [ ] **CLAIM-03**: System prevents duplicate claims with race condition protection
-- [ ] **CLAIM-04**: Claimed status is visible only to the claimer, not the wishlist owner
+- [x] **CLAIM-01**: Participant can anonymously claim a gift from another participant's wishlist
+- [x] **CLAIM-02**: Participant can unclaim a gift if plans change
+- [x] **CLAIM-03**: System prevents duplicate claims with race condition protection
+- [x] **CLAIM-04**: Claimed status is visible only to the claimer, not the wishlist owner
 
 ### Invite System
 
@@ -96,10 +96,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | WISH-05 | Phase 2 | Pending |
 | WISH-06 | Phase 6 | Pending |
 | WISH-07 | Phase 2 | Pending |
-| CLAIM-01 | Phase 3 | Pending |
-| CLAIM-02 | Phase 3 | Pending |
-| CLAIM-03 | Phase 3 | Pending |
-| CLAIM-04 | Phase 3 | Pending |
+| CLAIM-01 | Phase 3 | Complete |
+| CLAIM-02 | Phase 3 | Complete |
+| CLAIM-03 | Phase 3 | Complete |
+| CLAIM-04 | Phase 3 | Complete |
 | INV-01 | Phase 4 | Pending |
 | INV-02 | Phase 4 | Pending |
 | INV-03 | Phase 4 | Pending |

@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation & Privacy** - Database schema, authorization, Tailwind upgrade
 - [x] **Phase 2: Wishlist Core** - CRUD operations with images and links
-- [ ] **Phase 3: Claiming System** - Anonymous claiming with race condition protection
+- [x] **Phase 3: Claiming System** - Anonymous claiming with race condition protection
 - [x] **Phase 4: Invite System** - Shareable links and QR codes
 - [ ] **Phase 5: Mobile UI Redesign** - iOS-style interface with Konsta UI
 - [ ] **Phase 6: Wishlist Priority & Polish** - Drag-drop ordering and UX refinements
@@ -235,7 +235,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | --------------------------------------------- | -------------- | ----------- | ---------- |
 | 1. Foundation & Privacy                       | 2/2            | Complete    | 2026-02-06 |
 | 2. Wishlist Core                              | 0/5            | Not started | -          |
-| 3. Claiming System                            | 0/2            | Not started | -          |
+| 3. Claiming System                            | 2/2            | Complete    | 2026-02-20 |
 | 4. Invite System                              | 0/3            | Not started | -          |
 | 5. Mobile UI Redesign                         | 0/TBD          | Not started | -          |
 | 6. Wishlist Priority & Polish                 | 0/TBD          | Not started | -          |
