@@ -8,6 +8,7 @@ import {
   WishlistRegistryItem,
 } from "components/wishlist";
 import { wishlistsApi } from "api/wishlists";
+import { useClaimWishlistItem, useUnclaimWishlistItem } from "hooks/useWishlistMutations";
 import type { WishlistItem } from "api/events";
 import type { WishlistFormData } from "components/wishlist/WishlistForm";
 
@@ -18,6 +19,9 @@ export function WishlistPage() {
   }>();
   const navigate = useNavigate();
   const { state, dispatch, useApi } = useEvents();
+
+  const claimMutation = useClaimWishlistItem();
+  const unclaimMutation = useUnclaimWishlistItem();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<WishlistItem | null>(null);
@@ -443,8 +447,9 @@ export function WishlistPage() {
                       <WishlistRegistryItem
                         key={item.id}
                         item={item}
-                        isClaimed={item.isClaimed}
-                        onClaim={undefined} // Phase 3 will implement claiming
+                        onClaim={() => claimMutation.mutate({ eventId: eventId!, wishlistId: item.id })}
+                        onUnclaim={() => unclaimMutation.mutate({ eventId: eventId!, wishlistId: item.id })}
+                        isPending={claimMutation.isPending || unclaimMutation.isPending}
                       />
                     ))}
                   </div>
