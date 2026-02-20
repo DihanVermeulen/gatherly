@@ -137,11 +137,14 @@ Plans:
 2. Priority order persists across sessions
 3. Empty states and error handling provide clear guidance
 4. Loading states show progress during asynchronous operations
-   **Plans**: TBD
+
+**Plans**: 3 plans
 
 Plans:
 
-- [ ] 06-01: TBD during plan-phase
+- [ ] 06-01-PLAN.md -- Backend sort_order column migration and PUT reorder endpoint
+- [ ] 06-02-PLAN.md -- Frontend data layer (WishlistItem type, API function, reorder mutation hook)
+- [ ] 06-03-PLAN.md -- Vertical DnD list UI with @dnd-kit, empty states, and loading polish
 
 ### Phase 7: JWT Authentication with Secure Routes Following the Zero Trust Principle
 
@@ -238,7 +241,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 3. Claiming System                            | 2/2            | Complete    | 2026-02-20 |
 | 4. Invite System                              | 0/3            | Not started | -          |
 | 5. Mobile UI Redesign                         | 0/TBD          | Not started | -          |
-| 6. Wishlist Priority & Polish                 | 0/TBD          | Not started | -          |
+| 6. Wishlist Priority & Polish                 | 0/3            | Not started | -          |
 | 7. JWT Authentication                         | 4/4            | Complete    | 2026-02-08 |
 | 8. Offline-First Sync                         | 3/3            | Complete    | 2026-02-13 |
 | 9. Magic Link Access for Invited Members      | 0/TBD          | Not started | -          |
