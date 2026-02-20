@@ -25,18 +25,18 @@ router.get(
       w.product_url,
       w.priority,
       wc.claimed_by,
-      cp.name as claimed_by_name,
       w.created_at,
       w.updated_at
     FROM wishlists w
     INNER JOIN participants p ON w.participant_id = p.id
     LEFT JOIN wishlist_claims wc ON w.id = wc.wishlist_id
-    LEFT JOIN participants cp ON wc.claimed_by = cp.id
     WHERE w.event_id = $1
     ORDER BY w.created_at DESC
   `,
       [eventId],
     );
+
+    const currentParticipantId = req.user?.participantId ?? null;
 
     const wishlists = result.rows.map((row) => ({
       id: row.id,
@@ -48,8 +48,10 @@ router.get(
       imageUrl: row.image_url,
       productUrl: row.product_url,
       priority: row.priority,
-      claimedBy: row.claimed_by,
-      claimedByName: row.claimed_by_name,
+      isClaimed: row.claimed_by !== null,
+      claimedByMe:
+        currentParticipantId != null &&
+        currentParticipantId === row.claimed_by,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     }));
@@ -111,11 +113,11 @@ router.post(
       participantName: participantResult.rows[0]?.name,
       itemName: wishlist.item_name,
       description: wishlist.description,
-      imageUrl: wishlist.imageUrl,
+      imageUrl: wishlist.image_url,
       productUrl: wishlist.product_url,
       priority: wishlist.priority,
-      claimedBy: null,
-      claimedByName: null,
+      isClaimed: false,
+      claimedByMe: false,
       createdAt: wishlist.created_at,
       updatedAt: wishlist.updated_at,
     });
@@ -174,12 +176,12 @@ router.put(
     );
 
     const claimResult = await query(
-      `SELECT wc.claimed_by, p.name as claimed_by_name
-     FROM wishlist_claims wc
-     LEFT JOIN participants p ON wc.claimed_by = p.id
-     WHERE wc.wishlist_id = $1`,
+      `SELECT claimed_by FROM wishlist_claims WHERE wishlist_id = $1`,
       [id],
     );
+
+    const claimedById = claimResult.rows[0]?.claimed_by ?? null;
+    const currentParticipantId = req.user?.participantId ?? null;
 
     res.json({
       id: wishlist.id,
@@ -188,11 +190,12 @@ router.put(
       participantName: participantResult.rows[0]?.name,
       itemName: wishlist.item_name,
       description: wishlist.description,
-      imageUrl: wishlist.imageUrl,
+      imageUrl: wishlist.image_url,
       productUrl: wishlist.product_url,
       priority: wishlist.priority,
-      claimedBy: claimResult.rows[0]?.claimed_by || null,
-      claimedByName: claimResult.rows[0]?.claimed_by_name || null,
+      isClaimed: claimedById !== null,
+      claimedByMe:
+        currentParticipantId != null && currentParticipantId === claimedById,
       createdAt: wishlist.created_at,
       updatedAt: wishlist.updated_at,
     });
@@ -229,6 +232,80 @@ router.delete(
     ]);
 
     res.json({ success: true });
+  }),
+);
+
+// POST /api/events/:eventId/wishlists/:id/claim - Claim a wishlist item
+router.post(
+  "/:eventId/wishlists/:id/claim",
+  authenticateJWT,
+  asyncHandler(async (req: Request, res: Response) => {
+    const { eventId, id } = req.params;
+
+    // Guard: organizer sessions have no participantId
+    if (!req.user?.participantId) {
+      return res.status(403).json({ error: "Participants only" });
+    }
+
+    const currentParticipantId = req.user.participantId;
+
+    // Check item exists and get owner
+    const itemCheck = await query(
+      "SELECT participant_id FROM wishlists WHERE id = $1 AND event_id = $2",
+      [id, eventId],
+    );
+
+    if (itemCheck.rowCount === 0) {
+      return res.status(404).json({ error: "Wishlist item not found" });
+    }
+
+    // Self-claim guard
+    if (itemCheck.rows[0].participant_id === currentParticipantId) {
+      return res.status(403).json({ error: "Cannot claim your own item" });
+    }
+
+    // Atomic insert — ON CONFLICT DO NOTHING prevents race conditions
+    const result = await query(
+      `INSERT INTO wishlist_claims (wishlist_id, claimed_by)
+       VALUES ($1, $2)
+       ON CONFLICT (wishlist_id) DO NOTHING
+       RETURNING id`,
+      [id, currentParticipantId],
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(409).json({ error: "Item already claimed" });
+    }
+
+    return res.status(201).json({ success: true });
+  }),
+);
+
+// DELETE /api/events/:eventId/wishlists/:id/claim - Unclaim a wishlist item
+router.delete(
+  "/:eventId/wishlists/:id/claim",
+  authenticateJWT,
+  asyncHandler(async (req: Request, res: Response) => {
+    const { eventId: _eventId, id } = req.params;
+
+    // Guard: organizer sessions have no participantId
+    if (!req.user?.participantId) {
+      return res.status(403).json({ error: "Participants only" });
+    }
+
+    const currentParticipantId = req.user.participantId;
+
+    // Delete only own claim
+    const result = await query(
+      "DELETE FROM wishlist_claims WHERE wishlist_id = $1 AND claimed_by = $2",
+      [id, currentParticipantId],
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "No claim found" });
+    }
+
+    return res.status(200).json({ success: true });
   }),
 );
 
