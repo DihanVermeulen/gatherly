@@ -135,6 +135,8 @@ export function WishlistPage() {
             imageUrl: itemData.imageUrl,
             productUrl: itemData.productUrl,
             priority: itemData.priority,
+            isClaimed: false,
+            claimedByMe: false,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           };
@@ -160,7 +162,7 @@ export function WishlistPage() {
     if (!eventId || !participantId) return;
 
     // Check if item is claimed
-    if (item.claimedBy) {
+    if (item.isClaimed) {
       const confirmed = window.confirm(
         "Someone has claimed this item. Delete anyway?",
       );
@@ -441,7 +443,7 @@ export function WishlistPage() {
                       <WishlistRegistryItem
                         key={item.id}
                         item={item}
-                        isClaimed={!!item.claimedBy}
+                        isClaimed={item.isClaimed}
                         onClaim={undefined} // Phase 3 will implement claiming
                       />
                     ))}

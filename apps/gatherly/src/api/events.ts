@@ -10,8 +10,8 @@ export type WishlistItem = {
   imageUrl?: string;
   productUrl?: string;
   priority: "low" | "medium" | "high";
-  claimedBy?: number;
-  claimedByName?: string;
+  isClaimed: boolean;
+  claimedByMe: boolean;
   createdAt?: string;
   updatedAt?: string;
 };
