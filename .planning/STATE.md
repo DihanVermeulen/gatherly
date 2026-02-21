@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-06)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** Phase 3 - Claiming System (complete)
+**Current focus:** Phase 6 - Wishlist Priority & Polish (in progress)
 
 ## Current Position
 
-Phase: 03 of 10 (Claiming System)
-Plan: 2 of 2 in current phase (complete)
-Status: Phase complete — verified 5/5 must-haves
-Last activity: 2026-02-20 - Plans 03-01 + 03-02 executed; verified 5/5 must-haves passed
+Phase: 06 of 10 (Wishlist Priority & Polish)
+Plan: 2 of N in current phase (in progress)
+Status: In progress — 06-02 complete (data layer), proceeding to 06-03 (DnD UI)
+Last activity: 2026-02-21 - Completed 06-02-PLAN.md (sortOrder type, reorder API, useReorderWishlistItems hook)
 
-Progress: [████████░░░░░░░░░░░░░] ~40% (25 plans executed across completed phases)
+Progress: [████████░░░░░░░░░░░░░] ~40% (16 plans executed across completed phases)
 
 ## Performance Metrics
 
@@ -30,12 +30,13 @@ Progress: [████████░░░░░░░░░░░░░] ~40%
 | 01-foundation-privacy | 2 | 7.9m | 3.95m |
 | 02-wishlist-core | 4 | 9.64m | 2.41m |
 | 04-invite-system | 2 | 10.58m | 5.29m |
+| 06-wishlist-priority-polish | 1 | 1.12m | 1.12m |
 | 07-jwt-authentication | 4 | 16.28m | 4.07m |
 | 08-sync-events | 3 | 19.12m | 6.37m |
 
 **Recent Trend:**
-- Last 5 plans: 04-02 (9.08m), 08-01 (4.12m), 08-02 (3m), 08-03 (12m)
-- Trend: Phase 8 complete; 08-03 longer due to four bug fixes found during human verification
+- Last 5 plans: 08-01 (4.12m), 08-02 (3m), 08-03 (12m), 06-02 (1.12m)
+- Trend: Phase 6 started; 06-02 fast (pure type + API + hook additions, no UI)
 
 *Updated after each plan completion*
 
@@ -143,6 +144,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-20
-Stopped at: Completed 03-02-PLAN.md (frontend claiming UI + optimistic mutations — Phase 3 complete)
+Last session: 2026-02-21
+Stopped at: Completed 06-02-PLAN.md (sortOrder type, reorder API, useReorderWishlistItems hook)
 Resume file: None
