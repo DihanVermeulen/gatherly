@@ -1,6 +1,23 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router";
-import { ArrowLeft, Plus, Info } from "lucide-react";
+import { ArrowLeft, Plus, Info, Gift, GripVertical } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import type { DragEndEvent } from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  sortableKeyboardCoordinates,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useEvents } from "contexts/EventsContext";
 import {
   WishlistForm,
@@ -8,9 +25,68 @@ import {
   WishlistRegistryItem,
 } from "components/wishlist";
 import { wishlistsApi } from "api/wishlists";
-import { useClaimWishlistItem, useUnclaimWishlistItem } from "hooks/useWishlistMutations";
+import {
+  useClaimWishlistItem,
+  useUnclaimWishlistItem,
+  useReorderWishlistItems,
+} from "hooks/useWishlistMutations";
 import type { WishlistItem } from "api/events";
 import type { WishlistFormData } from "components/wishlist/WishlistForm";
+
+// SortableWishlistCard wraps WishlistCard with DnD drag handle and inline delete
+function SortableWishlistCard({
+  item,
+  onEdit,
+  onDelete,
+}: {
+  item: WishlistItem;
+  onEdit: (item: WishlistItem) => void;
+  onDelete: (item: WishlistItem) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : ("auto" as const),
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="flex items-center gap-2">
+      {/* Drag handle - touch-action: none ONLY on handle, not card */}
+      <button
+        {...attributes}
+        {...listeners}
+        className="shrink-0 p-2 cursor-grab active:cursor-grabbing touch-none text-gray-400"
+        aria-label="Drag to reorder"
+      >
+        <GripVertical className="w-5 h-5" />
+      </button>
+
+      {/* Card content - full width, tappable for edit */}
+      <div className="flex-1 min-w-0">
+        <WishlistCard item={item} onEdit={onEdit} />
+      </div>
+
+      {/* Inline delete button - replaces swipe-to-delete */}
+      <button
+        onClick={() => onDelete(item)}
+        className="shrink-0 p-2 text-red-400 hover:text-red-600"
+        aria-label="Delete item"
+      >
+        <span className="text-xs font-semibold">Delete</span>
+      </button>
+    </div>
+  );
+}
 
 export function WishlistPage() {
   const { eventId, participantId } = useParams<{
@@ -22,14 +98,23 @@ export function WishlistPage() {
 
   const claimMutation = useClaimWishlistItem();
   const unclaimMutation = useUnclaimWishlistItem();
+  const reorderMutation = useReorderWishlistItems();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<WishlistItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [swipingItemId, setSwipingItemId] = useState<number | null>(null);
-  const [swipeOffset, setSwipeOffset] = useState(0);
-  const touchStartX = useRef(0);
+
+  // Local state for immediate DnD feedback
+  const [orderedIds, setOrderedIds] = useState<number[]>([]);
+
+  // DnD sensors — distance:8 prevents tap-drag conflicts
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
 
   // Find the current event
   const event = state.events.find((e) => e.id === eventId);
@@ -63,6 +148,50 @@ export function WishlistPage() {
   const registryItems = wishlists.filter(
     (w) => w.participantId !== parseInt(participantId || "0"),
   );
+
+  // Sync orderedIds when personalItems change from server
+  // Use a stable key derived from the set of IDs to avoid infinite loops
+  const personalIdsKey = personalItems.map((i) => i.id).join(",");
+  useEffect(() => {
+    const newIds = personalItems.map((i) => i.id);
+    setOrderedIds((prev) => {
+      // Only reset if the set of IDs actually changed (items added/removed)
+      if (
+        prev.length !== newIds.length ||
+        !prev.every((id) => newIds.includes(id))
+      ) {
+        return newIds;
+      }
+      return prev;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [personalIdsKey]);
+
+  // Derive display items from local orderedIds state (for immediate DnD feedback)
+  const personalItemMap = new Map(personalItems.map((i) => [i.id, i]));
+  const displayPersonalItems = orderedIds
+    .map((id) => personalItemMap.get(id))
+    .filter(Boolean) as WishlistItem[];
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    setOrderedIds((prev) => {
+      const oldIndex = prev.indexOf(active.id as number);
+      const newIndex = prev.indexOf(over.id as number);
+      const newOrder = arrayMove(prev, oldIndex, newIndex);
+
+      // Fire reorder mutation with new order
+      reorderMutation.mutate({
+        eventId: eventId!,
+        participantId: parseInt(participantId || "0"),
+        orderedIds: newOrder,
+      });
+
+      return newOrder;
+    });
+  };
 
   // Group registry items by participant
   const groupedRegistry = registryItems.reduce(
@@ -187,37 +316,6 @@ export function WishlistPage() {
     }
   };
 
-  // Swipe-to-delete touch handlers
-  const handleTouchStart = (e: React.TouchEvent, itemId: number) => {
-    touchStartX.current = e.touches[0].clientX;
-    setSwipingItemId(itemId);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (swipingItemId === null) return;
-
-    const currentX = e.touches[0].clientX;
-    const diff = touchStartX.current - currentX;
-
-    // Only allow left swipe (positive diff)
-    if (diff > 0) {
-      setSwipeOffset(Math.min(diff, 80));
-    }
-  };
-
-  const handleTouchEnd = () => {
-    if (swipeOffset < 80) {
-      // Reset if not swiped far enough
-      setSwipeOffset(0);
-      setSwipingItemId(null);
-    }
-  };
-
-  const resetSwipe = () => {
-    setSwipeOffset(0);
-    setSwipingItemId(null);
-  };
-
   // Handle edit button
   const handleEdit = (item: WishlistItem) => {
     setEditingItem(item);
@@ -287,18 +385,15 @@ export function WishlistPage() {
           </div>
         </div>
 
-        {/* Loading skeleton */}
+        {/* Loading skeleton - vertical layout matching new list structure */}
         <main className="flex flex-col pb-24 p-4">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-1/2 mb-4"></div>
-            <div className="flex gap-4 overflow-x-hidden mb-6">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="w-44 h-64 bg-gray-200 dark:bg-gray-800 rounded-xl shrink-0"
-                ></div>
-              ))}
-            </div>
+          <div className="animate-pulse space-y-3 px-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center gap-2">
+                <div className="w-5 h-8 bg-gray-200 dark:bg-gray-800 rounded"></div>
+                <div className="flex-1 h-24 bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
+              </div>
+            ))}
           </div>
         </main>
       </div>
@@ -341,62 +436,54 @@ export function WishlistPage() {
           </span>
         </div>
 
-        {/* Carousel: Personal Wishlist Items */}
-        <div className="flex overflow-x-auto hide-scrollbar gap-4 px-4 py-2">
-          {personalItems.map((item) => (
-            <div
-              key={item.id}
-              className="relative"
-              onTouchStart={(e) => handleTouchStart(e, item.id)}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
+        {/* Vertical DnD Personal Wishlist */}
+        {displayPersonalItems.length === 0 ? (
+          /* Empty state */
+          <div className="flex flex-col items-center justify-center py-12 px-4">
+            <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+              <Gift className="w-8 h-8 text-primary" />
+            </div>
+            <h3 className="text-lg font-bold mb-1">No items yet</h3>
+            <p className="text-sm text-gray-500 text-center mb-4">
+              Add gifts you'd love to receive
+            </p>
+            <button
+              onClick={handleAdd}
+              className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-xl text-sm font-bold"
             >
-              {/* Swipeable card wrapper */}
-              <div
-                className="transition-transform"
-                style={{
-                  transform:
-                    swipingItemId === item.id
-                      ? `translateX(-${swipeOffset}px)`
-                      : "translateX(0)",
-                }}
+              <Plus className="w-4 h-4" />
+              Add Your First Gift
+            </button>
+          </div>
+        ) : (
+          <div className="px-4 py-2 space-y-2">
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={orderedIds}
+                strategy={verticalListSortingStrategy}
               >
-                <WishlistCard item={item} onEdit={handleEdit} />
-              </div>
-
-              {/* Delete button revealed by swipe */}
-              {swipingItemId === item.id && swipeOffset > 0 && (
-                <button
-                  onClick={() => {
-                    handleDelete(item);
-                    resetSwipe();
-                  }}
-                  className="absolute right-0 top-0 h-full w-20 bg-red-500 text-white font-bold rounded-r-xl flex items-center justify-center"
-                  style={{ transform: `translateX(${80 - swipeOffset}px)` }}
-                >
-                  Delete
-                </button>
-              )}
-            </div>
-          ))}
-
-          {/* Add More Placeholder */}
-          <button
-            onClick={handleAdd}
-            className="flex flex-col w-44 shrink-0 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-800 items-center justify-center p-4"
-          >
-            <div className="size-10 rounded-full bg-primary/20 flex items-center justify-center mb-2">
-              <Plus className="text-primary" />
-            </div>
-            <p className="text-xs font-bold text-center">Add More</p>
-          </button>
-        </div>
+                {displayPersonalItems.map((item) => (
+                  <SortableWishlistCard
+                    key={item.id}
+                    item={item}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
+          </div>
+        )}
 
         {/* Action: Add Gift Button */}
         <div className="px-4 py-4">
           <button
             onClick={handleAdd}
-            className="flex w-full cursor-pointer items-center justify-center rounded-xl h-12 px-4 bg-primary-0 text-on-primary-0 gap-2 text-sm font-bold shadow-lg shadow-primary/20"
+            className="flex w-full cursor-pointer items-center justify-center rounded-xl h-12 px-4 bg-primary-500 text-on-primary-0 gap-2 text-sm font-bold shadow-lg shadow-primary/20"
           >
             <Plus className="w-5 h-5" />
             <span>
@@ -447,9 +534,21 @@ export function WishlistPage() {
                       <WishlistRegistryItem
                         key={item.id}
                         item={item}
-                        onClaim={() => claimMutation.mutate({ eventId: eventId!, wishlistId: item.id })}
-                        onUnclaim={() => unclaimMutation.mutate({ eventId: eventId!, wishlistId: item.id })}
-                        isPending={claimMutation.isPending || unclaimMutation.isPending}
+                        onClaim={() =>
+                          claimMutation.mutate({
+                            eventId: eventId!,
+                            wishlistId: item.id,
+                          })
+                        }
+                        onUnclaim={() =>
+                          unclaimMutation.mutate({
+                            eventId: eventId!,
+                            wishlistId: item.id,
+                          })
+                        }
+                        isPending={
+                          claimMutation.isPending || unclaimMutation.isPending
+                        }
                       />
                     ))}
                   </div>
