@@ -70,6 +70,7 @@ CREATE TABLE IF NOT EXISTS wishlists (
     image_url TEXT,
     product_url TEXT,
     priority VARCHAR(50) DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high')),
+    sort_order INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -141,6 +142,7 @@ CREATE INDEX IF NOT EXISTS idx_gifts_event_id ON gifts(event_id);
 CREATE INDEX IF NOT EXISTS idx_gift_claims_gift_id ON gift_claims(gift_id);
 CREATE INDEX IF NOT EXISTS idx_wishlists_event_id ON wishlists(event_id);
 CREATE INDEX IF NOT EXISTS idx_wishlists_participant_id ON wishlists(participant_id);
+CREATE INDEX IF NOT EXISTS idx_wishlists_sort_order ON wishlists(event_id, participant_id, sort_order);
 CREATE INDEX IF NOT EXISTS idx_wishlist_claims_wishlist_id ON wishlist_claims(wishlist_id);
 CREATE INDEX IF NOT EXISTS idx_wishlist_claims_claimed_by ON wishlist_claims(claimed_by);
 CREATE INDEX IF NOT EXISTS idx_invites_event_id ON invites(event_id);
