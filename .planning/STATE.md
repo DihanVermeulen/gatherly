@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 ## Current Position
 
 Phase: 06 of 10 (Wishlist Priority & Polish)
-Plan: 2 of N in current phase (in progress)
-Status: In progress — 06-02 complete (data layer), proceeding to 06-03 (DnD UI)
-Last activity: 2026-02-21 - Completed 06-02-PLAN.md (sortOrder type, reorder API, useReorderWishlistItems hook)
+Plan: 1 of N in current phase (complete)
+Status: In progress — 06-01 complete (DB migration + reorder endpoint), proceeding to 06-02
+Last activity: 2026-02-21 - Completed 06-01-PLAN.md (sort_order column, backfill, PUT reorder endpoint)
 
 Progress: [████████░░░░░░░░░░░░░] ~40% (16 plans executed across completed phases)
 
@@ -30,13 +30,13 @@ Progress: [████████░░░░░░░░░░░░░] ~40%
 | 01-foundation-privacy | 2 | 7.9m | 3.95m |
 | 02-wishlist-core | 4 | 9.64m | 2.41m |
 | 04-invite-system | 2 | 10.58m | 5.29m |
-| 06-wishlist-priority-polish | 1 | 1.12m | 1.12m |
+| 06-wishlist-priority-polish | 1 | 5m | 5m |
 | 07-jwt-authentication | 4 | 16.28m | 4.07m |
 | 08-sync-events | 3 | 19.12m | 6.37m |
 
 **Recent Trend:**
-- Last 5 plans: 08-01 (4.12m), 08-02 (3m), 08-03 (12m), 06-02 (1.12m)
-- Trend: Phase 6 started; 06-02 fast (pure type + API + hook additions, no UI)
+- Last 5 plans: 08-01 (4.12m), 08-02 (3m), 08-03 (12m), 06-01 (5m)
+- Trend: Phase 6 started; 06-01 covered DB migration + API endpoint
 
 *Updated after each plan completion*
 
@@ -120,6 +120,9 @@ Recent decisions affecting current work:
 - Delete-before-insert token rotation for resend: DELETE FROM magic_link_tokens WHERE invite_id before INSERT new token — ensures no stale tokens remain after resend (Outcome: Good - clean atomic revocation)
 - Silent fail on invite load in edit.tsx: .catch(() => {}) so organizer edit page works even when invite API unavailable or user unauthenticated (Outcome: Good - supplementary data cannot break core functionality)
 - localStorage guard in edit.tsx invite useEffect: parseInt(id) > 2147483647 skips API call for synthetic localStorage IDs (Outcome: Good - consistent with established pattern)
+- sort_order INTEGER DEFAULT 0 in wishlists table with composite index (event_id, participant_id, sort_order) - covers primary ordering query pattern (Outcome: Good - efficient query plan for participant wishlist fetch)
+- Reorder route placed before /:id route in Express - prevents literal "reorder" string matching as :id param (Outcome: Good - correct routing without Express ambiguity)
+- Transaction for bulk reorder updates - atomic sort_order assignment prevents partial ordering state (Outcome: Good - data integrity for drag-and-drop operations)
 
 ### Pending Todos
 
@@ -145,5 +148,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-21
-Stopped at: Completed 06-02-PLAN.md (sortOrder type, reorder API, useReorderWishlistItems hook)
+Stopped at: Completed 06-01-PLAN.md (sort_order column migration, backfill, PUT reorder endpoint with transaction)
 Resume file: None
