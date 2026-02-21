@@ -116,3 +116,72 @@ export function useUnclaimWishlistItem() {
     },
   });
 }
+
+type ReorderVariables = {
+  eventId: string;
+  participantId: number;
+  orderedIds: number[];
+};
+type ReorderContext = { previous: Event[] | undefined };
+
+/**
+ * Hook for reordering wishlist items with optimistic updates.
+ *
+ * Optimistically reorders items in the cache immediately based on orderedIds,
+ * then confirms with the server. Rolls back to previous state on error.
+ */
+export function useReorderWishlistItems() {
+  const queryClient = useQueryClient();
+
+  return useMutation<{ success: boolean }, Error, ReorderVariables, ReorderContext>({
+    mutationKey: ["wishlist", "reorder"],
+    mutationFn: ({ eventId, participantId, orderedIds }) =>
+      wishlistsApi.reorder(eventId, participantId, orderedIds),
+
+    onMutate: async ({ eventId, participantId, orderedIds }) => {
+      await queryClient.cancelQueries({ queryKey: ["events"] });
+      const previous = queryClient.getQueryData<Event[]>(["events"]);
+
+      queryClient.setQueryData<Event[]>(["events"], (old = []) =>
+        old.map((event) => {
+          if (event.id !== eventId) return event;
+          const wishlists = event.wishlists || [];
+          // Build reordered personal items based on orderedIds
+          const personalMap = new Map(
+            wishlists
+              .filter((w) => w.participantId === participantId)
+              .map((w) => [w.id, w])
+          );
+          const reorderedPersonal = orderedIds
+            .map((id, index) => {
+              const item = personalMap.get(id);
+              return item ? { ...item, sortOrder: index + 1 } : null;
+            })
+            .filter(Boolean) as typeof wishlists;
+          // Keep other participants' items unchanged
+          const otherItems = wishlists.filter(
+            (w) => w.participantId !== participantId
+          );
+          return {
+            ...event,
+            wishlists: [...reorderedPersonal, ...otherItems],
+          };
+        })
+      );
+
+      return { previous };
+    },
+
+    onError: (_err, _variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["events"], context.previous);
+      }
+    },
+
+    onSettled: () => {
+      if (queryClient.isMutating({ mutationKey: ["wishlist", "reorder"] }) === 1) {
+        queryClient.invalidateQueries({ queryKey: ["events"] });
+      }
+    },
+  });
+}
