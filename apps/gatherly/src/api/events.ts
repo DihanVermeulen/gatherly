@@ -12,6 +12,7 @@ export type WishlistItem = {
   priority: "low" | "medium" | "high";
   isClaimed: boolean;
   claimedByMe: boolean;
+  sortOrder?: number;
   createdAt?: string;
   updatedAt?: string;
 };

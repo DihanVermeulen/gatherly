@@ -59,6 +59,19 @@ export const wishlistsApi = {
     await apiClient.delete(`/api/events/${eventId}/wishlists/${wishlistId}/claim`);
     return { success: true };
   },
+
+  // Reorder wishlist items (update sort_order)
+  reorder: async (
+    eventId: string,
+    participantId: number,
+    orderedIds: number[]
+  ): Promise<{ success: boolean }> => {
+    const response = await apiClient.put(
+      `/api/events/${eventId}/wishlists/reorder`,
+      { orderedIds, participantId }
+    );
+    return response.data;
+  },
 };
 
 export default wishlistsApi;
