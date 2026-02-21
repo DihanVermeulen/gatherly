@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { query } from "../db/connection";
+import { query, getClient } from "../db/connection";
 import { asyncHandler } from "../middleware/asyncHandler";
 import { authenticateJWT } from "../middleware/auth";
 
@@ -24,6 +24,7 @@ router.get(
       w.image_url,
       w.product_url,
       w.priority,
+      w.sort_order,
       wc.claimed_by,
       w.created_at,
       w.updated_at
@@ -31,7 +32,7 @@ router.get(
     INNER JOIN participants p ON w.participant_id = p.id
     LEFT JOIN wishlist_claims wc ON w.id = wc.wishlist_id
     WHERE w.event_id = $1
-    ORDER BY w.created_at DESC
+    ORDER BY w.sort_order ASC NULLS LAST, w.created_at ASC
   `,
       [eventId],
     );
@@ -48,6 +49,7 @@ router.get(
       imageUrl: row.image_url,
       productUrl: row.product_url,
       priority: row.priority,
+      sortOrder: row.sort_order,
       isClaimed: row.claimed_by !== null,
       claimedByMe:
         currentParticipantId != null &&
@@ -83,9 +85,16 @@ router.post(
       return res.status(400).json({ error: "itemName is required" });
     }
 
+    // Calculate next sort_order for this participant in this event
+    const orderResult = await query(
+      `SELECT COALESCE(MAX(sort_order), 0) + 1 AS next_order FROM wishlists WHERE event_id = $1 AND participant_id = $2`,
+      [eventId, participantId],
+    );
+    const nextSortOrder = orderResult.rows[0].next_order;
+
     const result = await query(
-      `INSERT INTO wishlists (event_id, participant_id, item_name, description, image_url, product_url, priority)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO wishlists (event_id, participant_id, item_name, description, image_url, product_url, priority, sort_order)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
      RETURNING *`,
       [
         eventId,
@@ -95,6 +104,7 @@ router.post(
         imageUrl || null,
         productUrl || null,
         priority || "medium",
+        nextSortOrder,
       ],
     );
 
@@ -116,11 +126,61 @@ router.post(
       imageUrl: wishlist.image_url,
       productUrl: wishlist.product_url,
       priority: wishlist.priority,
+      sortOrder: wishlist.sort_order,
       isClaimed: false,
       claimedByMe: false,
       createdAt: wishlist.created_at,
       updatedAt: wishlist.updated_at,
     });
+  }),
+);
+
+// PUT /api/events/:eventId/wishlists/reorder - Reorder wishlist items
+router.put(
+  "/:eventId/wishlists/reorder",
+  authenticateJWT,
+  asyncHandler(async (req: Request, res: Response) => {
+    const { eventId } = req.params;
+    const { orderedIds, participantId } = req.body;
+
+    if (!Array.isArray(orderedIds) || orderedIds.length === 0) {
+      return res.status(400).json({ error: "orderedIds array is required" });
+    }
+    if (!participantId) {
+      return res.status(400).json({ error: "participantId is required" });
+    }
+
+    // Verify all IDs belong to this participant in this event
+    const verification = await query(
+      `SELECT id FROM wishlists WHERE id = ANY($1) AND participant_id = $2 AND event_id = $3`,
+      [orderedIds, participantId, eventId],
+    );
+
+    if (verification.rowCount !== orderedIds.length) {
+      return res
+        .status(403)
+        .json({ error: "Some items do not belong to this participant" });
+    }
+
+    // Use transaction to bulk-update sort_order
+    const client = await getClient();
+    try {
+      await client.query("BEGIN");
+      for (let i = 0; i < orderedIds.length; i++) {
+        await client.query(
+          "UPDATE wishlists SET sort_order = $1 WHERE id = $2",
+          [i + 1, orderedIds[i]],
+        );
+      }
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+
+    res.json({ success: true });
   }),
 );
 
@@ -193,6 +253,7 @@ router.put(
       imageUrl: wishlist.image_url,
       productUrl: wishlist.product_url,
       priority: wishlist.priority,
+      sortOrder: wishlist.sort_order,
       isClaimed: claimedById !== null,
       claimedByMe:
         currentParticipantId != null && currentParticipantId === claimedById,
