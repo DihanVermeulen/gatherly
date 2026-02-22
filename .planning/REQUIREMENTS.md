@@ -125,15 +125,15 @@ Not in v2.1 scope — tracked for later.
 | INVT-03 | Phase 18 | Pending |
 | INVT-04 | Phase 18 | Pending |
 | INVT-05 | Phase 18 | Pending |
-| TMPL-01 | All phases | Pending |
-| TMPL-02 | All phases | Pending |
-| TMPL-03 | All phases | Pending |
+| TMPL-01 | All phases (11–18) | Pending |
+| TMPL-02 | All phases (11–18) | Pending |
+| TMPL-03 | All phases (11–18) | Pending |
 
 **Coverage:**
-- v2.1 requirements: 28 total
-- Mapped to phases: 28
+- v2.1 requirements: 32 total
+- Mapped to phases: 32
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-22*
-*Last updated: 2026-02-22 after initial definition*
+*Last updated: 2026-02-22 — traceability updated after v2.1 roadmap creation*
