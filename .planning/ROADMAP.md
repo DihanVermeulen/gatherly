@@ -48,17 +48,17 @@ Plans:
 **Goal**: Users can create accounts, log in, and log out — with sessions that survive app restarts via JWT auto-refresh
 **Depends on**: Phase 11
 **Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-04
-**Note**: TMPL-01, TMPL-02, TMPL-03 apply. Login and Register screen templates are MISSING — request templates from user before implementing screens.
+**Note**: TMPL-01, TMPL-02, TMPL-03 apply. Login and Register screen templates are NOW PROVIDED (Login.png and Register.png exist — note filenames are swapped: Register.png = Login UI, Login.png = Register UI).
 **Success Criteria** (what must be TRUE):
   1. User enters email and password on the Login screen and reaches the Events screen on success
   2. User fills name, email, and password on the Register screen and is logged in immediately after
   3. Closing and reopening the app keeps the user logged in (session restored via token refresh)
   4. Tapping "Log out" from any screen returns the user to the Login screen with session cleared
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 12-01: Request Login + Register screen templates from user, then implement Login screen
-- [ ] 12-02: Register screen + AuthContext wiring (auto-refresh, logout, session persistence)
+- [ ] 12-01-PLAN.md — Login screen (matching Register.png) + AuthContext upgrade with expo-secure-store + client.ts interceptor fix
+- [ ] 12-02-PLAN.md — Register screen (matching Login.png) + backend refresh endpoint body fallback
 
 ---
 
@@ -182,7 +182,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1–10. v2.0 Phases | v2.0 | 27/27 | Complete | 2026-02-22 |
-| 11. Navigation Foundation | v2.1 | 0/2 | Not started | - |
+| 11. Navigation Foundation | v2.1 | 2/2 | Complete | 2026-02-23 |
 | 12. Authentication Screens | v2.1 | 0/2 | Not started | - |
 | 13. Events List + Details Screens | v2.1 | 0/2 | Not started | - |
 | 14. Edit Event Screen | v2.1 | 0/2 | Not started | - |
