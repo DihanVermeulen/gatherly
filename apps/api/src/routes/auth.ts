@@ -163,7 +163,7 @@ router.post(
 router.post(
   "/refresh",
   asyncHandler(async (req: Request, res: Response) => {
-    const refreshToken = req.cookies.refreshToken;
+    const refreshToken = req.cookies.refreshToken || req.body?.refreshToken;
 
     if (!refreshToken) {
       return res.status(401).json({ error: "No refresh token" });
