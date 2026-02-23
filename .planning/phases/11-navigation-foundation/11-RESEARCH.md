@@ -1,6 +1,6 @@
 # Phase 11: Navigation Foundation - Research
 
-**Researched:** 2026-02-23
+**Researched:** 2026-02-23 (re-researched same day with --research flag)
 **Domain:** Expo Router v6 file-based navigation, auth guard routing, deep links
 **Confidence:** HIGH
 
@@ -8,7 +8,7 @@
 
 ## Summary
 
-Phase 11 establishes the navigation shell for Gatherly Mobile using Expo Router v6 (installed: expo-router@6.0.23, expo@54.0.33). The codebase already has a partially wired Expo Router structure but uses an incorrect folder layout (`app/tabs/(tabs)/`) and a placeholder app scheme (`starterkitexpo`). This phase requires restructuring to the canonical `app/(tabs)/` convention, adding an auth guard via `Stack.Protected`, a stub AuthContext (the real JWT implementation is Phase 12), and changing the app scheme to `gatherly` for deep links.
+Phase 11 establishes the navigation shell for Gatherly Mobile using Expo Router v6 (installed: expo-router@6.0.23, expo@54.0.7). The codebase already has a partially wired Expo Router structure but uses an incorrect folder layout (`app/tabs/(tabs)/`) and a placeholder app scheme (`starterkitexpo`). This phase requires restructuring to the canonical `app/(tabs)/` convention, adding an auth guard via `Stack.Protected`, a stub AuthContext (the real JWT implementation is Phase 12), and changing the app scheme to `gatherly` for deep links.
 
 The standard approach for auth-guarded tab navigation in Expo Router v6 is: root `_layout.tsx` wraps everything in providers and uses `Stack.Protected` to gate the `(tabs)` group behind auth; unauthenticated users see `sign-in.tsx`. Both `Stack.Protected` and `Tabs.Protected` are confirmed exported in the installed expo-router@6.0.23 build.
 
@@ -28,7 +28,6 @@ Deep linking is automatic in Expo Router — all file routes become deep links o
 | expo-linking | ~8.0.8 | Deep link URL parsing | Integrates with expo-router automatically |
 | @react-navigation/native | ^7.1.6 | Underlying navigation engine | Required peer of expo-router |
 | @react-navigation/bottom-tabs | (bundled) | Bottom tab UI | Powers `Tabs` in expo-router |
-| expo-secure-store | (check) | Persistent token storage | Used in AuthContext for session |
 
 ### Supporting
 
@@ -38,6 +37,12 @@ Deep linking is automatic in Expo Router — all file routes become deep links o
 | @expo/vector-icons | ^15.0.2 | Fallback icon set | Avoid — prefer lucide for consistency |
 | expo-splash-screen | ~31.0.10 | Hold splash until auth resolves | Required during auth loading |
 
+### NOT Installed (relevant to Phase 12)
+
+| Library | Status | Notes |
+|---------|--------|-------|
+| expo-secure-store | NOT IN package.json | Phase 11 stub uses useState only — not needed yet. Phase 12 must install this for persistent token storage. |
+
 ### Alternatives Considered
 
 | Instead of | Could Use | Tradeoff |
@@ -46,7 +51,7 @@ Deep linking is automatic in Expo Router — all file routes become deep links o
 | lucide-react-native | @expo/vector-icons FontAwesome | Both work; lucide is already used in index.tsx |
 | Route group `(tabs)` | Flat files at root | Route groups are the canonical pattern for tab-scoped screens |
 
-**Installation:** No new packages needed — all required libraries are installed.
+**Installation:** No new packages needed for Phase 11 — all required libraries are installed. expo-secure-store will be needed in Phase 12.
 
 ---
 
@@ -285,6 +290,89 @@ With this scheme:
 
 ---
 
+## Re-Research Findings (6 Specific Questions)
+
+### Finding 1: Events.png Template — DO NOT Match It
+
+**Question:** Should Phase 11 update the Events screen to match Events.png?
+
+**Finding:** The `Events.png` screen template shows a **"Discover Events"** UI — a generic event discovery screen from the starter kit with category filter chips (Music, Tech, Social), event cards with "Book" buttons, and a bottom tab bar with "Explore / My Events / Tickets / Profile" tabs. This design is completely unrelated to Gatherly's events management UI.
+
+The existing `app/index.tsx` Events screen already shows the correct Gatherly-specific UI: "My Events" with personal event cards (create/manage/delete), gift tracking metrics, and a bottom sheet for creating events.
+
+**Verdict:** The Events.png template is NOT the Gatherly Events design. It is a starter kit placeholder that should be ignored. TMPL-01 ("implement screen to match its PNG template") does NOT apply to the Events screen in Phase 11 because the template does not represent the intended Gatherly design.
+
+**Action for planner:** Do NOT update the Events screen UI to match Events.png. Move the existing `app/index.tsx` content as-is to `app/(tabs)/index.tsx` (with the import path fix). The Events screen template discrepancy should be noted in STATE.md as "starter kit placeholder — does not represent Gatherly design."
+
+### Finding 2: expo-secure-store — NOT Installed, Not Needed in Phase 11
+
+**Question:** Is expo-secure-store installed? Does the stub AuthContext work without it?
+
+**Finding:** `expo-secure-store` is **not in package.json** (verified by reading full package.json). It does not appear in dependencies or devDependencies.
+
+**Impact on Phase 11:** Zero. The Phase 11 stub AuthContext uses only `useState` from React — no storage at all. `isLoading` is always `false`, session state is in-memory only. The stub works perfectly without expo-secure-store.
+
+**Impact on Phase 12:** Phase 12 must `pnpm add expo-secure-store` before implementing real auth. This is a task for Phase 12, not Phase 11.
+
+### Finding 3: Navigation Bug in index.tsx — Two Separate Issues
+
+**Question:** What should `router.push("/tabs/tab1")` navigate to after restructure?
+
+**Finding:** There are actually two navigation calls in `app/index.tsx`:
+
+1. **Line 137 (outer card Pressable):** `router.push("/tabs/tab1")` — This is broken today and will remain broken after restructure. After restructure, `/tabs/tab1` won't exist at all. The whole-card press has no meaningful destination yet (edit-event requires an event ID).
+
+2. **Line 195 (Manage button):** `router.push("/edit-event", {})` — This is correct and will work after restructure. The edit-event screen stays at `app/edit-event.tsx` (root level, not inside tabs).
+
+**Root cause:** The card's outer `Pressable` wrapper calls `/tabs/tab1` as if tapping anywhere on the card should navigate to an old placeholder tab. The Manage button is the correct way to navigate to edit-event.
+
+**Recommended fix when moving index.tsx to (tabs)/index.tsx:** Remove the `onPress` from the outer card Pressable entirely, or change it to `router.push("/edit-event")` to match the Manage button. The outer Pressable serves as a touch target wrapper — it should not duplicate navigation that the Manage button already handles.
+
+**This bug must be fixed during Task 2 of Plan 01** when the content is moved from `app/index.tsx` to `app/(tabs)/index.tsx`. The plan currently says "move verbatim" — this instruction needs to be updated to include fixing the navigation route.
+
+### Finding 4: TMPL-01 for Phase 11 — Events Screen Is Exempt
+
+**Question:** Should Phase 11 update the Events screen UI to match the template?
+
+**Verdict:** No. Three reasons:
+
+1. The Events.png template is a generic starter kit placeholder, not a Gatherly design (see Finding 1).
+2. TMPL-01 says "implement to match its PNG template" — the template does not define the Gatherly Events screen.
+3. The existing Events screen already has functional Gatherly-specific UI that represents the intended design.
+
+The Events screen needs no UI changes in Phase 11. The only changes are: moving the file to `app/(tabs)/index.tsx`, fixing the import path for EventsContext, and fixing the `router.push("/tabs/tab1")` navigation bug.
+
+### Finding 5: TMPL-02 for Stubs — Does NOT Block Phase 11
+
+**Question:** Does TMPL-02 block Phase 11 since sign-in.tsx and join.tsx templates are missing?
+
+**Verdict:** TMPL-02 does NOT block Phase 11. The sign-in screen template is MISSING and the join screen template is MISSING, but:
+
+- `sign-in.tsx` in Phase 11 is a **navigation wiring stub only** — its purpose is to be a valid route that Stack.Protected can redirect unauthenticated users to. Phase 12 implements the real Login UI.
+- `join.tsx` in Phase 11 is a **deep link target stub only** — its purpose is to confirm the URL scheme routes correctly. Phase 17 implements the real Join Event UI.
+
+TMPL-02 applies when a screen is being **implemented**, not when it's being created as a stub placeholder. Invoke TMPL-02 at the start of Phase 12 (for Login) and Phase 17 (for Join).
+
+### Finding 6: Issues in Existing Plans to Flag for Planner
+
+**Issue 1: Plan 01 Task 2 says "move content verbatim" but index.tsx has a broken route**
+
+Plan 01, Task 2 says: "Create `apps/gatherly-mobile/app/(tabs)/index.tsx` by moving the content of the deleted `app/index.tsx` verbatim."
+
+This will reproduce the `router.push("/tabs/tab1")` bug in the new location. The plan must explicitly instruct: when moving the file, also change `router.push("/tabs/tab1")` on the outer card Pressable to either remove the `onPress` or change it to `router.push("/edit-event")` to match the Manage button.
+
+**Issue 2: EventsContext uses localStorage — will fail on React Native**
+
+The `app/contexts/EventsContext.tsx` uses `localStorage.getItem()` and `typeof window !== "undefined"` checks. On React Native, `localStorage` is not available. The context was copied from the web app. This will cause the Events screen to always show empty state on native.
+
+This is NOT a Phase 11 blocker — Phase 11 only moves the file and fixes the structure. But the planner should be aware that EventsContext needs to be rewritten for React Native (likely using AsyncStorage or the API). This is a Phase 12+ concern.
+
+**Issue 3: edit-event.tsx uses `useRoute` from @react-navigation/native and expects route.params.id**
+
+`app/edit-event.tsx` uses `const { id } = route.params` from `useRoute()`. After moving to expo-router, this should use `useLocalSearchParams()` from expo-router instead. The current Manage button calls `router.push("/edit-event", {})` — it passes no ID. This is already broken in the current codebase and is NOT introduced by Phase 11 changes. Phase 11 should leave edit-event.tsx unchanged (it's pre-broken). Flag for a future phase.
+
+---
+
 ## Common Pitfalls
 
 ### Pitfall 1: Wrong Tabs Directory Location
@@ -336,6 +424,12 @@ With this scheme:
 **Why it happens:** The Events screen is currently at `app/index.tsx` (root). After adding `(tabs)`, the Events screen should move to `app/(tabs)/index.tsx`.
 
 **How to avoid:** Delete or convert `app/index.tsx` to a redirect: `export default function Index() { return <Redirect href="/(tabs)" />; }`. Better: just delete it since `(tabs)/index.tsx` will serve `/` automatically.
+
+### Pitfall 7: Moving index.tsx Without Fixing the Broken Route
+
+**What goes wrong:** Moving `app/index.tsx` to `app/(tabs)/index.tsx` verbatim reproduces the `router.push("/tabs/tab1")` bug. After restructure, `/tabs/tab1` is a dead route — it won't cause a crash but tapping the event card will silently fail to navigate.
+
+**How to avoid:** When moving the file, fix `router.push("/tabs/tab1")` on the outer card Pressable. Either remove the `onPress` from the outer Pressable wrapper entirely, or change it to `router.push("/edit-event")` to match the Manage button behavior. The Manage button already has the correct `router.push("/edit-event", {})` call.
 
 ---
 
@@ -424,6 +518,26 @@ export default function TabLayout() {
 }
 ```
 
+### Fixing the Navigation Bug When Moving index.tsx
+
+```tsx
+// BEFORE (broken — /tabs/tab1 won't exist after restructure):
+<Pressable
+  onPress={() => router.push("/tabs/tab1")}
+  className="mb-4 rounded-2xl ..."
+>
+
+// AFTER (fix when moving to (tabs)/index.tsx):
+// Option A: Remove onPress from outer Pressable (let Manage button handle navigation)
+<Pressable
+  className="mb-4 rounded-2xl ..."
+>
+
+// Option B: Navigate to edit-event (consistent with Manage button)
+// Note: edit-event needs the event ID — this should eventually be router.push(`/edit-event?id=${item.id}`)
+// For Phase 11, simply removing onPress from the wrapper is cleanest
+```
+
 ---
 
 ## State of the Art
@@ -448,16 +562,21 @@ export default function TabLayout() {
    - What we know: Requirements say "all main sections reachable from persistent navigation" but don't list tabs explicitly. Events is tab 1. Phase context mentions a Profile tab.
    - What's unclear: Are there 2 tabs or 3? Should there be a "Profile" or "Settings" tab?
    - Recommendation: Create Events + Profile tabs as stubs. Add more in later phases. Require screen template for any tab that shows real content (TMPL-02 rule).
+   - Status: RESOLVED — Plans already implement Events + Profile with stubs.
 
 2. **Does `join.tsx` need to be inside or outside `(tabs)`?**
-   - What we know: Join Event is a deep link target that should open as a full-screen modal/stack, not as a tab.
-   - What's unclear: Should it be a modal-style stack screen or a regular screen?
    - Recommendation: Place `app/join.tsx` outside `(tabs)` as a Stack screen. It should be accessible regardless of auth state (invite links must work even for unauthenticated users). Add it to the root Stack outside both `Stack.Protected` blocks.
+   - Status: RESOLVED — Plans already handle this correctly.
 
 3. **Should Login and Join Event templates be requested from user now?**
-   - What we know: STATE.md says Login template is MISSING. Join template is MISSING. TMPL-02 requires asking for missing templates before implementing.
-   - What's unclear: Phase 11 only implements stubs for these screens. Full implementation is Phase 12 (Login) and Phase 17 (Join).
-   - Recommendation: In Phase 11, implement `sign-in.tsx` and `join.tsx` as minimal navigation-wiring stubs (text + placeholder button), not full screens. Don't invoke TMPL-02 blocking until Phase 12 and Phase 17 respectively.
+   - Recommendation: In Phase 11, implement `sign-in.tsx` and `join.tsx` as minimal navigation-wiring stubs. Don't invoke TMPL-02 blocking until Phase 12 and Phase 17 respectively.
+   - Status: RESOLVED — Confirmed in Finding 5 above. Phase 11 stubs are exempt from TMPL-02.
+
+4. **When does EventsContext get rewritten for React Native?**
+   - What we know: Current EventsContext uses `localStorage` (web-only). Will silently fail on native.
+   - What's unclear: Is this Phase 12 or a dedicated phase?
+   - Recommendation: Flag in STATE.md. Phase 12 or Phase 13 should rewrite EventsContext to use AsyncStorage or the API directly, removing the `typeof window !== "undefined"` guards.
+   - Status: OPEN — Not blocking Phase 11 (navigation wiring works regardless), but must be addressed before Phase 11 is truly functional on device.
 
 ---
 
@@ -467,6 +586,9 @@ export default function TabLayout() {
 - `node_modules/expo-router/build/layouts/StackClient.d.ts` — Confirmed `Stack.Protected: FunctionComponent<ProtectedProps>` in installed expo-router@6.0.23
 - `node_modules/expo-router/build/layouts/TabsClient.d.ts` — Confirmed `Tabs.Protected: typeof Protected` in installed expo-router@6.0.23
 - `node_modules/expo-router/build/views/Protected.d.ts` — Confirmed `ProtectedProps = { guard: boolean; children?: ReactNode }`
+- `apps/gatherly-mobile/package.json` — Verified expo-secure-store is NOT installed; verified expo-router@~6.0.4 spec (6.0.23 actual)
+- `apps/gatherly-mobile/app/index.tsx` — Directly read; confirmed two separate navigation calls (line 137 broken, line 195 correct)
+- `apps/gatherly-mobile/screen-templates/Events.png` — Directly viewed; confirmed it is a starter kit "Discover Events" placeholder, not Gatherly design
 - https://docs.expo.dev/router/advanced/protected/ — Stack.Protected API and SDK 53+ requirement
 - https://docs.expo.dev/router/advanced/authentication/ — Full auth pattern with SessionProvider, useStorageState, splash screen wiring
 - https://docs.expo.dev/router/advanced/tabs/ — Bottom tabs file structure and layout pattern
@@ -485,10 +607,12 @@ export default function TabLayout() {
 ## Metadata
 
 **Confidence breakdown:**
-- Standard stack: HIGH — All libraries confirmed installed and version-verified in node_modules
+- Standard stack: HIGH — All libraries confirmed installed and version-verified in node_modules; expo-secure-store absence confirmed
 - Architecture (file structure, Stack.Protected): HIGH — Verified against official docs and installed type definitions
 - Auth stub pattern: HIGH — Pattern sourced directly from official Expo auth docs
 - Deep link config: HIGH — app.json scheme property verified, Expo Router automatic routing confirmed
+- Events.png template assessment: HIGH — Template directly viewed and confirmed as starter kit placeholder
+- Navigation bug (router.push): HIGH — Directly read from app/index.tsx source code
 - Pitfalls: MEDIUM — Most verified against official docs; Tabs.Protected bug status verified against installed package
 
 **Research date:** 2026-02-23
