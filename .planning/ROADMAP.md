@@ -35,11 +35,11 @@ See `.planning/milestones/v2.0-ROADMAP.md` for full phase details.
   2. After logging in, the user lands on the Events screen with no manual navigation required
   3. Tapping any item in the bottom navigation bar reaches its destination screen
   4. Pasting a gatherly invite URL into the device opens the app and shows the Join Event screen
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 11-01: Expo Router file structure — define all route files, (auth) group, (tabs) group, deep link config
-- [ ] 11-02: Bottom tab navigator with icons, auth guard redirect logic, and root layout wiring
+- [ ] 11-01-PLAN.md — File structure restructure: delete broken tabs/, create app/(tabs)/, stub AuthContext, sign-in, join, update app.json scheme
+- [ ] 11-02-PLAN.md — Root layout auth guard (Stack.Protected), full bottom tab navigator with lucide icons, human verification checkpoint
 
 ---
 
