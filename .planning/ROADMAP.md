@@ -24,7 +24,7 @@ See `.planning/milestones/v2.0-ROADMAP.md` for full phase details.
 
 ---
 
-### Phase 11: Navigation Foundation
+### ✅ Phase 11: Navigation Foundation — COMPLETE 2026-02-23
 
 **Goal**: The app has a working navigation shell — authenticated users land on Events, unauthenticated users are redirected to Login, deep links open Join Event, and all main sections are reachable from persistent navigation
 **Depends on**: Nothing (first phase of v2.1 — existing scaffolding in place)
@@ -38,8 +38,8 @@ See `.planning/milestones/v2.0-ROADMAP.md` for full phase details.
 **Plans**: 2 plans
 
 Plans:
-- [ ] 11-01-PLAN.md — File structure restructure: delete broken tabs/, create app/(tabs)/, stub AuthContext, sign-in, join, update app.json scheme
-- [ ] 11-02-PLAN.md — Root layout auth guard (Stack.Protected), full bottom tab navigator with lucide icons, human verification checkpoint
+- [x] 11-01-PLAN.md — File structure restructure: delete broken tabs/, create app/(tabs)/, stub AuthContext, sign-in, join, update app.json scheme
+- [x] 11-02-PLAN.md — Root layout auth guard (Stack.Protected), full bottom tab navigator with lucide icons, human verification checkpoint
 
 ---
 

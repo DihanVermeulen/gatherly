@@ -5,21 +5,21 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** v2.1 — Phase 11: Navigation Foundation
+**Current focus:** v2.1 — Phase 12: Authentication Screens
 
 ## Current Position
 
-Phase: 11 of 18 (Navigation Foundation)
-Plan: 02 of 02 complete
-Status: Phase complete — awaiting verification
-Last activity: 2026-02-23 — Completed 11-02-PLAN.md (Auth Guard + Tab Navigator)
+Phase: 12 of 18 (Authentication Screens) — ready to plan
+Plan: —
+Status: Phase 11 complete ✓, Phase 12 not started
+Last activity: 2026-02-23 — Phase 11 complete, verified 13/13 must-haves
 
-Progress: [██░░░░░░░░░░░░░░░░░░] ~10% — v2.1 Phase 11 done (2/~18 plans)
+Progress: [█░░░░░░░░░░░░░░░░░░░] ~12% — v2.1 Phase 11 done (2 plans / 8 phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 28 (27 v2.0 + 1 v2.1)
+- Total plans completed: 29 (27 v2.0 + 2 v2.1)
 - Average duration: —
 - Total execution time: —
 
@@ -56,7 +56,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 11-02-PLAN.md — auth guard and tab navigator wired
+Stopped at: Phase 11 complete and verified — navigation shell live
 Resume file: None
 
-Next step: Execute Phase 12 (Authentication screens — Login + Register)
+Next step: `/gsd:plan-phase 12` — Phase 12 requires Login + Register templates from user first (see Blockers)

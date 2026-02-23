@@ -96,10 +96,10 @@ Not in v2.1 scope — tracked for later.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| NAV-01 | Phase 11 | Pending |
-| NAV-02 | Phase 11 | Pending |
-| NAV-03 | Phase 11 | Pending |
-| NAV-04 | Phase 11 | Pending |
+| NAV-01 | Phase 11 | Complete |
+| NAV-02 | Phase 11 | Complete |
+| NAV-03 | Phase 11 | Complete |
+| NAV-04 | Phase 11 | Complete |
 | AUTH-01 | Phase 12 | Pending |
 | AUTH-02 | Phase 12 | Pending |
 | AUTH-03 | Phase 12 | Pending |
