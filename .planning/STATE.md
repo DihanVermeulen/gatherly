@@ -10,16 +10,16 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 11 of 18 (Navigation Foundation)
-Plan: —
-Status: Ready to plan
-Last activity: 2026-02-22 — Roadmap created for v2.1 (Gatherly Mobile, Phases 11–18)
+Plan: 01 of 02 complete
+Status: In progress
+Last activity: 2026-02-23 — Completed 11-01-PLAN.md (Navigation Foundation - File Structure)
 
-Progress: [░░░░░░░░░░░░░░░░░░░░] 0% — v2.1 not started
+Progress: [█░░░░░░░░░░░░░░░░░░░] ~5% — v2.1 started (1/~18 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 27 (v2.0)
+- Total plans completed: 28 (27 v2.0 + 1 v2.1)
 - Average duration: —
 - Total execution time: —
 
@@ -28,6 +28,7 @@ Progress: [░░░░░░░░░░░░░░░░░░░░] 0% — 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | v2.0 (1–10) | 27 | — | — |
+| v2.1 Phase 11 | 1/2 | ~4m | ~4m |
 
 *Updated after each plan completion*
 
@@ -38,6 +39,7 @@ Progress: [░░░░░░░░░░░░░░░░░░░░] 0% — 
 - GlueStack UI over Konsta UI — already installed and scaffolded; Konsta was v2.0 plan
 - Expo Router for navigation — file-based routing, matches React Router mental model
 - Screen templates required before implementing any screen — if missing, ask user to create it
+- apps/gatherly-mobile nested .git removed — monorepo pattern, parent repo tracks all files directly
 
 ### Pending Todos
 
@@ -53,8 +55,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-22
-Stopped at: v2.1 roadmap created — ready to begin Phase 11
+Last session: 2026-02-23
+Stopped at: Completed 11-01-PLAN.md — canonical file structure in place
 Resume file: None
 
-Next step: `/gsd:plan-phase 11` to start Phase 11 (Navigation Foundation)
+Next step: Execute 11-02-PLAN.md (root layout auth guard + tab navigator wiring)
