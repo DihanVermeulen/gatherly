@@ -88,6 +88,10 @@ function RootLayoutNav() {
                     name="sign-in"
                     options={{ headerShown: false }}
                   />
+                  <Stack.Screen
+                    name="register"
+                    options={{ headerShown: false }}
+                  />
                 </Stack.Protected>
 
                 {/* Public routes — accessible regardless of auth state */}
