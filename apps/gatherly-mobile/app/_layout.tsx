@@ -1,24 +1,28 @@
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
-import '@/global.css';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useState } from 'react';
-import { useColorScheme } from '@/components/useColorScheme';
-import { Stack } from 'expo-router';
-import { View } from 'react-native';
-import { SafeAreaView } from '@/components/ui/safe-area-view';
-import { SessionProvider, useSession } from './contexts/AuthContext';
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
+import "@/global.css";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect, useState } from "react";
+import { useColorScheme } from "@/components/useColorScheme";
+import { Stack } from "expo-router";
+import { View } from "react-native";
+import { SafeAreaView } from "@/components/ui/safe-area-view";
+import { SessionProvider, useSession } from "./contexts/AuthContext";
 
-export { ErrorBoundary } from 'expo-router';
+export { ErrorBoundary } from "expo-router";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     ...FontAwesome.font,
   });
 
@@ -38,7 +42,7 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const { session, isLoading } = useSession();
-  const [colorMode] = useState<'light' | 'dark'>('light');
+  const [colorMode] = useState<"light" | "dark">("light");
   const colorScheme = useColorScheme();
 
   useEffect(() => {
@@ -54,19 +58,36 @@ function RootLayoutNav() {
     <GluestackUIProvider mode={colorMode}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <View className="h-full w-full bg-background-0">
-          <SafeAreaView className="h-full w-full max-w-7xl mx-auto bg-background-0">
-            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <SafeAreaView
+            className="h-full w-full max-w-7xl mx-auto bg-background-0"
+            edges={["top"]}
+          >
+            <ThemeProvider
+              value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+            >
               <Stack>
                 {/* Authenticated routes — only accessible when session exists */}
                 <Stack.Protected guard={!!session}>
-                  <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                  <Stack.Screen name="edit-event" options={{ title: 'Edit Event' }} />
-                  <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+                  <Stack.Screen
+                    name="(tabs)"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="edit-event"
+                    options={{ title: "Edit Event" }}
+                  />
+                  <Stack.Screen
+                    name="modal"
+                    options={{ presentation: "modal" }}
+                  />
                 </Stack.Protected>
 
                 {/* Unauthenticated routes — only accessible when no session */}
                 <Stack.Protected guard={!session}>
-                  <Stack.Screen name="sign-in" options={{ headerShown: false }} />
+                  <Stack.Screen
+                    name="sign-in"
+                    options={{ headerShown: false }}
+                  />
                 </Stack.Protected>
 
                 {/* Public routes — accessible regardless of auth state */}

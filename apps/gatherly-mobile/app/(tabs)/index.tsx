@@ -133,9 +133,7 @@ export default function EventsScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingBottom: 120 }}
           renderItem={({ item }) => (
-            <Pressable
-              className="mb-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 active:scale-[0.99]"
-            >
+            <Pressable className="mb-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 active:scale-[0.99]">
               {/* Card Header */}
               <View className="flex-row justify-between mb-4">
                 <View>
