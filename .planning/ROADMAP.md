@@ -62,7 +62,7 @@ Plans:
 
 ---
 
-### Phase 13: Events List + Details Screens
+### ✅ Phase 13: Events List + Details Screens — COMPLETE 2026-02-24
 
 **Goal**: Users can see all their events at a glance and view event details including their secret assignment — both screens matching their PNG templates
 **Depends on**: Phase 12
@@ -184,7 +184,7 @@ Plans:
 | 1–10. v2.0 Phases | v2.0 | 27/27 | Complete | 2026-02-22 |
 | 11. Navigation Foundation | v2.1 | 2/2 | Complete | 2026-02-23 |
 | 12. Authentication Screens | v2.1 | 0/2 | Not started | - |
-| 13. Events List + Details Screens | v2.1 | 0/2 | Not started | - |
+| 13. Events List + Details Screens | v2.1 | 2/2 | Complete | 2026-02-24 |
 | 14. Edit Event Screen | v2.1 | 0/2 | Not started | - |
 | 15. My Wishlist Screen | v2.1 | 0/2 | Not started | - |
 | 16. Event Wishlists + Claiming | v2.1 | 0/2 | Not started | - |
