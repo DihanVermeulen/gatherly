@@ -5,21 +5,21 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** v2.1 — Phase 12: Authentication Screens
+**Current focus:** v2.1 — Phase 13: Events List + Details Screens
 
 ## Current Position
 
-Phase: 12 of 18 (Authentication Screens) — in progress
-Plan: 1 of 2 complete (12-01 done)
-Status: 12-01 complete ✓, 12-02 ready to execute
-Last activity: 2026-02-23 — Completed 12-01-PLAN.md (auth foundation + login screen)
+Phase: 13 of 18 (Events List + Details Screens) — in progress
+Plan: 1 of 2 complete (13-01 done)
+Status: 13-01 complete ✓, 13-02 ready to execute
+Last activity: 2026-02-24 — Completed 13-01-PLAN.md (Events list screen + EventsProvider mount)
 
-Progress: [█░░░░░░░░░░░░░░░░░░░] ~13% — v2.1 Phase 12 in progress (3 plans / 8 phases)
+Progress: [██░░░░░░░░░░░░░░░░░░] ~18% — v2.1 Phase 13 in progress (5 plans / 8 phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 30 (27 v2.0 + 3 v2.1)
+- Total plans completed: 31 (27 v2.0 + 4 v2.1)
 - Average duration: —
 - Total execution time: —
 
@@ -29,7 +29,8 @@ Progress: [█░░░░░░░░░░░░░░░░░░░] ~13% �
 |-------|-------|-------|----------|
 | v2.0 (1–10) | 27 | — | — |
 | v2.1 Phase 11 | 2/2 | ~8m | ~4m |
-| v2.1 Phase 12 | 1/2 | ~6m | ~6m |
+| v2.1 Phase 12 | 2/2 | ~12m | ~6m |
+| v2.1 Phase 13 | 1/2 | ~6m | ~6m |
 
 *Updated after each plan completion*
 
@@ -45,6 +46,11 @@ Progress: [█░░░░░░░░░░░░░░░░░░░] ~13% �
 - signOutCallback pattern — client.ts interceptor calls AuthContext's signOut then router.replace on 401
 - 2-arg signIn(accessToken, user) — no refreshToken in body (HttpOnly cookie pattern)
 - Use `npm install` in gatherly-mobile — pnpm virtual store dir length mismatch makes pnpm unusable for mobile app installs
+- EventsProvider inside GluestackUIProvider wrapping Stack — ensures all authenticated screens have events context
+- event-details.tsx stub created in 13-01 — Phase 13-02 implements full details screen by modifying it
+- eventToDeleteId state pattern — store id before confirm dialog, dispatch after user confirmation
+- Type aliases (Event/WishlistItem) in events.ts before eventsApi — prevents binding to global DOM Event type
+- Filter pills derive Active/Planning from assignments field: null = Planning, non-null = Active
 
 ### Pending Todos
 
@@ -59,8 +65,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-23
-Stopped at: Completed 12-01-PLAN.md — auth foundation, login screen, SecureStore AuthContext, Log Out button
+Last session: 2026-02-24
+Stopped at: Completed 13-01-PLAN.md — EventsProvider mount, Events list screen rebuild, bug fixes
 Resume file: None
 
-Next step: Execute 12-02-PLAN.md — Register screen (builds on AuthContext + _layout.tsx patterns from 12-01)
+Next step: Execute 13-02-PLAN.md — Event details screen (full implementation of event-details.tsx stub)
