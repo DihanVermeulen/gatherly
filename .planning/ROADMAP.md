@@ -73,11 +73,11 @@ Plans:
   2. User can create a new event from the Events screen and see it appear in the list immediately
   3. User can delete an event from the Events screen
   4. Tapping an event opens the Details screen showing participants and the user's secret assignment (inline reveal, no codes)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 13-01: Complete Events list screen to match Events.png (create, delete, list display)
-- [ ] 13-02: Event Details screen matching Details.png (participant list, inline assignment reveal)
+- [ ] 13-01-PLAN.md — Mount EventsProvider, fix bugs (delete/navigation/search), rework Events list to match Events.png, fix CreateEvent API call
+- [ ] 13-02-PLAN.md — Event Details screen matching Details.png (participant list, inline assignment reveal, stubbed gift buttons)
 
 ---
 
