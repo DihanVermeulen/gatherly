@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { View } from "react-native";
+import { Alert, View } from "react-native";
 import { Text } from "@/components/ui/text";
 import { Input, InputField } from "@/components/ui/input";
 import { Textarea, TextareaInput } from "@/components/ui/textarea";
@@ -7,6 +7,7 @@ import { Button, ButtonText } from "@/components/ui/button";
 import { X, Gift } from "lucide-react-native";
 import { Pressable } from "@/components/ui/pressable";
 import { useEvents } from "@/app/contexts/EventsContext";
+import { eventsApi } from "@/app/api/events";
 
 type CreateEventProps = {
   onClose: () => void;
@@ -15,31 +16,45 @@ type CreateEventProps = {
 export function CreateEvent({ onClose }: CreateEventProps) {
   const [eventName, setEventName] = useState("");
   const [description, setDescription] = useState("");
-  const { dispatch } = useEvents();
+  const { dispatch, useApi } = useEvents();
 
-  const handleCreate = useCallback(() => {
+  const handleCreate = useCallback(async () => {
     if (!eventName.trim()) return;
 
-    dispatch({
-      type: "ADD_EVENT",
-      payload: {
-        id: Date.now().toString(),
-        name: eventName,
-        people: [],
-        couples: [],
-        assignments: null,
-        coupleCrossing: false,
-        gifts: {},
-        date: new Date().toISOString(),
-        participants: [],
-        description: description,
-      },
-    });
+    if (useApi) {
+      try {
+        const created = await eventsApi.create(eventName.trim());
+        dispatch({
+          type: "ADD_EVENT",
+          payload: { ...created, description: description || created.description },
+        });
+      } catch (error) {
+        console.error("Failed to create event via API:", error);
+        Alert.alert("Error", "Failed to create event. Please try again.");
+        return;
+      }
+    } else {
+      dispatch({
+        type: "ADD_EVENT",
+        payload: {
+          id: Date.now().toString(),
+          name: eventName.trim(),
+          people: [],
+          couples: [],
+          assignments: null,
+          coupleCrossing: false,
+          gifts: {},
+          date: new Date().toISOString(),
+          participants: [],
+          description: description,
+        },
+      });
+    }
 
     setEventName("");
     setDescription("");
     onClose();
-  }, [eventName, description, dispatch, onClose]);
+  }, [eventName, description, dispatch, useApi, onClose]);
 
   return (
     <View className="flex-1 bg-background-0 dark:bg-background-950 rounded-t-3xl overflow-hidden">
