@@ -15,6 +15,7 @@ import { Stack } from "expo-router";
 import { View } from "react-native";
 import { SafeAreaView } from "@/components/ui/safe-area-view";
 import { SessionProvider, useSession } from "./contexts/AuthContext";
+import { EventsProvider } from "./contexts/EventsContext";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -56,51 +57,57 @@ function RootLayoutNav() {
 
   return (
     <GluestackUIProvider mode={colorMode}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <View className="h-full w-full bg-background-0">
-          <SafeAreaView
-            className="h-full w-full max-w-7xl mx-auto bg-background-0"
-            edges={["top"]}
-          >
-            <ThemeProvider
-              value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+      <EventsProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <View className="h-full w-full bg-background-0">
+            <SafeAreaView
+              className="h-full w-full max-w-7xl mx-auto bg-background-0"
+              edges={["top"]}
             >
-              <Stack>
-                {/* Authenticated routes — only accessible when session exists */}
-                <Stack.Protected guard={!!session}>
-                  <Stack.Screen
-                    name="(tabs)"
-                    options={{ headerShown: false }}
-                  />
-                  <Stack.Screen
-                    name="edit-event"
-                    options={{ title: "Edit Event" }}
-                  />
-                  <Stack.Screen
-                    name="modal"
-                    options={{ presentation: "modal" }}
-                  />
-                </Stack.Protected>
+              <ThemeProvider
+                value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+              >
+                <Stack>
+                  {/* Authenticated routes — only accessible when session exists */}
+                  <Stack.Protected guard={!!session}>
+                    <Stack.Screen
+                      name="(tabs)"
+                      options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                      name="edit-event"
+                      options={{ title: "Edit Event" }}
+                    />
+                    <Stack.Screen
+                      name="event-details"
+                      options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                      name="modal"
+                      options={{ presentation: "modal" }}
+                    />
+                  </Stack.Protected>
 
-                {/* Unauthenticated routes — only accessible when no session */}
-                <Stack.Protected guard={!session}>
-                  <Stack.Screen
-                    name="sign-in"
-                    options={{ headerShown: false }}
-                  />
-                  <Stack.Screen
-                    name="register"
-                    options={{ headerShown: false }}
-                  />
-                </Stack.Protected>
+                  {/* Unauthenticated routes — only accessible when no session */}
+                  <Stack.Protected guard={!session}>
+                    <Stack.Screen
+                      name="sign-in"
+                      options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                      name="register"
+                      options={{ headerShown: false }}
+                    />
+                  </Stack.Protected>
 
-                {/* Public routes — accessible regardless of auth state */}
-                <Stack.Screen name="join" options={{ headerShown: false }} />
-              </Stack>
-            </ThemeProvider>
-          </SafeAreaView>
-        </View>
-      </GestureHandlerRootView>
+                  {/* Public routes — accessible regardless of auth state */}
+                  <Stack.Screen name="join" options={{ headerShown: false }} />
+                </Stack>
+              </ThemeProvider>
+            </SafeAreaView>
+          </View>
+        </GestureHandlerRootView>
+      </EventsProvider>
     </GluestackUIProvider>
   );
 }
