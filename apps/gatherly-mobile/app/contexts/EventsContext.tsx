@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, {
   createContext,
   useContext,
@@ -6,6 +7,9 @@ import React, {
   useState,
 } from "react";
 import { eventsApi, Event, WishlistItem } from "../api/events";
+
+const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_URL || "http://192.168.0.9:5001";
 
 type EventsState = {
   events: Event[];
@@ -151,68 +155,66 @@ export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [useApi, setUseApi] = useState(false);
 
-  // Initialize with localStorage
-  const [state, dispatch] = useReducer(eventsReducer, initialState, () => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Ensure backward compatibility: add missing fields
-        const events = (parsed.events || []).map((e: Event) => ({
-          ...e,
-          wishlists: e.wishlists || [],
-          gifts: e.gifts || {},
-        }));
-        return { events, loading: false, error: null };
-      }
-    }
-    return initialState;
-  });
+  const [state, dispatch] = useReducer(eventsReducer, initialState);
 
-  // Check if API is available on mount
+  // Load cached events from AsyncStorage on mount (async — cannot use in reducer initializer)
+  useEffect(() => {
+    const loadFromStorage = async () => {
+      try {
+        const saved = await AsyncStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          const events = (parsed.events || []).map((e: Event) => ({
+            ...e,
+            wishlists: e.wishlists || [],
+            gifts: e.gifts || {},
+          }));
+          dispatch({ type: "SET_EVENTS", payload: events });
+        }
+      } catch (err) {
+        console.log("Failed to load cached events:", err);
+      }
+    };
+    loadFromStorage();
+  }, []);
+
+  // Check if API is available on mount, then fetch fresh data
   useEffect(() => {
     const checkApi = async () => {
       try {
-        const response = await fetch("http://localhost:5001/status");
+        const response = await fetch(`${API_BASE_URL}/status`);
         if (response.ok) {
           setUseApi(true);
-          // Load events from API
-          refreshEvents();
+          // Load directly here — don't call refreshEvents() which reads stale useApi state
+          dispatch({ type: "SET_LOADING", payload: true });
+          const events = await eventsApi.getAll();
+          dispatch({ type: "SET_EVENTS", payload: events });
+          await AsyncStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({ events }),
+          );
         }
       } catch (error) {
-        console.log("API not available, using localStorage");
+        console.log("API not available, using cached data");
         setUseApi(false);
       }
     };
-
     checkApi();
   }, []);
 
-  // Refresh events from API
+  // Refresh events from API (for manual refresh calls)
   const refreshEvents = async () => {
-    if (!useApi) return;
-
     try {
       dispatch({ type: "SET_LOADING", payload: true });
       const events = await eventsApi.getAll();
       dispatch({ type: "SET_EVENTS", payload: events });
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({ events }));
     } catch (error) {
       console.error("Error fetching events:", error);
       dispatch({ type: "SET_ERROR", payload: "Failed to load events" });
-      // Fallback to localStorage
       setUseApi(false);
     }
   };
-
-  // Save to localStorage when not using API
-  useEffect(() => {
-    if (!useApi && typeof window !== "undefined") {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ events: state.events }),
-      );
-    }
-  }, [state.events, useApi]);
 
   return (
     <EventsContext.Provider value={{ state, dispatch, refreshEvents, useApi }}>
