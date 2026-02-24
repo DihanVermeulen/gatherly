@@ -76,7 +76,7 @@ function RootLayoutNav() {
                     />
                     <Stack.Screen
                       name="edit-event"
-                      options={{ title: "Edit Event" }}
+                      options={{ headerShown: false }}
                     />
                     <Stack.Screen
                       name="event-details"
