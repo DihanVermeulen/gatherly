@@ -93,11 +93,11 @@ Plans:
   3. Organizer can mark two participants as a couple and the constraint is saved
   4. Organizer sets gifts-per-person, taps Generate, and assignments appear without page reload
   5. Organizer can view the secret code for each participant after assignments are generated
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 14-01: Participant management UI (add, remove, couple definition) matching Edit.png
-- [ ] 14-02: Gift count input, assignment generation, and secret code display
+- [ ] 14-01-PLAN.md — Install react-qr-code, create invites API module, Manage Exclusions screen + route registration
+- [ ] 14-02-PLAN.md — Complete edit-event.tsx overhaul: participant chips, invite modal, settings, generate, secret codes
 
 ---
 
