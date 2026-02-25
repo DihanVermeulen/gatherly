@@ -5,21 +5,21 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** v2.1 — Phase 14 planned, ready for execution
+**Current focus:** v2.1 — Phase 14 complete, Phase 15 pending template from user
 
 ## Current Position
 
-Phase: 14 of 18 (Edit Event Screen) — in progress
-Plan: 1 of 2 complete (14-01 done, 14-02 pending)
-Status: In progress
-Last activity: 2026-02-25 — Completed 14-01-PLAN.md (invites API, manage-exclusions, react-qr-code)
+Phase: 14 of 18 (Edit Event Screen) — complete
+Plan: 2 of 2 complete (14-01 done, 14-02 done)
+Status: Phase complete
+Last activity: 2026-02-25 — Completed 14-02-PLAN.md (edit-event.tsx overhaul)
 
-Progress: [████░░░░░░░░░░░░░░░░] ~25% — v2.1 Phase 14 in progress (7 plans / 8 phases)
+Progress: [████░░░░░░░░░░░░░░░░] ~28% — v2.1 Phase 14 complete (8 plans / 8 phases remaining)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 32 (27 v2.0 + 5 v2.1)
+- Total plans completed: 34 (27 v2.0 + 7 v2.1)
 - Average duration: —
 - Total execution time: —
 
@@ -31,6 +31,7 @@ Progress: [████░░░░░░░░░░░░░░░░] ~25% �
 | v2.1 Phase 11 | 2/2 | ~8m | ~4m |
 | v2.1 Phase 12 | 2/2 | ~12m | ~6m |
 | v2.1 Phase 13 | 2/2 | ~9m | ~4.5m |
+| v2.1 Phase 14 | 2/2 | ~7m | ~3.5m |
 
 *Updated after each plan completion*
 
@@ -57,6 +58,11 @@ Progress: [████░░░░░░░░░░░░░░░░] ~25% �
 - PUT /api/events/:id confirmed to accept couples field — deletes all existing couples and re-inserts full array (full-array-replace)
 - Manage Exclusions save pattern: eventsApi.update(id, { couples }) then refreshEvents() then router.back()
 - react-qr-code@2.0.18 installed in gatherly-mobile
+- ActivityIndicator (not ButtonSpinner) in Pressable context — ButtonSpinner requires GlueStack Button parent context
+- giftCount is local UI state only — not stored in TEvent, always initializes to 1
+- Immediate save pattern for toggles: onValueChange calls API directly, no useEffect debounce
+- getCodes returns Record<string,string> — always transform via Object.entries().map() to array
+- removeParticipant takes participant name string, not numeric ID — backend route: DELETE /events/:id/participants/:name
 
 ### Pending Todos
 
@@ -72,7 +78,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 14-01-PLAN.md — invites API module, manage-exclusions screen, react-qr-code installed
+Stopped at: Completed 14-02-PLAN.md — edit-event.tsx fully rewritten (651 lines, all interactions)
 Resume file: None
 
-Next step: Execute 14-02 — Edit Event screen (edit-event.tsx overhaul)
+Next step: Phase 15 — request My Wishlist screen template from user before proceeding
