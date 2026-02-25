@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ScrollView, Share, View } from "react-native";
+import { ActivityIndicator, ScrollView, Share, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ArrowLeft,
@@ -461,7 +461,7 @@ export default function EditEventScreen() {
               >
                 {generating ? (
                   <>
-                    <ButtonSpinner color="white" />
+                    <ActivityIndicator size="small" color="white" />
                     <Text className="text-white font-bold text-base ml-2">
                       Generating...
                     </Text>
