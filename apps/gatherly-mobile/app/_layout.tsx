@@ -79,6 +79,10 @@ function RootLayoutNav() {
                       options={{ headerShown: false }}
                     />
                     <Stack.Screen
+                      name="manage-exclusions"
+                      options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
                       name="event-details"
                       options={{ headerShown: false }}
                     />
