@@ -88,7 +88,7 @@ Plans:
 **Requirements**: EVNT-05, EVNT-06, EVNT-07, EVNT-08, EVNT-09
 **Note**: TMPL-01, TMPL-02, TMPL-03 apply. Edit.png template exists. Partially-done edit-event.tsx must be completed to match Edit.png.
 **Success Criteria** (what must be TRUE):
-  1. Organizer can type a name and add a participant — they appear in the participant list immediately
+  1. Organizer can tap "+ Add Participant", generate an invite link/QR code, and share it with the new participant
   2. Organizer can remove a participant and they are gone from the list
   3. Organizer can mark two participants as a couple and the constraint is saved
   4. Organizer sets gifts-per-person, taps Generate, and assignments appear without page reload
