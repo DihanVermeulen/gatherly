@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** v2.1 — Phase 13 complete, Phase 14 next
+**Current focus:** v2.1 — Phase 14 planned, ready for execution
 
 ## Current Position
 
-Phase: 13 of 18 (Events List + Details Screens) — complete
-Plan: 2 of 2 complete (13-01 and 13-02 both done)
-Status: Phase 13 complete ✓
-Last activity: 2026-02-24 — Completed 13-02-PLAN.md (Event details screen full implementation)
+Phase: 14 of 18 (Edit Event Screen) — in progress
+Plan: 1 of 2 complete (14-01 done, 14-02 pending)
+Status: In progress
+Last activity: 2026-02-25 — Completed 14-01-PLAN.md (invites API, manage-exclusions, react-qr-code)
 
-Progress: [███░░░░░░░░░░░░░░░░░] ~22% — v2.1 Phase 13 complete (6 plans / 8 phases)
+Progress: [████░░░░░░░░░░░░░░░░] ~25% — v2.1 Phase 14 in progress (7 plans / 8 phases)
 
 ## Performance Metrics
 
@@ -54,6 +54,9 @@ Progress: [███░░░░░░░░░░░░░░░░░] ~22% �
 - Inline style for dynamic hex heroColor: NativeWind cannot use dynamic hex values as Tailwind className at runtime
 - Assignment card has three states: null (not generated), empty array (no match), populated (has assignment, show toggle)
 - Role badge shows Organizer only when name === user?.name AND user.role === organizer
+- PUT /api/events/:id confirmed to accept couples field — deletes all existing couples and re-inserts full array (full-array-replace)
+- Manage Exclusions save pattern: eventsApi.update(id, { couples }) then refreshEvents() then router.back()
+- react-qr-code@2.0.18 installed in gatherly-mobile
 
 ### Pending Todos
 
@@ -68,8 +71,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-24
-Stopped at: Completed 13-02-PLAN.md — Event details screen full implementation
+Last session: 2026-02-25
+Stopped at: Completed 14-01-PLAN.md — invites API module, manage-exclusions screen, react-qr-code installed
 Resume file: None
 
-Next step: Execute Phase 14 — Edit Event screen
+Next step: Execute 14-02 — Edit Event screen (edit-event.tsx overhaul)
