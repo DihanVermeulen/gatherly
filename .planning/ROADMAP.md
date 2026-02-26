@@ -81,7 +81,7 @@ Plans:
 
 ---
 
-### Phase 14: Edit Event Screen
+### ✅ Phase 14: Edit Event Screen — COMPLETE 2026-02-25
 
 **Goal**: Organizers can fully configure an event — adding/removing participants, defining couples, setting gift counts, generating assignments, and viewing secret codes — all from the Edit screen matching Edit.png
 **Depends on**: Phase 13
@@ -96,8 +96,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 14-01-PLAN.md — Install react-qr-code, create invites API module, Manage Exclusions screen + route registration
-- [ ] 14-02-PLAN.md — Complete edit-event.tsx overhaul: participant chips, invite modal, settings, generate, secret codes
+- [x] 14-01-PLAN.md — Install react-qr-code, create invites API module, Manage Exclusions screen + route registration
+- [x] 14-02-PLAN.md — Complete edit-event.tsx overhaul: participant chips, invite modal, settings, generate, secret codes
 
 ---
 
@@ -185,7 +185,7 @@ Plans:
 | 11. Navigation Foundation | v2.1 | 2/2 | Complete | 2026-02-23 |
 | 12. Authentication Screens | v2.1 | 0/2 | Not started | - |
 | 13. Events List + Details Screens | v2.1 | 2/2 | Complete | 2026-02-24 |
-| 14. Edit Event Screen | v2.1 | 0/2 | Not started | - |
+| 14. Edit Event Screen | v2.1 | 2/2 | Complete | 2026-02-25 |
 | 15. My Wishlist Screen | v2.1 | 0/2 | Not started | - |
 | 16. Event Wishlists + Claiming | v2.1 | 0/2 | Not started | - |
 | 17. Join Event Screen | v2.1 | 0/1 | Not started | - |

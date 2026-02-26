@@ -29,11 +29,11 @@ Port Gatherly to React Native (Expo + GlueStack) as the primary mobile client wi
 - [ ] **EVNT-02**: User can create a new event with a name
 - [ ] **EVNT-03**: User can delete an event
 - [ ] **EVNT-04**: User can view event details including their secret assignment (inline reveal, no codes)
-- [ ] **EVNT-05**: User can add participants to an event by name
-- [ ] **EVNT-06**: User can remove participants from an event
-- [ ] **EVNT-07**: User can define couples who should not buy for each other
-- [ ] **EVNT-08**: User can set the number of gifts per person and generate secret assignments
-- [ ] **EVNT-09**: Organizer can view generated secret codes per participant
+- [x] **EVNT-05**: User can add participants to an event by name
+- [x] **EVNT-06**: User can remove participants from an event
+- [x] **EVNT-07**: User can define couples who should not buy for each other
+- [x] **EVNT-08**: User can set the number of gifts per person and generate secret assignments
+- [x] **EVNT-09**: Organizer can view generated secret codes per participant
 
 ### Wishlists
 
