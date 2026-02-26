@@ -5,21 +5,21 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** v2.1 — Phase 14 complete, Phase 15 pending template from user
+**Current focus:** v2.1 — Phase 15 in progress (15-01 complete)
 
 ## Current Position
 
-Phase: 14 of 18 (Edit Event Screen) — complete
-Plan: 2 of 2 complete (14-01 done, 14-02 done)
+Phase: 15 of 18 (My Wishlist Screen) — in progress
+Plan: 1 of 1 complete (15-01 done)
 Status: Phase complete
-Last activity: 2026-02-25 — Completed 14-02-PLAN.md (edit-event.tsx overhaul)
+Last activity: 2026-02-26 — Completed 15-01-PLAN.md (my-wishlist screen + AddWishlistItem component)
 
-Progress: [████░░░░░░░░░░░░░░░░] ~28% — v2.1 Phase 14 complete (8 plans / 8 phases remaining)
+Progress: [█████░░░░░░░░░░░░░░░] ~33% — v2.1 Phase 15 complete (9 plans / 7 phases remaining)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 34 (27 v2.0 + 7 v2.1)
+- Total plans completed: 35 (27 v2.0 + 8 v2.1)
 - Average duration: —
 - Total execution time: —
 
@@ -32,6 +32,7 @@ Progress: [████░░░░░░░░░░░░░░░░] ~28% �
 | v2.1 Phase 12 | 2/2 | ~12m | ~6m |
 | v2.1 Phase 13 | 2/2 | ~9m | ~4.5m |
 | v2.1 Phase 14 | 2/2 | ~7m | ~3.5m |
+| v2.1 Phase 15 | 1/1 | ~6m | ~6m |
 
 *Updated after each plan completion*
 
@@ -46,7 +47,7 @@ Progress: [████░░░░░░░░░░░░░░░░] ~28% �
 - SecureStore for token persistence — accessToken + user JSON; refreshToken lives in HttpOnly cookie only
 - signOutCallback pattern — client.ts interceptor calls AuthContext's signOut then router.replace on 401
 - 2-arg signIn(accessToken, user) — no refreshToken in body (HttpOnly cookie pattern)
-- Use `npm install` in gatherly-mobile — pnpm virtual store dir length mismatch makes pnpm unusable for mobile app installs
+- Use `npm install --ignore-scripts` in gatherly-mobile — pnpm virtual store dir length mismatch; --ignore-scripts also needed to bypass @gluestack-ui/core broken postinstall hook that triggers from npm installs
 - EventsProvider inside GluestackUIProvider wrapping Stack — ensures all authenticated screens have events context
 - eventToDeleteId state pattern — store id before confirm dialog, dispatch after user confirmation
 - Type aliases (Event/WishlistItem) in events.ts before eventsApi — prevents binding to global DOM Event type
@@ -63,6 +64,9 @@ Progress: [████░░░░░░░░░░░░░░░░] ~28% �
 - Immediate save pattern for toggles: onValueChange calls API directly, no useEffect debounce
 - getCodes returns Record<string,string> — always transform via Object.entries().map() to array
 - removeParticipant takes participant name string, not numeric ID — backend route: DELETE /events/:id/participants/:name
+- participantDetails-via-getById: eventsApi.getById(id) returns participantDetails; eventsApi.getAll() does NOT — always fetch via getById in wishlist screens for correct participantId
+- BottomSheetTextInput for text inputs inside gorhom sheets — prevents keyboard overlap on Android
+- wishlist optimistic-delete pattern: dispatch DELETE_WISHLIST_ITEM immediately, revert with SET_WISHLISTS + wishlistsApi.getAll() on API failure
 
 ### Pending Todos
 
@@ -70,15 +74,14 @@ None yet.
 
 ### Blockers/Concerns
 
-- Phase 15: My Wishlist template MISSING — must request from user before implementing
 - Phase 16: Event Wishlists template MISSING — must request from user before implementing
 - Phase 17: Join Event template MISSING — must request from user before implementing
 - Phase 18: Organizer Invite Management template MISSING — must request from user; backend endpoint may also be missing
 
 ## Session Continuity
 
-Last session: 2026-02-25
-Stopped at: Completed 14-02-PLAN.md — edit-event.tsx fully rewritten (651 lines, all interactions)
+Last session: 2026-02-26
+Stopped at: Completed 15-01-PLAN.md — my-wishlist.tsx (441 lines), AddWishlistItem.tsx (227 lines), routes registered, Add My Gifts button wired
 Resume file: None
 
-Next step: Phase 15 — request My Wishlist screen template from user before proceeding
+Next step: Phase 16 — request Event Wishlists screen template from user before proceeding
