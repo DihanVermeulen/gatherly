@@ -1,7 +1,8 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { router } from "expo-router";
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:5001";
+const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_URL || "http://192.168.0.9:5001";
 
 // Token management - stored in memory only (not localStorage)
 let _accessToken: string | null = null;
@@ -19,6 +20,8 @@ let _signOutCallback: (() => Promise<void>) | null = null;
 export const setSignOutCallback = (fn: () => Promise<void>) => {
   _signOutCallback = fn;
 };
+
+console.log(API_BASE_URL);
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -83,7 +86,8 @@ apiClient.interceptors.response.use(
     if (
       error.response?.status === 401 &&
       originalRequest &&
-      !originalRequest._retry
+      !originalRequest._retry &&
+      getAccessToken() !== null
     ) {
       if (isRefreshing) {
         // Queue this request while refresh is in progress

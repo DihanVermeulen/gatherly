@@ -1,15 +1,13 @@
+import { config } from "@/components/ui/gluestack-ui-provider/config";
 import { Tabs } from "expo-router";
 import { Calendar, User } from "lucide-react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabLayout() {
-  const insets = useSafeAreaInsets();
-
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#6366f1",
+        tabBarActiveTintColor: "#fa8072",
         tabBarInactiveTintColor: "#94a3b8",
         tabBarStyle: {
           backgroundColor: "#ffffff",

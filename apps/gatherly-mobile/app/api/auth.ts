@@ -35,6 +35,8 @@ export const authApi = {
   },
 
   async refresh(refreshToken?: string): Promise<AuthResponse> {
+    console.log("Refreshing token...");
+    console.log(process.env.EXPO_PUBLIC_API_URL);
     const response = await apiClient.post<AuthResponse>(
       "/api/auth/refresh",
       refreshToken ? { refreshToken } : undefined,

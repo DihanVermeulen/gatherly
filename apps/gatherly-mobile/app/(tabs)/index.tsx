@@ -193,11 +193,15 @@ export default function EventsScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 20, gap: 8, paddingBottom: 4 }}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          gap: 8,
+          paddingBottom: 4,
+        }}
         className="mb-3"
       >
         {filterPills.map((pill) => (
-          <Pressable
+          <Button
             key={pill}
             onPress={() => setActiveFilter(pill)}
             className={`rounded-full px-4 py-2 ${
@@ -208,14 +212,12 @@ export default function EventsScreen() {
           >
             <Text
               className={`text-sm font-semibold ${
-                activeFilter === pill
-                  ? "text-white"
-                  : "text-typography-600"
+                activeFilter === pill ? "text-white" : "text-typography-600"
               }`}
             >
               {pill}
             </Text>
-          </Pressable>
+          </Button>
         ))}
       </ScrollView>
 
@@ -316,22 +318,38 @@ type EventCardProps = {
   onDelete: () => void;
 };
 
-function EventCard({ item, index, onPress, onManage, onDelete }: EventCardProps) {
+function EventCard({
+  item,
+  index,
+  onPress,
+  onManage,
+  onDelete,
+}: EventCardProps) {
   const isActive = item.assignments !== null && item.assignments !== undefined;
   const heroColor = HERO_COLORS[index % HERO_COLORS.length];
   const initial = item.name.charAt(0).toUpperCase();
-  const participantCount = item.people?.length ?? item.participants?.length ?? 0;
+  const participantCount =
+    item.people?.length ?? item.participants?.length ?? 0;
   const giftCount = isActive ? Object.keys(item.assignments!).length : 0;
 
   return (
     <Pressable
       onPress={onPress}
       className="mb-4 rounded-2xl overflow-hidden bg-white dark:bg-slate-900 border border-outline-100 active:opacity-90"
-      style={{ elevation: 2, shadowColor: "#000", shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 2 } }}
+      style={{
+        elevation: 2,
+        shadowColor: "#000",
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 2 },
+      }}
     >
       {/* Hero block */}
       <View className={`h-32 ${heroColor} items-center justify-center`}>
-        <Text className="text-5xl font-bold text-white" style={{ opacity: 0.9 }}>
+        <Text
+          className="text-5xl font-bold text-white"
+          style={{ opacity: 0.9 }}
+        >
           {initial}
         </Text>
         {/* Status badge */}
