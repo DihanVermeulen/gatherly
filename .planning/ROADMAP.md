@@ -106,17 +106,17 @@ Plans:
 **Goal**: Users can manage their own wishlist for an event — adding, editing, and deleting items with name, description, image, and priority
 **Depends on**: Phase 13
 **Requirements**: WISH-01, WISH-02, WISH-03
-**Note**: TMPL-01, TMPL-02, TMPL-03 apply. My Wishlist screen template is MISSING — request template from user before implementing.
+**Note**: TMPL-01, TMPL-02, TMPL-03 apply. My Wishlist screen template has been provided via discuss-phase (CONTEXT.md), which contains detailed UI decisions.
 **Success Criteria** (what must be TRUE):
   1. User opens My Wishlist for an event and sees all their existing wishlist items
   2. User adds a new item with name, description, optional image, and priority — it appears in the list
   3. User edits an existing item and sees the updated details reflected immediately
   4. User deletes an item and it is removed from the list
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 15-01: Request My Wishlist screen template from user, then implement wishlist list view and add form
-- [ ] 15-02: Edit and delete item actions + priority display
+- [ ] 15-01-PLAN.md — Install expo-image-picker, register routes, create my-wishlist screen (list + FAB + add bottom sheet + ActionSheet delete)
+- [ ] 15-02-PLAN.md — Full-screen edit-wishlist-item screen (pre-filled form, save with UPDATE_WISHLIST_ITEM)
 
 ---
 
