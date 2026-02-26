@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** v2.1 — Phase 15 in progress (15-01 complete)
+**Current focus:** v2.1 — Phase 15 complete, Phase 16 pending template
 
 ## Current Position
 
-Phase: 15 of 18 (My Wishlist Screen) — in progress
-Plan: 1 of 1 complete (15-01 done)
+Phase: 15 of 18 (My Wishlist Screen) — complete
+Plan: 2 of 2 complete (15-01 + 15-02 done)
 Status: Phase complete
-Last activity: 2026-02-26 — Completed 15-01-PLAN.md (my-wishlist screen + AddWishlistItem component)
+Last activity: 2026-02-26 — Completed 15-02-PLAN.md (edit-wishlist-item screen, all CRUD complete)
 
-Progress: [█████░░░░░░░░░░░░░░░] ~33% — v2.1 Phase 15 complete (9 plans / 7 phases remaining)
+Progress: [█████░░░░░░░░░░░░░░░] ~36% — v2.1 Phase 15 complete (10 plans / 6 phases remaining)
 
 ## Performance Metrics
 
@@ -32,7 +32,7 @@ Progress: [█████░░░░░░░░░░░░░░░] ~33% �
 | v2.1 Phase 12 | 2/2 | ~12m | ~6m |
 | v2.1 Phase 13 | 2/2 | ~9m | ~4.5m |
 | v2.1 Phase 14 | 2/2 | ~7m | ~3.5m |
-| v2.1 Phase 15 | 1/1 | ~6m | ~6m |
+| v2.1 Phase 15 | 2/2 | ~7m | ~3.5m |
 
 *Updated after each plan completion*
 
@@ -81,7 +81,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-26
-Stopped at: Completed 15-01-PLAN.md — my-wishlist.tsx (441 lines), AddWishlistItem.tsx (227 lines), routes registered, Add My Gifts button wired
+Stopped at: Completed 15-02-PLAN.md — edit-wishlist-item.tsx (348 lines), all My Wishlist CRUD complete
 Resume file: None
 
 Next step: Phase 16 — request Event Wishlists screen template from user before proceeding
