@@ -87,6 +87,14 @@ function RootLayoutNav() {
                       options={{ headerShown: false }}
                     />
                     <Stack.Screen
+                      name="my-wishlist"
+                      options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                      name="edit-wishlist-item"
+                      options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
                       name="modal"
                       options={{ presentation: "modal" }}
                     />

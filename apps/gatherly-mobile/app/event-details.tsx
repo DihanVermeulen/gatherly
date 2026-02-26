@@ -314,10 +314,7 @@ export default function EventDetailsScreen() {
           <Button
             className="flex-1 rounded-xl"
             style={{ backgroundColor: "#0d9488" }}
-            onPress={() => {
-              // Stub: add gifts screen not yet implemented
-              console.log("Add My Gifts — coming soon");
-            }}
+            onPress={() => router.push(`/my-wishlist?id=${event.id}`)}
           >
             <ButtonText className="text-white font-semibold">
               + Add My Gifts
