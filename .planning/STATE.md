@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** v2.1 — Phase 15 complete, Phase 16 pending template
+**Current focus:** v2.1 — Phase 17 complete, Phase 18 pending template
 
 ## Current Position
 
-Phase: 17 of 18 (Join Event Screen) — in progress
-Plan: 1 of 2 complete (17-01 done)
-Status: In progress
-Last activity: 2026-02-27 — Completed 17-01-PLAN.md (invite validate extended, pendingInvite utility, _layout.tsx gesture + redirect)
+Phase: 17 of 18 (Join Event Screen) — complete
+Plan: 2 of 2 complete (17-01 and 17-02 done)
+Status: Phase complete
+Last activity: 2026-02-27 — Completed 17-02-PLAN.md (join.tsx full 7-state screen, sign-in/register pending invite docs)
 
-Progress: [██████░░░░░░░░░░░░░░] ~38% — v2.1 Phase 17 plan 1 complete (9 plans / ~5 phases remaining)
+Progress: [███████░░░░░░░░░░░░░] ~42% — v2.1 Phase 17 complete (8 plans / ~1 phase remaining)
 
 ## Performance Metrics
 
@@ -33,6 +33,7 @@ Progress: [██████░░░░░░░░░░░░░░] ~38% �
 | v2.1 Phase 13 | 2/2 | ~9m | ~4.5m |
 | v2.1 Phase 14 | 2/2 | ~7m | ~3.5m |
 | v2.1 Phase 15 | 2/2 | ~7m | ~3.5m |
+| v2.1 Phase 17 | 2/2 | ~10m | ~5m |
 
 *Updated after each plan completion*
 
@@ -71,6 +72,10 @@ Progress: [██████░░░░░░░░░░░░░░] ~38% �
 - pendingInvite module-level variable pattern — for transient session state that doesn't need to survive app restarts (not AsyncStorage)
 - consumePendingInviteCode() atomic read-and-clear — prevents double redirect; called in _layout.tsx useEffect watching session
 - 100ms setTimeout in post-auth join redirect — lets Stack.Protected navigation settle before router.replace('/join?token=...')
+- JoinState machine pattern: 7-state union type + switch in renderContent() — explicit states prevent impossible UI combinations
+- retryCount in validate effect deps: token doesn't change on retry, retryCount triggers re-fetch
+- Double-call guard in handleJoin: if (joinState === 'joining') return — prevents concurrent join requests
+- Comment-only for sign-in/register pending invite docs: unused imports cause TS errors; comments document flow
 
 ### Pending Todos
 
@@ -78,14 +83,13 @@ None yet.
 
 ### Blockers/Concerns
 
-- Phase 17 Plan 02: join.tsx template screen exists (confirmed in app dir) — ready to implement join screen UI
 - Phase 18: Organizer Invite Management template MISSING — must request from user; backend endpoint may also be missing
 - Existing dev databases need manual migration: ALTER TABLE invites ADD COLUMN IF NOT EXISTS created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;
 
 ## Session Continuity
 
-Last session: 2026-02-27
-Stopped at: Completed 17-01-PLAN.md — invite validate extended, mobile invitesApi validate/accept, pendingInvite utility, _layout.tsx gesture + redirect
+Last session: 2026-02-27 15:57 UTC
+Stopped at: Completed 17-02-PLAN.md — full join.tsx 7-state screen, sign-in/register pending invite docs
 Resume file: None
 
-Next step: Phase 17 Plan 02 — implement join screen UI (join.tsx template exists)
+Next step: Phase 18 — Organizer Invite Management (template MISSING, request from user first)
