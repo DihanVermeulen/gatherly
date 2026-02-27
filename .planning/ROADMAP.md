@@ -144,16 +144,17 @@ Plans:
 **Goal**: Users can join an event via an invite deep link — the Join Event screen handles all states of the flow gracefully
 **Depends on**: Phase 12
 **Requirements**: INVT-01, INVT-02
-**Note**: TMPL-01, TMPL-02, TMPL-03 apply. Join Event screen template is MISSING — request template from user before implementing.
+**Note**: TMPL-01, TMPL-02, TMPL-03 apply. UI decisions provided via discuss-phase (CONTEXT.md) — full-screen hero layout, skeleton loading, 7 flow states.
 **Success Criteria** (what must be TRUE):
   1. Tapping an invite link opens the app and shows an event preview with the event name and organizer
   2. User taps Join and is added to the event as a participant
   3. A user who is already a member of the event sees an "already joined" state (not a duplicate join)
   4. Invalid or expired invite codes show a clear error state — the user is not left on a blank screen
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 17-01: Request Join Event screen template from user, then implement join flow (loading, preview, join, success, already-joined, error states)
+- [ ] 17-01-PLAN.md — Add validate/accept to invitesApi, create pendingInvite utility, update _layout.tsx gesture
+- [ ] 17-02-PLAN.md — Full join.tsx screen (7 states: loading, preview, joining, success, already-joined, invalid, error) + auth screen auto-join wiring
 
 ---
 
@@ -188,5 +189,5 @@ Plans:
 | 14. Edit Event Screen | v2.1 | 2/2 | Complete | 2026-02-25 |
 | 15. My Wishlist Screen | v2.1 | 0/2 | Not started | - |
 | 16. Event Wishlists + Claiming | v2.1 | 0/2 | Not started | - |
-| 17. Join Event Screen | v2.1 | 0/1 | Not started | - |
+| 17. Join Event Screen | v2.1 | 0/2 | Not started | - |
 | 18. Organizer Invite Management | v2.1 | 0/2 | Not started | - |
