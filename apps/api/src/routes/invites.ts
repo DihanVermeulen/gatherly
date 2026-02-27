@@ -62,12 +62,13 @@ router.post(
       expiresAt = expirationDate;
     }
 
-    // Insert invite into database
+    // Insert invite into database, storing created_by_user_id for organizer attribution
+    const createdByUserId = (req as any).user?.id || null;
     const result = await query(
-      `INSERT INTO invites (event_id, email, invite_code, status, expires_at)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO invites (event_id, email, invite_code, status, expires_at, created_by_user_id)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING id, event_id, email, invite_code, status, expires_at, created_at`,
-      [eventId, email || null, inviteCode, "pending", expiresAt],
+      [eventId, email || null, inviteCode, "pending", expiresAt, createdByUserId],
     );
 
     const invite = result.rows[0];
@@ -187,13 +188,18 @@ router.post(
     }
 
     // Look up invite where status is pending and not expired
+    // Also retrieve organizer name (via created_by_user_id), participant count, and event date
     const result = await query(
       `SELECT
         invites.id as invite_id,
         invites.event_id,
-        events.name as event_name
+        events.name as event_name,
+        events.created_at as event_date,
+        users.name as organizer_name,
+        (SELECT COUNT(*) FROM participants WHERE participants.event_id = events.id) as participant_count
       FROM invites
       JOIN events ON invites.event_id = events.id
+      LEFT JOIN users ON invites.created_by_user_id = users.id
       WHERE invites.invite_code = $1
         AND invites.status = 'pending'
         AND (invites.expires_at IS NULL OR invites.expires_at > NOW())`,
@@ -211,6 +217,9 @@ router.post(
       eventId: invite.event_id,
       eventName: invite.event_name,
       inviteId: invite.invite_id,
+      organizerName: invite.organizer_name || null,
+      participantCount: parseInt(invite.participant_count, 10) || 0,
+      eventDate: invite.event_date || null,
     });
   }),
 );
@@ -295,8 +304,7 @@ router.post(
       await client.query("COMMIT");
 
       // After transaction commits: generate magic link if email provided
-      const emailAddress =
-        typeof email === "string" ? email.trim() : null;
+      const emailAddress = typeof email === "string" ? email.trim() : null;
       if (emailAddress) {
         const magicToken = nanoid(48);
         const tokenHash = crypto
@@ -344,6 +352,8 @@ router.post(
     const eventId = parseInt(req.params.eventId, 10);
     const inviteId = parseInt(req.params.inviteId, 10);
 
+    logger.log("Resend magic link...");
+
     // Look up the invite and its event name
     const inviteResult = await query(
       `SELECT i.id, i.email, e.name as event_name
@@ -353,11 +363,14 @@ router.post(
       [inviteId, eventId],
     );
 
+    logger.log("Resend magic link...");
+
     if (inviteResult.rows.length === 0) {
       return res.status(404).json({ error: "Invite not found" });
     }
 
     const invite = inviteResult.rows[0];
+    console.log("🚀 ~ invite:", invite);
 
     // Invalidate all existing tokens for this invite
     await query("DELETE FROM magic_link_tokens WHERE invite_id = $1", [
@@ -381,9 +394,12 @@ router.post(
     // Build magic link URL
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
     const magicLinkUrl = `${frontendUrl}/magic-link/${magicToken}`;
+    console.log("🚀 ~ magicLinkUrl:", magicLinkUrl);
 
     // Fire-and-forget email if invite has an email address
     if (invite.email) {
+      logger.log("Resending magic link...");
+      console.log("Resending magic link...");
       sendMagicLinkEmail(invite.email, magicLinkUrl, invite.event_name);
     }
 
