@@ -139,7 +139,7 @@ Plans:
 
 ---
 
-### Phase 17: Join Event Screen
+### ✅ Phase 17: Join Event Screen — COMPLETE 2026-02-27
 
 **Goal**: Users can join an event via an invite deep link — the Join Event screen handles all states of the flow gracefully
 **Depends on**: Phase 12
@@ -153,8 +153,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 17-01-PLAN.md — Add validate/accept to invitesApi, create pendingInvite utility, update _layout.tsx gesture
-- [ ] 17-02-PLAN.md — Full join.tsx screen (7 states: loading, preview, joining, success, already-joined, invalid, error) + auth screen auto-join wiring
+- [x] 17-01-PLAN.md — Add validate/accept to invitesApi, create pendingInvite utility, update _layout.tsx gesture
+- [x] 17-02-PLAN.md — Full join.tsx screen (7 states: loading, preview, joining, success, already-joined, invalid, error) + auth screen auto-join wiring
 
 ---
 
@@ -189,5 +189,5 @@ Plans:
 | 14. Edit Event Screen | v2.1 | 2/2 | Complete | 2026-02-25 |
 | 15. My Wishlist Screen | v2.1 | 0/2 | Not started | - |
 | 16. Event Wishlists + Claiming | v2.1 | 0/2 | Not started | - |
-| 17. Join Event Screen | v2.1 | 0/2 | Not started | - |
+| 17. Join Event Screen | v2.1 | 2/2 | Complete | 2026-02-27 |
 | 18. Organizer Invite Management | v2.1 | 0/2 | Not started | - |

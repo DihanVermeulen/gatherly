@@ -120,8 +120,8 @@ Not in v2.1 scope — tracked for later.
 | WISH-05 | Phase 16 | Pending |
 | WISH-06 | Phase 16 | Pending |
 | WISH-07 | Phase 16 | Pending |
-| INVT-01 | Phase 17 | Pending |
-| INVT-02 | Phase 17 | Pending |
+| INVT-01 | Phase 17 | Complete |
+| INVT-02 | Phase 17 | Complete |
 | INVT-03 | Phase 18 | Pending |
 | INVT-04 | Phase 18 | Pending |
 | INVT-05 | Phase 18 | Pending |
