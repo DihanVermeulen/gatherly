@@ -11,8 +11,9 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import { useColorScheme } from "@/components/useColorScheme";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { View } from "react-native";
+import { consumePendingInviteCode } from "./utils/pendingInvite";
 import { SafeAreaView } from "@/components/ui/safe-area-view";
 import { SessionProvider, useSession } from "./contexts/AuthContext";
 import { EventsProvider } from "./contexts/EventsContext";
@@ -45,12 +46,29 @@ function RootLayoutNav() {
   const { session, isLoading } = useSession();
   const [colorMode] = useState<"light" | "dark">("light");
   const colorScheme = useColorScheme();
+  const router = useRouter();
 
   useEffect(() => {
     if (!isLoading) {
       SplashScreen.hideAsync();
     }
   }, [isLoading]);
+
+  // After authentication, check for pending invite code and redirect to join screen.
+  // This handles the race condition where Stack.Protected redirects away from
+  // sign-in/register before they can navigate to /join themselves.
+  useEffect(() => {
+    if (session && !isLoading) {
+      const pendingCode = consumePendingInviteCode();
+      if (pendingCode) {
+        // Small delay to let the Stack.Protected navigation settle
+        const timer = setTimeout(() => {
+          router.replace(`/join?token=${pendingCode}`);
+        }, 100);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [session, isLoading]);
 
   // Hold splash screen while auth state is loading
   if (isLoading) return null;
@@ -113,7 +131,7 @@ function RootLayoutNav() {
                   </Stack.Protected>
 
                   {/* Public routes — accessible regardless of auth state */}
-                  <Stack.Screen name="join" options={{ headerShown: false }} />
+                  <Stack.Screen name="join" options={{ headerShown: false, gestureEnabled: false }} />
                 </Stack>
               </ThemeProvider>
             </SafeAreaView>
