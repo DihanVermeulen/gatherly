@@ -31,6 +31,10 @@ import {
 } from "@/components/ui/form-control";
 import { Icon } from "@/components/ui/icon";
 
+// Pending invite flow: join.tsx calls setPendingInviteCode before navigating here.
+// After signIn(), _layout.tsx consumes the pending code and redirects to /join.
+// See: utils/pendingInvite.ts (setPendingInviteCode)
+
 export default function SignInScreen() {
   const { signIn } = useSession();
   const [email, setEmail] = useState("");
