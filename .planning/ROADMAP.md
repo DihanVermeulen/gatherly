@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v2.0 Gift Exchange Platform** - Phases 1–10 (shipped 2026-02-22)
-- 🚧 **v2.1 Gatherly Mobile** - Phases 11–18 (in progress)
+- 🚧 **v2.1 Gatherly Mobile** - Phases 11–19 (in progress)
 
 ## Phases
 
@@ -176,9 +176,22 @@ Plans:
 
 ---
 
+### Phase 19: Offline Storage Strategy — AsyncStorage → SQLite + SecureStore
+
+**Goal**: All local persistence uses the right tool for the job — expo-sqlite for non-sensitive structured data (cached events, wishlists), expo-secure-store for auth tokens, and AsyncStorage removed entirely. Offline mutation scope is explicitly defined: read-only caching only (no create/edit/delete without a live API connection), reflecting the planned paid-feature model.
+**Depends on**: Phase 18
+**Plans:** 3 plans
+
+Plans:
+- [ ] 19-01-PLAN.md — SQLite database layer + SecureStore abstraction + cache utilities + DatabaseProvider
+- [ ] 19-02-PLAN.md — Migrate EventsContext from AsyncStorage to SQLite + remove AsyncStorage package
+- [ ] 19-03-PLAN.md — Native network detection (NetInfo) + offline banner + fix useSyncStatus for RN
+
+---
+
 ## Progress
 
-**Execution Order:** 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18
+**Execution Order:** 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18 → 19
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -191,3 +204,4 @@ Plans:
 | 16. Event Wishlists + Claiming | v2.1 | 0/2 | Not started | - |
 | 17. Join Event Screen | v2.1 | 2/2 | Complete | 2026-02-27 |
 | 18. Organizer Invite Management | v2.1 | 0/2 | Not started | - |
+| 19. Offline Storage Strategy | v2.1 | 0/3 | Not started | - |
