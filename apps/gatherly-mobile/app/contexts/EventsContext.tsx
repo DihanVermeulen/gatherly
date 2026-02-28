@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, {
   createContext,
   useContext,
@@ -7,6 +6,8 @@ import React, {
   useState,
 } from "react";
 import { eventsApi, Event, WishlistItem } from "../api/events";
+import { useDatabase } from "../../contexts/DatabaseContext";
+import { cacheEvents, loadCachedEvents } from "@/lib/cache";
 
 const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_URL || "http://192.168.0.9:5001";
@@ -148,8 +149,6 @@ const eventsReducer = (
   }
 };
 
-const STORAGE_KEY = "secret_santa_events";
-
 export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -157,18 +156,14 @@ export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const [state, dispatch] = useReducer(eventsReducer, initialState);
 
-  // Load cached events from AsyncStorage on mount (async — cannot use in reducer initializer)
+  const db = useDatabase();
+
+  // Load cached events from SQLite on mount (async — cannot use in reducer initializer)
   useEffect(() => {
     const loadFromStorage = async () => {
       try {
-        const saved = await AsyncStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          const events = (parsed.events || []).map((e: Event) => ({
-            ...e,
-            wishlists: e.wishlists || [],
-            gifts: e.gifts || {},
-          }));
+        const events = await loadCachedEvents(db);
+        if (events.length > 0) {
           dispatch({ type: "SET_EVENTS", payload: events });
         }
       } catch (err) {
@@ -176,7 +171,7 @@ export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     };
     loadFromStorage();
-  }, []);
+  }, [db]);
 
   // Check if API is available on mount, then fetch fresh data
   useEffect(() => {
@@ -189,10 +184,7 @@ export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({
           dispatch({ type: "SET_LOADING", payload: true });
           const events = await eventsApi.getAll();
           dispatch({ type: "SET_EVENTS", payload: events });
-          await AsyncStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify({ events }),
-          );
+          await cacheEvents(db, events);
         }
       } catch (error) {
         console.log("API not available, using cached data");
@@ -200,7 +192,7 @@ export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     };
     checkApi();
-  }, []);
+  }, [db]);
 
   // Refresh events from API (for manual refresh calls)
   const refreshEvents = async () => {
@@ -208,7 +200,7 @@ export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({
       dispatch({ type: "SET_LOADING", payload: true });
       const events = await eventsApi.getAll();
       dispatch({ type: "SET_EVENTS", payload: events });
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({ events }));
+      await cacheEvents(db, events);
     } catch (error) {
       console.error("Error fetching events:", error);
       dispatch({ type: "SET_ERROR", payload: "Failed to load events" });
