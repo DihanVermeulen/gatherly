@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 19 of 19 (Offline Storage Strategy — SQLite Migration) — in progress
-Plan: 1 of 3 complete (19-01 done)
+Plan: 2 of 3 complete (19-01, 19-02 done)
 Status: In progress
-Last activity: 2026-02-28 — Completed 19-01-PLAN.md (SQLite foundation: database.ts, cache.ts, DatabaseContext.tsx)
+Last activity: 2026-02-28 — Completed 19-02-PLAN.md (EventsContext SQLite migration, signOut cache clearing, AsyncStorage removed)
 
-Progress: [████████░░░░░░░░░░░░] ~45% — v2.1 Phase 19 plan 1 of 3 complete
+Progress: [████████████░░░░░░░░] ~60% — v2.1 Phase 19 plan 2 of 3 complete
 
 ## Performance Metrics
 
@@ -34,7 +34,7 @@ Progress: [████████░░░░░░░░░░░░] ~45% �
 | v2.1 Phase 14 | 2/2 | ~7m | ~3.5m |
 | v2.1 Phase 15 | 2/2 | ~7m | ~3.5m |
 | v2.1 Phase 17 | 2/2 | ~10m | ~5m |
-| v2.1 Phase 19 | 1/3 | ~4m | ~4m |
+| v2.1 Phase 19 | 2/3 | ~11m | ~5.5m |
 
 *Updated after each plan completion*
 
@@ -83,6 +83,8 @@ Progress: [████████░░░░░░░░░░░░] ~45% �
 - SQLite singleton pattern: module-level let db = null in database.ts, repeated initDatabase() calls return same instance
 - DatabaseProvider position: inside SessionProvider, outside RootLayoutNav — db available when EventsProvider (Plan 02) calls useDatabase()
 - gift_count column in SQLite events table is always 0 — giftCount is local UI state, not in TEvent
+- initDatabase() direct call in signOut — SessionProvider is outside DatabaseProvider; singleton pattern makes direct call safe and returns same instance
+- clearCache called after SecureStore.deleteItemAsync but before state setters in signOut — ensures data cleared before UI reacts to null session
 
 ### Roadmap Evolution
 
@@ -99,8 +101,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-28 06:18 UTC
-Stopped at: Completed 19-01-PLAN.md — SQLite foundation (database.ts, cache.ts, DatabaseContext.tsx, _layout.tsx wiring)
+Last session: 2026-02-28 11:58 UTC
+Stopped at: Completed 19-02-PLAN.md — EventsContext SQLite migration, signOut cache clearing, AsyncStorage removed
 Resume file: None
 
-Next step: Phase 19 Plan 02 — EventsContext SQLite migration (cacheEvents on fetch, loadCachedEvents on offline fallback)
+Next step: Phase 19 Plan 03 — Offline UI indicators (show cached/offline state to user)
