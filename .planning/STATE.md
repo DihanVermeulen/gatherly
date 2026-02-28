@@ -5,21 +5,21 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** v2.1 — Phase 19 in progress (offline storage SQLite migration)
+**Current focus:** v2.1 — Phase 19 COMPLETE (offline storage SQLite migration)
 
 ## Current Position
 
-Phase: 19 of 19 (Offline Storage Strategy — SQLite Migration) — in progress
-Plan: 2 of 3 complete (19-01, 19-02 done)
-Status: In progress
-Last activity: 2026-02-28 — Completed 19-02-PLAN.md (EventsContext SQLite migration, signOut cache clearing, AsyncStorage removed)
+Phase: 19 of 19 (Offline Storage Strategy — SQLite Migration) — COMPLETE
+Plan: 3 of 3 complete (19-01, 19-02, 19-03 done)
+Status: Phase 19 complete — all v2.1 phases complete
+Last activity: 2026-02-28 — Completed 19-03-PLAN.md (NetInfo, OfflineBanner, networkMode mutations)
 
-Progress: [████████████░░░░░░░░] ~60% — v2.1 Phase 19 plan 2 of 3 complete
+Progress: [████████████████████] ~100% — v2.1 Phase 19 all 3 plans complete
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 35 (27 v2.0 + 8 v2.1)
+- Total plans completed: 36 (27 v2.0 + 9 v2.1)
 - Average duration: —
 - Total execution time: —
 
@@ -34,7 +34,7 @@ Progress: [████████████░░░░░░░░] ~60% �
 | v2.1 Phase 14 | 2/2 | ~7m | ~3.5m |
 | v2.1 Phase 15 | 2/2 | ~7m | ~3.5m |
 | v2.1 Phase 17 | 2/2 | ~10m | ~5m |
-| v2.1 Phase 19 | 2/3 | ~11m | ~5.5m |
+| v2.1 Phase 19 | 3/3 | ~15m | ~5m |
 
 *Updated after each plan completion*
 
@@ -85,10 +85,14 @@ Progress: [████████████░░░░░░░░] ~60% �
 - gift_count column in SQLite events table is always 0 — giftCount is local UI state, not in TEvent
 - initDatabase() direct call in signOut — SessionProvider is outside DatabaseProvider; singleton pattern makes direct call safe and returns same instance
 - clearCache called after SecureStore.deleteItemAsync but before state setters in signOut — ensures data cleared before UI reacts to null session
+- isConnected !== false pattern for offline detection — null (NetInfo initializing) treated as online; only false triggers offline banner
+- Fragment wrapper for SafeAreaView children — avoids extra View in layout tree while allowing OfflineBanner + ThemeProvider as siblings
+- networkMode: 'online' per-mutation (not via QueryClient defaults) — no central QueryClient config in codebase; added inline to each useMutation
 
 ### Roadmap Evolution
 
 - Phase 19 added: Offline Storage Strategy — AsyncStorage → SQLite + SecureStore (read-only offline caching, no offline mutations, scoped to paid-feature model)
+- Phase 19 COMPLETE: All 3 plans executed (SQLite foundation, EventsContext migration, offline UI + mutation blocking)
 
 ### Pending Todos
 
@@ -101,8 +105,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-28 11:58 UTC
-Stopped at: Completed 19-02-PLAN.md — EventsContext SQLite migration, signOut cache clearing, AsyncStorage removed
+Last session: 2026-02-28 11:59 UTC
+Stopped at: Completed 19-03-PLAN.md — NetInfo, OfflineBanner, networkMode mutations — Phase 19 COMPLETE
 Resume file: None
 
-Next step: Phase 19 Plan 03 — Offline UI indicators (show cached/offline state to user)
+Next step: All planned phases complete. Phase 18 (Organizer Invite Management) skipped — template missing.
