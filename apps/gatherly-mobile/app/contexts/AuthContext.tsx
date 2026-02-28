@@ -8,6 +8,8 @@ import {
 import * as SecureStore from "expo-secure-store";
 import { setAccessToken, setSignOutCallback } from "../api/client";
 import { authApi, type User } from "../api/auth";
+import { clearCache } from "@/lib/cache";
+import { initDatabase } from "@/lib/database";
 
 type AuthContextValue = {
   session: string | null; // accessToken — used by _layout.tsx Stack.Protected guard
@@ -79,6 +81,13 @@ export function SessionProvider({ children }: PropsWithChildren) {
     }
     await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
     await SecureStore.deleteItemAsync(USER_KEY);
+    // Clear SQLite cache on sign-out
+    try {
+      const db = await initDatabase();
+      await clearCache(db);
+    } catch (err) {
+      console.log("Failed to clear cache on sign-out:", err);
+    }
     setAccessToken(null);
     setSession(null);
     setUser(null);
