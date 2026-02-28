@@ -18,6 +18,7 @@ export function useCreateEvent() {
     { previous: Event[] | undefined; tempId: string }
   >({
     mutationKey: ["event", "create"],
+    networkMode: "online",
     mutationFn: ({ name, coupleCrossing }) =>
       eventsApi.create(name, coupleCrossing),
 
@@ -86,6 +87,7 @@ export function useUpdateEvent() {
 
   return useMutation<Event, Error, Event, { previous: Event[] | undefined }>({
     mutationKey: ["event", "update"],
+    networkMode: "online",
     mutationFn: (event) => {
       const { id, ...rest } = event;
       return eventsApi.update(id, rest);
@@ -134,6 +136,7 @@ export function useDeleteEvent() {
 
   return useMutation<void, Error, string, { previous: Event[] | undefined }>({
     mutationKey: ["event", "delete"],
+    networkMode: "online",
     mutationFn: (id) => eventsApi.delete(id),
 
     onMutate: async (id) => {

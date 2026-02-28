@@ -17,6 +17,7 @@ export function useClaimWishlistItem() {
 
   return useMutation<{ success: boolean }, Error, ClaimVariables, ClaimContext>({
     mutationKey: ["wishlist", "claim"],
+    networkMode: "online",
     mutationFn: ({ eventId, wishlistId }) =>
       wishlistsApi.claim(eventId, wishlistId),
 
@@ -73,6 +74,7 @@ export function useUnclaimWishlistItem() {
 
   return useMutation<{ success: boolean }, Error, ClaimVariables, ClaimContext>({
     mutationKey: ["wishlist", "unclaim"],
+    networkMode: "online",
     mutationFn: ({ eventId, wishlistId }) =>
       wishlistsApi.unclaim(eventId, wishlistId),
 
@@ -135,6 +137,7 @@ export function useReorderWishlistItems() {
 
   return useMutation<{ success: boolean }, Error, ReorderVariables, ReorderContext>({
     mutationKey: ["wishlist", "reorder"],
+    networkMode: "online",
     mutationFn: ({ eventId, participantId, orderedIds }) =>
       wishlistsApi.reorder(eventId, participantId, orderedIds),
 
