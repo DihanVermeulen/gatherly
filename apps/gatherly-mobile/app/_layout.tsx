@@ -17,6 +17,7 @@ import { consumePendingInviteCode } from "./utils/pendingInvite";
 import { SafeAreaView } from "@/components/ui/safe-area-view";
 import { SessionProvider, useSession } from "./contexts/AuthContext";
 import { EventsProvider } from "./contexts/EventsContext";
+import { DatabaseProvider } from "@/contexts/DatabaseContext";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -37,7 +38,9 @@ export default function RootLayout() {
 
   return (
     <SessionProvider>
-      <RootLayoutNav />
+      <DatabaseProvider>
+        <RootLayoutNav />
+      </DatabaseProvider>
     </SessionProvider>
   );
 }
