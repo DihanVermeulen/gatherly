@@ -18,6 +18,7 @@ import { SafeAreaView } from "@/components/ui/safe-area-view";
 import { SessionProvider, useSession } from "./contexts/AuthContext";
 import { EventsProvider } from "./contexts/EventsContext";
 import { DatabaseProvider } from "@/contexts/DatabaseContext";
+import { OfflineBanner } from "@/components/OfflineBanner";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -85,10 +86,12 @@ function RootLayoutNav() {
               className="h-full w-full max-w-7xl mx-auto bg-background-0"
               edges={["top"]}
             >
-              <ThemeProvider
-                value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-              >
-                <Stack>
+              <>
+                <OfflineBanner />
+                <ThemeProvider
+                  value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+                >
+                  <Stack>
                   {/* Authenticated routes — only accessible when session exists */}
                   <Stack.Protected guard={!!session}>
                     <Stack.Screen
@@ -135,8 +138,9 @@ function RootLayoutNav() {
 
                   {/* Public routes — accessible regardless of auth state */}
                   <Stack.Screen name="join" options={{ headerShown: false, gestureEnabled: false }} />
-                </Stack>
-              </ThemeProvider>
+                  </Stack>
+                </ThemeProvider>
+              </>
             </SafeAreaView>
           </View>
         </GestureHandlerRootView>

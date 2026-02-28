@@ -1,5 +1,6 @@
 import { useIsMutating, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
+import { useNetworkStatus } from "./useNetworkStatus";
 
 export type SyncStatus = "synced" | "syncing" | "offline" | "error";
 
@@ -7,7 +8,7 @@ export type SyncStatus = "synced" | "syncing" | "offline" | "error";
  * Hook for monitoring sync queue status.
  *
  * Derives sync status from:
- * - Network connectivity (navigator.onLine)
+ * - Network connectivity (useNetworkStatus via @react-native-community/netinfo)
  * - Active mutations (useIsMutating)
  * - Failed mutations in cache
  *
@@ -22,25 +23,10 @@ export function useSyncStatus() {
   const queryClient = useQueryClient();
   const mutatingCount = useIsMutating();
 
-  // Track online/offline status
-  const [isOnline, setIsOnline] = useState(
-    typeof navigator !== "undefined" ? navigator.onLine : true,
-  );
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-    };
-  }, []);
+  // Track online/offline status via NetInfo (works on iOS, Android, and web)
+  const isConnected = useNetworkStatus();
+  // Treat null (initializing) and true (connected) as online; only false = offline
+  const isOnline = isConnected !== false;
 
   // Check for failed mutations
   const [lastError, setLastError] = useState<string | null>(null);
