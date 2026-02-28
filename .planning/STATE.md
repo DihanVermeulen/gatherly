@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** v2.1 — Phase 17 complete, Phase 18 pending template
+**Current focus:** v2.1 — Phase 19 in progress (offline storage SQLite migration)
 
 ## Current Position
 
-Phase: 17 of 18 (Join Event Screen) — complete
-Plan: 2 of 2 complete (17-01 and 17-02 done)
-Status: Phase complete
-Last activity: 2026-02-27 — Completed 17-02-PLAN.md (join.tsx full 7-state screen, sign-in/register pending invite docs)
+Phase: 19 of 19 (Offline Storage Strategy — SQLite Migration) — in progress
+Plan: 1 of 3 complete (19-01 done)
+Status: In progress
+Last activity: 2026-02-28 — Completed 19-01-PLAN.md (SQLite foundation: database.ts, cache.ts, DatabaseContext.tsx)
 
-Progress: [███████░░░░░░░░░░░░░] ~42% — v2.1 Phase 17 complete (8 plans / ~1 phase remaining)
+Progress: [████████░░░░░░░░░░░░] ~45% — v2.1 Phase 19 plan 1 of 3 complete
 
 ## Performance Metrics
 
@@ -34,6 +34,7 @@ Progress: [███████░░░░░░░░░░░░░] ~42% �
 | v2.1 Phase 14 | 2/2 | ~7m | ~3.5m |
 | v2.1 Phase 15 | 2/2 | ~7m | ~3.5m |
 | v2.1 Phase 17 | 2/2 | ~10m | ~5m |
+| v2.1 Phase 19 | 1/3 | ~4m | ~4m |
 
 *Updated after each plan completion*
 
@@ -76,6 +77,16 @@ Progress: [███████░░░░░░░░░░░░░] ~42% �
 - retryCount in validate effect deps: token doesn't change on retry, retryCount triggers re-fetch
 - Double-call guard in handleJoin: if (joinState === 'joining') return — prevents concurrent join requests
 - Comment-only for sign-in/register pending invite docs: unused imports cause TS errors; comments document flow
+- expo-sqlite via npm --ignore-scripts — pnpm fails due to monorepo virtual store path length (consistent with existing gatherly-mobile install convention)
+- async-storage pinned to 1.24.0 — version 1.24.1 was unpublished from npm registry; 1.24.0 is highest compatible
+- No wishlist_items SQLite table — wishlists embedded in event JSON blob and cached implicitly via cacheEvents(); separate table is dead code
+- SQLite singleton pattern: module-level let db = null in database.ts, repeated initDatabase() calls return same instance
+- DatabaseProvider position: inside SessionProvider, outside RootLayoutNav — db available when EventsProvider (Plan 02) calls useDatabase()
+- gift_count column in SQLite events table is always 0 — giftCount is local UI state, not in TEvent
+
+### Roadmap Evolution
+
+- Phase 19 added: Offline Storage Strategy — AsyncStorage → SQLite + SecureStore (read-only offline caching, no offline mutations, scoped to paid-feature model)
 
 ### Pending Todos
 
@@ -88,8 +99,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-27 15:57 UTC
-Stopped at: Completed 17-02-PLAN.md — full join.tsx 7-state screen, sign-in/register pending invite docs
+Last session: 2026-02-28 06:18 UTC
+Stopped at: Completed 19-01-PLAN.md — SQLite foundation (database.ts, cache.ts, DatabaseContext.tsx, _layout.tsx wiring)
 Resume file: None
 
-Next step: Phase 18 — Organizer Invite Management (template MISSING, request from user first)
+Next step: Phase 19 Plan 02 — EventsContext SQLite migration (cacheEvents on fetch, loadCachedEvents on offline fallback)
