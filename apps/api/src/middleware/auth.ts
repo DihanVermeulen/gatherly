@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from "express";
-import { verifyAccessToken } from "../services/tokenService.js";
-import jwt from "jsonwebtoken";
+import { Request, Response, NextFunction } from 'express';
+import { verifyAccessToken } from '../services/tokenService.js';
+import jwt from 'jsonwebtoken';
 
 // Extend Express Request interface to include user
 declare global {
@@ -9,9 +9,9 @@ declare global {
       user?: {
         userId: number;
         email: string;
-        role: "organizer" | "participant";
+        role: 'organizer' | 'participant';
         participantId?: number; // Set for magic-link participant sessions
-        eventId?: number; // Set for magic-link participant sessions
+        eventId?: number;       // Set for magic-link participant sessions
       };
     }
   }
@@ -25,20 +25,18 @@ declare global {
 export function authenticateJWT(
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ): void {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
-    res.status(401).json({ error: "No token provided" });
+    res.status(401).json({ error: 'No token provided' });
     return;
   }
 
-  const parts = authHeader.split(" ");
-  if (parts.length !== 2 || parts[0] !== "Bearer") {
-    res
-      .status(401)
-      .json({ error: "Invalid token format. Use: Bearer <token>" });
+  const parts = authHeader.split(' ');
+  if (parts.length !== 2 || parts[0] !== 'Bearer') {
+    res.status(401).json({ error: 'Invalid token format. Use: Bearer <token>' });
     return;
   }
 
@@ -50,23 +48,21 @@ export function authenticateJWT(
       userId: payload.userId,
       email: payload.email,
       role: payload.role,
-      ...(payload.participantId !== undefined && {
-        participantId: payload.participantId,
-      }),
+      ...(payload.participantId !== undefined && { participantId: payload.participantId }),
       ...(payload.eventId !== undefined && { eventId: payload.eventId }),
     };
     next();
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
-      res.status(401).json({ error: "Token expired" });
+      res.status(401).json({ error: 'Token expired' });
       return;
     }
     if (error instanceof jwt.JsonWebTokenError) {
-      res.status(401).json({ error: "Invalid token" });
+      res.status(401).json({ error: 'Invalid token' });
       return;
     }
-    console.error("Authentication error:", error);
-    res.status(500).json({ error: "Authentication failed" });
+    console.error('Authentication error:', error);
+    res.status(500).json({ error: 'Authentication failed' });
     return;
   }
 }
@@ -80,7 +76,7 @@ export function authenticateJWT(
 export function optionalAuth(
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ): void {
   const authHeader = req.headers.authorization;
 
@@ -90,8 +86,8 @@ export function optionalAuth(
     return;
   }
 
-  const parts = authHeader.split(" ");
-  if (parts.length !== 2 || parts[0] !== "Bearer") {
+  const parts = authHeader.split(' ');
+  if (parts.length !== 2 || parts[0] !== 'Bearer') {
     // Invalid format - swallow error and proceed without authentication
     next();
     return;
@@ -105,9 +101,7 @@ export function optionalAuth(
       userId: payload.userId,
       email: payload.email,
       role: payload.role,
-      ...(payload.participantId !== undefined && {
-        participantId: payload.participantId,
-      }),
+      ...(payload.participantId !== undefined && { participantId: payload.participantId }),
       ...(payload.eventId !== undefined && { eventId: payload.eventId }),
     };
   } catch (error) {
