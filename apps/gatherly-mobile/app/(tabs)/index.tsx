@@ -177,7 +177,7 @@ export default function EventsScreen() {
       </View>
 
       {/* Search Bar */}
-      <View className="mx-5 mb-3 flex-row items-center gap-2 rounded-2xl border border-outline-200 bg-background-50 px-4 py-3">
+      <View className="mx-5 ps-2 mb-3 flex-row items-center gap-2 rounded-2xl border border-outline-200 bg-background-50">
         <Search size={18} color="#94a3b8" />
         <TextInput
           placeholder="Search events..."
@@ -196,7 +196,7 @@ export default function EventsScreen() {
         contentContainerStyle={{
           paddingHorizontal: 20,
           gap: 8,
-          paddingBottom: 4,
+          paddingBottom: 14,
         }}
         className="mb-3"
       >
@@ -223,7 +223,7 @@ export default function EventsScreen() {
 
       {/* FAB */}
       <Fab
-        size="lg"
+        size="xl"
         onPress={createEvent}
         isDisabled={false}
         isHovered={false}
