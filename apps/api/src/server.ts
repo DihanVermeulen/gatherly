@@ -20,7 +20,17 @@ export const createServer = (): Express => {
     .use(cookieParser())
     .use(
       cors({
-        origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+        origin: (origin, callback) => {
+          const allowed = (process.env.CORS_ORIGIN || "http://localhost:3000,http://localhost:8081")
+            .split(",")
+            .map((o) => o.trim());
+          // Native mobile apps don't send an Origin header — allow them through
+          if (!origin || allowed.includes(origin)) {
+            callback(null, true);
+          } else {
+            callback(new Error(`CORS: origin '${origin}' not allowed`));
+          }
+        },
         credentials: true,
       }),
     )
