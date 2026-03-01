@@ -52,7 +52,7 @@ export const Header: React.FC<{
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => navigate("/home")}
           >
-            <img src="/Logo.png" alt="" style={{ height: "40px" }} />
+            <img src="/Logo_Full.png" alt="" style={{ height: "40px" }} />
           </div>
 
           {/* Desktop Navigation */}
@@ -63,7 +63,7 @@ export const Header: React.FC<{
                 onClick={() => handleNavClick(item.route)}
                 className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                   isActive(item.route)
-                    ? "bg-primary-0 text-on-primary-0 shadow-lg shadow-primary/20"
+                    ? "bg-primary-500 text-on-primary-0 shadow-lg shadow-primary/20"
                     : "text-typography-0 dark:text-typography-dark hover:bg-slate-50 dark:hover:bg-slate-800"
                 }`}
               >

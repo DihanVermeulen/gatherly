@@ -480,19 +480,17 @@ export function WishlistPage() {
         )}
 
         {/* Action: Add Gift Button */}
-        <div className="px-4 py-4">
-          <button
-            onClick={handleAdd}
-            className="flex w-full cursor-pointer items-center justify-center rounded-xl h-12 px-4 bg-primary-500 text-on-primary-0 gap-2 text-sm font-bold shadow-lg shadow-primary/20"
-          >
-            <Plus className="w-5 h-5" />
-            <span>
-              {personalItems.length === 0
-                ? "Add Your First Gift"
-                : "Add to Wishlist"}
-            </span>
-          </button>
-        </div>
+        {displayPersonalItems.length > 0 && (
+          <div className="px-4 py-4">
+            <button
+              onClick={handleAdd}
+              className="flex w-full cursor-pointer items-center justify-center rounded-xl h-12 px-4 bg-primary-500 text-on-primary-0 gap-2 text-sm font-bold shadow-lg shadow-primary/20"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Add to Wishlist</span>
+            </button>
+          </div>
+        )}
 
         {/* Section Header: Registry */}
         <div className="px-4 pt-8 pb-4">

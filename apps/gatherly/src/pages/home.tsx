@@ -18,7 +18,7 @@ export const HomePage = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={() => navigate("/events")}
-            className="bg-primary-0 hover:opacity-90 text-on-primary-0 px-10 py-5 rounded-2xl text-lg font-bold transition-all shadow-xl shadow-primary/20 active:scale-95 flex items-center justify-center gap-2"
+            className="bg-primary-500 hover:opacity-90 text-on-primary-0 px-10 py-5 rounded-2xl text-lg font-bold transition-all shadow-xl shadow-primary/20 active:scale-95 flex items-center justify-center gap-2"
           >
             Get Started
           </button>

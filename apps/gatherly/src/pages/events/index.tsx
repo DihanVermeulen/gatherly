@@ -85,7 +85,7 @@ export const EventsPage = () => {
           <h2 className="text-2xl font-bold tracking-tight">My Events</h2>
           <button
             onClick={() => setIsCreateFormOpen(true)}
-            className="flex items-center justify-center h-10 px-4 rounded-xl bg-primary-0 text-on-primary-0 gap-2 shadow-lg shadow-primary/20 transition-transform active:scale-95"
+            className="flex items-center justify-center h-10 px-4 rounded-xl bg-primary-500 text-on-primary-0 gap-2 shadow-lg shadow-primary/20 transition-transform active:scale-95"
           >
             <Plus />
             <span className="text-sm font-bold truncate">New Event</span>

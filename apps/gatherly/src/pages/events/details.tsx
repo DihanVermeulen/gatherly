@@ -205,7 +205,7 @@ export const EventDetailsPage = () => {
                   </p>
                   <button
                     onClick={handleReveal}
-                    className="w-full flex items-center justify-center gap-2 bg-primary-0 text-on-primary-0 font-bold py-3 rounded-xl shadow-sm shadow-primary/20 active:scale-95 transition-transform"
+                    className="w-full flex items-center justify-center gap-2 bg-primary-500 text-on-primary-0 font-bold py-3 rounded-xl shadow-sm shadow-primary/20 active:scale-95 transition-transform"
                   >
                     <Eye size={18} />
                     Reveal My Assignment
@@ -223,7 +223,7 @@ export const EventDetailsPage = () => {
                   </p>
                   <button
                     disabled
-                    className="w-full flex items-center justify-center gap-2 bg-primary-0 text-on-primary-0 font-bold py-3 rounded-xl shadow-sm shadow-primary/20 opacity-70 cursor-not-allowed"
+                    className="w-full flex items-center justify-center gap-2 bg-primary-500 text-on-primary-0 font-bold py-3 rounded-xl shadow-sm shadow-primary/20 opacity-70 cursor-not-allowed"
                   >
                     <Loader size={18} className="animate-spin" />
                     Revealing...
@@ -283,7 +283,9 @@ export const EventDetailsPage = () => {
             </>
           ) : (
             <>
-              <h3 className="text-base font-bold mb-1">Your Secret Assignment</h3>
+              <h3 className="text-base font-bold mb-1">
+                Your Secret Assignment
+              </h3>
               <p className="text-sm text-slate-500 mb-4 leading-relaxed">
                 {hasAssignments
                   ? "The draw is complete! Reveal who you are surprising this year."
@@ -291,7 +293,7 @@ export const EventDetailsPage = () => {
               </p>
               <button
                 onClick={() => navigate("/decipher")}
-                className="w-full flex items-center justify-center gap-2 bg-primary-0 text-on-primary-0 font-bold py-3 rounded-xl shadow-sm shadow-primary/20 active:scale-95 transition-transform"
+                className="w-full flex items-center justify-center gap-2 bg-primary-500 text-on-primary-0 font-bold py-3 rounded-xl shadow-sm shadow-primary/20 active:scale-95 transition-transform"
               >
                 <Eye size={18} />
                 View My Assignment
@@ -361,7 +363,7 @@ export const EventDetailsPage = () => {
                 : undefined
             }
             disabled={!currentParticipant}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm bg-primary-0 text-on-primary-0 shadow-sm shadow-primary/20 active:scale-95 transition-transform ${!currentParticipant ? "opacity-50 cursor-not-allowed" : ""}`}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm bg-primary-500 text-on-primary-0 shadow-sm shadow-primary/20 active:scale-95 transition-transform ${!currentParticipant ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <Plus size={16} />
             Add My Gifts

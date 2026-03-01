@@ -120,7 +120,7 @@ export function CreateEventForm({
             <button
               type="submit"
               disabled={!name.trim() || isSubmitting}
-              className="w-full h-14 rounded-xl bg-primary-0 text-on-primary-0 font-bold text-lg shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-14 rounded-xl bg-primary-500 text-on-primary-0 font-bold text-lg shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "Creating..." : "Create Event"}
             </button>

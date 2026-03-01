@@ -245,7 +245,7 @@ export const JoinPage: React.FC = () => {
           <button
             type="submit"
             disabled={isSubmitting || participantName.trim().length < 2}
-            className="w-full bg-primary-0 hover:bg-primary/80 disabled:bg-zinc-600 disabled:cursor-not-allowed text-on-primary-0 px-6 py-3 rounded-lg transition-colors font-medium flex items-center justify-center gap-2"
+            className="w-full bg-primary-500 hover:bg-primary/80 disabled:bg-zinc-600 disabled:cursor-not-allowed text-on-primary-0 px-6 py-3 rounded-lg transition-colors font-medium flex items-center justify-center gap-2"
           >
             {isSubmitting ? (
               <>

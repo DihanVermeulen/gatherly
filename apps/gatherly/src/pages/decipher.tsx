@@ -42,7 +42,7 @@ export const DecipherPage = () => {
             />
             <button
               onClick={decipherCode}
-              className="w-full bg-primary-0 text-on-primary-0 py-3 rounded-lg transition-colors font-medium"
+              className="w-full bg-primary-500 text-on-primary-0 py-3 rounded-lg transition-colors font-medium"
             >
               Decipher Code
             </button>
