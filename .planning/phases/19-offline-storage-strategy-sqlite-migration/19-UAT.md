@@ -1,9 +1,9 @@
 ---
-status: complete
+status: diagnosed
 phase: 19-offline-storage-strategy-sqlite-migration
-source: 19-01-SUMMARY.md, 19-02-SUMMARY.md, 19-03-SUMMARY.md
+source: 19-01-SUMMARY.md, 19-02-SUMMARY.md, 19-03-SUMMARY.md, 19-04-SUMMARY.md
 started: 2026-03-02T10:38:37Z
-updated: 2026-03-02T10:40:30Z
+updated: 2026-03-03T08:30:00Z
 ---
 
 ## Current Test
@@ -35,8 +35,9 @@ result: pass
 ### 6. Sign out clears cached data
 expected: Sign out of the app. The cache is cleared as part of sign-out. If you sign back in with a different account (or the same), the app loads fresh data from the API rather than showing stale cached events from the previous session.
 result: issue
-reported: "The cache has not been cleared when signed out. And when signing in with a different account; the other account's cache still remains and displays that account's events"
+reported: "After logging out, I am not redirected to the login screen. Also, when logging in, I get an invite expired error"
 severity: major
+note: "19-04 fix (EventsProvider inside Stack.Protected) introduced two regressions. Original cache-not-cleared issue may be fixed, but navigation is broken."
 
 ## Summary
 
@@ -50,10 +51,13 @@ skipped: 0
 
 - truth: "Sign out clears the SQLite cache so no stale or cross-account data is visible after logout"
   status: failed
-  reason: "User reported: The cache has not been cleared when signed out. And when signing in with a different account; the other account's cache still remains and displays that account's events"
+  reason: "User reported: After logging out, I am not redirected to the login screen. Also, when logging in, I get an invite expired error"
   severity: major
   test: 6
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Placing EventsProvider inside Stack.Protected breaks Expo Router's navigation tree. Stack.Protected expects only Stack.Screen children — wrapping them in an arbitrary React provider prevents proper screen registration and guard-based redirect. Two regressions: (1) logout no longer redirects to sign-in; (2) consumePendingInviteCode fires unexpectedly on login due to broken navigation state. Fix: revert EventsProvider to its original position (outside Stack.Protected) and add key={session ?? 'unauthenticated'} so React forces a fresh mount when the session changes."
+  artifacts:
+    - path: "apps/gatherly-mobile/app/_layout.tsx"
+      issue: "EventsProvider placed inside Stack.Protected breaks Expo Router screen registration and guard redirect; needs key prop instead"
+  missing:
+    - "Revert EventsProvider to outside Stack.Protected; add key={session ?? 'unauthenticated'} to trigger remount on sign-out without breaking navigation"
+  debug_session: ".planning/debug/sqlite-cache-not-cleared-on-signout.md"
