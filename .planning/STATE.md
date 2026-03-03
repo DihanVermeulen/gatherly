@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** v2.1 — Phase 19 COMPLETE (offline storage SQLite migration)
+**Current focus:** v2.1 — Phase 19 COMPLETE (offline storage SQLite migration + gap closure)
 
 ## Current Position
 
 Phase: 19 of 19 (Offline Storage Strategy — SQLite Migration) — COMPLETE
-Plan: 3 of 3 complete (19-01, 19-02, 19-03 done)
-Status: Phase 19 complete — all v2.1 phases complete
-Last activity: 2026-02-28 — Completed 19-03-PLAN.md (NetInfo, OfflineBanner, networkMode mutations)
+Plan: 4 of 4 complete (19-01, 19-02, 19-03, 19-04 done)
+Status: Phase 19 gap closure complete — all v2.1 phases complete
+Last activity: 2026-03-03 — Completed 19-04-PLAN.md (sign-out state reset — EventsProvider scoped inside auth guard)
 
-Progress: [████████████████████] ~100% — v2.1 Phase 19 all 3 plans complete
+Progress: [████████████████████] ~100% — v2.1 Phase 19 all 4 plans complete
 
 ## Performance Metrics
 
@@ -34,7 +34,7 @@ Progress: [████████████████████] ~100% �
 | v2.1 Phase 14 | 2/2 | ~7m | ~3.5m |
 | v2.1 Phase 15 | 2/2 | ~7m | ~3.5m |
 | v2.1 Phase 17 | 2/2 | ~10m | ~5m |
-| v2.1 Phase 19 | 3/3 | ~15m | ~5m |
+| v2.1 Phase 19 | 4/4 | ~18m | ~4.5m |
 
 *Updated after each plan completion*
 
@@ -50,7 +50,7 @@ Progress: [████████████████████] ~100% �
 - signOutCallback pattern — client.ts interceptor calls AuthContext's signOut then router.replace on 401
 - 2-arg signIn(accessToken, user) — no refreshToken in body (HttpOnly cookie pattern)
 - Use `npm install --ignore-scripts` in gatherly-mobile — pnpm virtual store dir length mismatch; --ignore-scripts also needed to bypass @gluestack-ui/core broken postinstall hook that triggers from npm installs
-- EventsProvider inside GluestackUIProvider wrapping Stack — ensures all authenticated screens have events context
+- EventsProvider scoped inside Stack.Protected guard={!!session} — mounts fresh on each login, unmounts on sign-out, resetting in-memory state (supersedes prior decision about wrapping full Stack)
 - eventToDeleteId state pattern — store id before confirm dialog, dispatch after user confirmation
 - Type aliases (Event/WishlistItem) in events.ts before eventsApi — prevents binding to global DOM Event type
 - Filter pills derive Active/Planning from assignments field: null = Planning, non-null = Active
@@ -92,7 +92,7 @@ Progress: [████████████████████] ~100% �
 ### Roadmap Evolution
 
 - Phase 19 added: Offline Storage Strategy — AsyncStorage → SQLite + SecureStore (read-only offline caching, no offline mutations, scoped to paid-feature model)
-- Phase 19 COMPLETE: All 3 plans executed (SQLite foundation, EventsContext migration, offline UI + mutation blocking)
+- Phase 19 COMPLETE: All 4 plans executed (SQLite foundation, EventsContext migration, offline UI + mutation blocking, sign-out state reset gap closure)
 
 ### Pending Todos
 
@@ -105,8 +105,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-28 11:59 UTC
-Stopped at: Completed 19-03-PLAN.md — NetInfo, OfflineBanner, networkMode mutations — Phase 19 COMPLETE
+Last session: 2026-03-03 08:00 UTC
+Stopped at: Completed 19-04-PLAN.md — EventsProvider scoped inside auth guard — Phase 19 gap closure COMPLETE
 Resume file: None
 
 Next step: All planned phases complete. Phase 18 (Organizer Invite Management) skipped — template missing.
