@@ -187,6 +187,7 @@ Plans:
 - [x] 19-02-PLAN.md — Migrate EventsContext from AsyncStorage to SQLite + remove AsyncStorage package
 - [x] 19-03-PLAN.md — Native network detection (NetInfo) + offline banner + fix useSyncStatus for RN
 - [x] 19-04-PLAN.md — Gap closure: scope EventsProvider inside authenticated guard so sign-out resets in-memory event state
+- [x] 19-05-PLAN.md — Gap closure fix: revert to EventsProvider outside Stack.Protected with key={session} for correct remount
 
 ---
 
