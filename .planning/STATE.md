@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 19 of 19 (Offline Storage Strategy — SQLite Migration) — COMPLETE
-Plan: 4 of 4 complete (19-01, 19-02, 19-03, 19-04 done)
+Plan: 5 of 5 complete (19-01, 19-02, 19-03, 19-04, 19-05 done)
 Status: Phase 19 gap closure complete — all v2.1 phases complete
-Last activity: 2026-03-03 — Completed 19-04-PLAN.md (sign-out state reset — EventsProvider scoped inside auth guard)
+Last activity: 2026-03-03 — Completed 19-05-PLAN.md (key-based EventsProvider remount — reverted broken 19-04 approach)
 
 Progress: [████████████████████] ~100% — v2.1 Phase 19 all 4 plans complete
 
@@ -50,7 +50,7 @@ Progress: [████████████████████] ~100% �
 - signOutCallback pattern — client.ts interceptor calls AuthContext's signOut then router.replace on 401
 - 2-arg signIn(accessToken, user) — no refreshToken in body (HttpOnly cookie pattern)
 - Use `npm install --ignore-scripts` in gatherly-mobile — pnpm virtual store dir length mismatch; --ignore-scripts also needed to bypass @gluestack-ui/core broken postinstall hook that triggers from npm installs
-- EventsProvider scoped inside Stack.Protected guard={!!session} — mounts fresh on each login, unmounts on sign-out, resetting in-memory state (supersedes prior decision about wrapping full Stack)
+- EventsProvider key={session ?? 'unauthenticated'} OUTSIDE Stack.Protected — React destroys/remounts on session change; key approach preferred over scoping inside Stack.Protected which breaks Expo Router screen registration (supersedes 19-04 decision)
 - eventToDeleteId state pattern — store id before confirm dialog, dispatch after user confirmation
 - Type aliases (Event/WishlistItem) in events.ts before eventsApi — prevents binding to global DOM Event type
 - Filter pills derive Active/Planning from assignments field: null = Planning, non-null = Active
@@ -92,7 +92,7 @@ Progress: [████████████████████] ~100% �
 ### Roadmap Evolution
 
 - Phase 19 added: Offline Storage Strategy — AsyncStorage → SQLite + SecureStore (read-only offline caching, no offline mutations, scoped to paid-feature model)
-- Phase 19 COMPLETE: All 4 plans executed (SQLite foundation, EventsContext migration, offline UI + mutation blocking, sign-out state reset gap closure)
+- Phase 19 COMPLETE: All 5 plans executed (SQLite foundation, EventsContext migration, offline UI + mutation blocking, sign-out state reset gap closure, key-based EventsProvider remount fix)
 
 ### Pending Todos
 
@@ -105,8 +105,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-03 08:00 UTC
-Stopped at: Completed 19-04-PLAN.md — EventsProvider scoped inside auth guard — Phase 19 gap closure COMPLETE
+Last session: 2026-03-03 09:55 UTC
+Stopped at: Completed 19-05-PLAN.md — key-based EventsProvider remount — Phase 19 fully closed
 Resume file: None
 
 Next step: All planned phases complete. Phase 18 (Organizer Invite Management) skipped — template missing.
