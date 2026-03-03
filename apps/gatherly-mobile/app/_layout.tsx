@@ -79,49 +79,50 @@ function RootLayoutNav() {
 
   return (
     <GluestackUIProvider mode={colorMode}>
-      <EventsProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <View className="h-full w-full bg-background-0">
-            <SafeAreaView
-              className="h-full w-full max-w-7xl mx-auto bg-background-0"
-              edges={["top"]}
-            >
-              <>
-                <OfflineBanner />
-                <ThemeProvider
-                  value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-                >
-                  <Stack>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <View className="h-full w-full bg-background-0">
+          <SafeAreaView
+            className="h-full w-full max-w-7xl mx-auto bg-background-0"
+            edges={["top"]}
+          >
+            <>
+              <OfflineBanner />
+              <ThemeProvider
+                value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+              >
+                <Stack>
                   {/* Authenticated routes — only accessible when session exists */}
                   <Stack.Protected guard={!!session}>
-                    <Stack.Screen
-                      name="(tabs)"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="edit-event"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="manage-exclusions"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="event-details"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="my-wishlist"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="edit-wishlist-item"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="modal"
-                      options={{ presentation: "modal" }}
-                    />
+                    <EventsProvider>
+                      <Stack.Screen
+                        name="(tabs)"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="edit-event"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="manage-exclusions"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="event-details"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="my-wishlist"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="edit-wishlist-item"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="modal"
+                        options={{ presentation: "modal" }}
+                      />
+                    </EventsProvider>
                   </Stack.Protected>
 
                   {/* Unauthenticated routes — only accessible when no session */}
@@ -138,13 +139,12 @@ function RootLayoutNav() {
 
                   {/* Public routes — accessible regardless of auth state */}
                   <Stack.Screen name="join" options={{ headerShown: false, gestureEnabled: false }} />
-                  </Stack>
-                </ThemeProvider>
-              </>
-            </SafeAreaView>
-          </View>
-        </GestureHandlerRootView>
-      </EventsProvider>
+                </Stack>
+              </ThemeProvider>
+            </>
+          </SafeAreaView>
+        </View>
+      </GestureHandlerRootView>
     </GluestackUIProvider>
   );
 }
