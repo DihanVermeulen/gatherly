@@ -186,7 +186,7 @@ Plans:
 - [x] 19-01-PLAN.md — SQLite database layer + SecureStore abstraction + cache utilities + DatabaseProvider
 - [x] 19-02-PLAN.md — Migrate EventsContext from AsyncStorage to SQLite + remove AsyncStorage package
 - [x] 19-03-PLAN.md — Native network detection (NetInfo) + offline banner + fix useSyncStatus for RN
-- [ ] 19-04-PLAN.md — Gap closure: scope EventsProvider inside authenticated guard so sign-out resets in-memory event state
+- [x] 19-04-PLAN.md — Gap closure: scope EventsProvider inside authenticated guard so sign-out resets in-memory event state
 
 ---
 
@@ -205,4 +205,4 @@ Plans:
 | 16. Event Wishlists + Claiming | v2.1 | 0/2 | Not started | - |
 | 17. Join Event Screen | v2.1 | 2/2 | Complete | 2026-02-27 |
 | 18. Organizer Invite Management | v2.1 | 0/2 | Not started | - |
-| 19. Offline Storage Strategy | v2.1 | 3/4 | Gap closure in progress | 2026-02-28 (3/4) |
+| 19. Offline Storage Strategy | v2.1 | 4/4 | Complete | 2026-03-03 |
