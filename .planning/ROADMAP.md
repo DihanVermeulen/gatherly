@@ -131,11 +131,11 @@ Plans:
   2. User taps "Claim" on someone else's item and the item shows as claimed to other viewers
   3. User taps "Unclaim" on an item they previously claimed — it returns to available status
   4. A user viewing their own wishlist does not see any claimed/unclaimed indicators (privacy preserved)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 16-01: Request Event Wishlists screen template from user, then implement browse view (all participants)
-- [ ] 16-02: Claim and unclaim actions with privacy-preserving owner view
+- [ ] 16-01-PLAN.md — Request Wishlists screen template + build claim/unclaim data layer (type, API, reducer)
+- [ ] 16-02-PLAN.md — Create view-wishlists.tsx screen (SectionList + claim/unclaim + privacy) + wire navigation
 
 ---
 
