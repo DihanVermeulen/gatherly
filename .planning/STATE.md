@@ -5,21 +5,21 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** v2.1 — Phase 17 complete, Phase 18 pending template
+**Current focus:** v2.1 — Phase 19 COMPLETE (offline storage SQLite migration + gap closure)
 
 ## Current Position
 
-Phase: 17 of 18 (Join Event Screen) — complete
-Plan: 2 of 2 complete (17-01 and 17-02 done)
-Status: Phase complete
-Last activity: 2026-02-27 — Completed 17-02-PLAN.md (join.tsx full 7-state screen, sign-in/register pending invite docs)
+Phase: 19 of 19 (Offline Storage Strategy — SQLite Migration) — COMPLETE
+Plan: 5 of 5 complete (19-01, 19-02, 19-03, 19-04, 19-05 done)
+Status: Phase 19 gap closure complete — all v2.1 phases complete
+Last activity: 2026-03-03 — Completed 19-05-PLAN.md (key-based EventsProvider remount — reverted broken 19-04 approach)
 
-Progress: [███████░░░░░░░░░░░░░] ~42% — v2.1 Phase 17 complete (8 plans / ~1 phase remaining)
+Progress: [████████████████████] ~100% — v2.1 Phase 19 all 5 plans complete
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 35 (27 v2.0 + 8 v2.1)
+- Total plans completed: 36 (27 v2.0 + 9 v2.1)
 - Average duration: —
 - Total execution time: —
 
@@ -34,6 +34,7 @@ Progress: [███████░░░░░░░░░░░░░] ~42% �
 | v2.1 Phase 14 | 2/2 | ~7m | ~3.5m |
 | v2.1 Phase 15 | 2/2 | ~7m | ~3.5m |
 | v2.1 Phase 17 | 2/2 | ~10m | ~5m |
+| v2.1 Phase 19 | 4/4 | ~18m | ~4.5m |
 
 *Updated after each plan completion*
 
@@ -49,7 +50,7 @@ Progress: [███████░░░░░░░░░░░░░] ~42% �
 - signOutCallback pattern — client.ts interceptor calls AuthContext's signOut then router.replace on 401
 - 2-arg signIn(accessToken, user) — no refreshToken in body (HttpOnly cookie pattern)
 - Use `npm install --ignore-scripts` in gatherly-mobile — pnpm virtual store dir length mismatch; --ignore-scripts also needed to bypass @gluestack-ui/core broken postinstall hook that triggers from npm installs
-- EventsProvider inside GluestackUIProvider wrapping Stack — ensures all authenticated screens have events context
+- EventsProvider key={session ?? 'unauthenticated'} OUTSIDE Stack.Protected — React destroys/remounts on session change; key approach preferred over scoping inside Stack.Protected which breaks Expo Router screen registration (supersedes 19-04 decision)
 - eventToDeleteId state pattern — store id before confirm dialog, dispatch after user confirmation
 - Type aliases (Event/WishlistItem) in events.ts before eventsApi — prevents binding to global DOM Event type
 - Filter pills derive Active/Planning from assignments field: null = Planning, non-null = Active
@@ -76,6 +77,22 @@ Progress: [███████░░░░░░░░░░░░░] ~42% �
 - retryCount in validate effect deps: token doesn't change on retry, retryCount triggers re-fetch
 - Double-call guard in handleJoin: if (joinState === 'joining') return — prevents concurrent join requests
 - Comment-only for sign-in/register pending invite docs: unused imports cause TS errors; comments document flow
+- expo-sqlite via npm --ignore-scripts — pnpm fails due to monorepo virtual store path length (consistent with existing gatherly-mobile install convention)
+- async-storage pinned to 1.24.0 — version 1.24.1 was unpublished from npm registry; 1.24.0 is highest compatible
+- No wishlist_items SQLite table — wishlists embedded in event JSON blob and cached implicitly via cacheEvents(); separate table is dead code
+- SQLite singleton pattern: module-level let db = null in database.ts, repeated initDatabase() calls return same instance
+- DatabaseProvider position: inside SessionProvider, outside RootLayoutNav — db available when EventsProvider (Plan 02) calls useDatabase()
+- gift_count column in SQLite events table is always 0 — giftCount is local UI state, not in TEvent
+- initDatabase() direct call in signOut — SessionProvider is outside DatabaseProvider; singleton pattern makes direct call safe and returns same instance
+- clearCache called after SecureStore.deleteItemAsync but before state setters in signOut — ensures data cleared before UI reacts to null session
+- isConnected !== false pattern for offline detection — null (NetInfo initializing) treated as online; only false triggers offline banner
+- Fragment wrapper for SafeAreaView children — avoids extra View in layout tree while allowing OfflineBanner + ThemeProvider as siblings
+- networkMode: 'online' per-mutation (not via QueryClient defaults) — no central QueryClient config in codebase; added inline to each useMutation
+
+### Roadmap Evolution
+
+- Phase 19 added: Offline Storage Strategy — AsyncStorage → SQLite + SecureStore (read-only offline caching, no offline mutations, scoped to paid-feature model)
+- Phase 19 COMPLETE: All 5 plans executed (SQLite foundation, EventsContext migration, offline UI + mutation blocking, sign-out state reset gap closure, key-based EventsProvider remount fix)
 
 ### Pending Todos
 
@@ -88,8 +105,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-27 15:57 UTC
-Stopped at: Completed 17-02-PLAN.md — full join.tsx 7-state screen, sign-in/register pending invite docs
+Last session: 2026-03-03 09:55 UTC
+Stopped at: Completed 19-05-PLAN.md — key-based EventsProvider remount — Phase 19 fully closed
 Resume file: None
 
-Next step: Phase 18 — Organizer Invite Management (template MISSING, request from user first)
+Next step: All planned phases complete. Phase 18 (Organizer Invite Management) skipped — template missing.

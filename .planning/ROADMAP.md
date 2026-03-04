@@ -176,16 +176,18 @@ Plans:
 
 ---
 
-### Phase 19: Offline Storage Strategy — AsyncStorage → SQLite + SecureStore
+### ✅ Phase 19: Offline Storage Strategy — AsyncStorage → SQLite + SecureStore — COMPLETE 2026-02-28
 
 **Goal**: All local persistence uses the right tool for the job — expo-sqlite for non-sensitive structured data (cached events, wishlists), expo-secure-store for auth tokens, and AsyncStorage removed entirely. Offline mutation scope is explicitly defined: read-only caching only (no create/edit/delete without a live API connection), reflecting the planned paid-feature model.
 **Depends on**: Phase 18
-**Plans:** 3 plans
+**Plans:** 4 plans
 
 Plans:
-- [ ] 19-01-PLAN.md — SQLite database layer + SecureStore abstraction + cache utilities + DatabaseProvider
-- [ ] 19-02-PLAN.md — Migrate EventsContext from AsyncStorage to SQLite + remove AsyncStorage package
-- [ ] 19-03-PLAN.md — Native network detection (NetInfo) + offline banner + fix useSyncStatus for RN
+- [x] 19-01-PLAN.md — SQLite database layer + SecureStore abstraction + cache utilities + DatabaseProvider
+- [x] 19-02-PLAN.md — Migrate EventsContext from AsyncStorage to SQLite + remove AsyncStorage package
+- [x] 19-03-PLAN.md — Native network detection (NetInfo) + offline banner + fix useSyncStatus for RN
+- [x] 19-04-PLAN.md — Gap closure: scope EventsProvider inside authenticated guard so sign-out resets in-memory event state
+- [x] 19-05-PLAN.md — Gap closure fix: revert to EventsProvider outside Stack.Protected with key={session} for correct remount
 
 ---
 
@@ -204,4 +206,4 @@ Plans:
 | 16. Event Wishlists + Claiming | v2.1 | 0/2 | Not started | - |
 | 17. Join Event Screen | v2.1 | 2/2 | Complete | 2026-02-27 |
 | 18. Organizer Invite Management | v2.1 | 0/2 | Not started | - |
-| 19. Offline Storage Strategy | v2.1 | 0/3 | Not started | - |
+| 19. Offline Storage Strategy | v2.1 | 4/4 | Complete | 2026-03-03 |

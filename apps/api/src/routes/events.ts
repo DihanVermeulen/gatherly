@@ -6,12 +6,14 @@ import { requireOrganizer } from "../middleware/requireOrganizer.js";
 
 const router: Router = Router();
 
-// GET /api/events - List all events
+// GET /api/events - List events for the authenticated user
 router.get(
   "/",
-  optionalAuth,
+  authenticateJWT,
   asyncHandler(async (req: Request, res: Response) => {
-    const result = await query(`
+    const user = (req as any).user;
+
+    const baseSelect = `
     SELECT
       e.id,
       e.name,
@@ -43,10 +45,22 @@ router.get(
     LEFT JOIN participants p1 ON c.person1_id = p1.id
     LEFT JOIN participants p2 ON c.person2_id = p2.id
     LEFT JOIN assignments a ON a.event_id = e.id
-    LEFT JOIN participants giver ON a.giver_id = giver.id
-    GROUP BY e.id
-    ORDER BY e.created_at DESC
-  `);
+    LEFT JOIN participants giver ON a.giver_id = giver.id`;
+
+    let result;
+    if (user.role === "participant") {
+      // Magic-link participant — can only see their one event
+      result = await query(
+        `${baseSelect} WHERE e.id = $1 GROUP BY e.id ORDER BY e.created_at DESC`,
+        [user.eventId],
+      );
+    } else {
+      // Organizer — see events they own, plus legacy events with no organizer
+      result = await query(
+        `${baseSelect} WHERE e.organizer_id = $1 OR e.organizer_id IS NULL GROUP BY e.id ORDER BY e.created_at DESC`,
+        [user.userId],
+      );
+    }
 
     const events = result.rows.map((row) => ({
       id: row.id.toString(),
@@ -173,8 +187,8 @@ router.post(
     }
 
     const result = await query(
-      "INSERT INTO events (name, couple_crossing) VALUES ($1, $2) RETURNING *",
-      [name.trim(), coupleCrossing],
+      "INSERT INTO events (name, couple_crossing, organizer_id) VALUES ($1, $2, $3) RETURNING *",
+      [name.trim(), coupleCrossing, (req as any).user.userId],
     );
 
     const event = result.rows[0];

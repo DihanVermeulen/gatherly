@@ -196,9 +196,9 @@ export default function EventsScreen() {
         contentContainerStyle={{
           paddingHorizontal: 20,
           gap: 8,
-          paddingBottom: 14,
+          paddingBottom: 16,
         }}
-        className="mb-3"
+        className="mb-4"
       >
         {filterPills.map((pill) => (
           <Button

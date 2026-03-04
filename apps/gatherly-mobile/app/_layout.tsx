@@ -17,6 +17,8 @@ import { consumePendingInviteCode } from "./utils/pendingInvite";
 import { SafeAreaView } from "@/components/ui/safe-area-view";
 import { SessionProvider, useSession } from "./contexts/AuthContext";
 import { EventsProvider } from "./contexts/EventsContext";
+import { DatabaseProvider } from "@/contexts/DatabaseContext";
+import { OfflineBanner } from "@/components/OfflineBanner";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -37,7 +39,9 @@ export default function RootLayout() {
 
   return (
     <SessionProvider>
-      <RootLayoutNav />
+      <DatabaseProvider>
+        <RootLayoutNav />
+      </DatabaseProvider>
     </SessionProvider>
   );
 }
@@ -75,65 +79,68 @@ function RootLayoutNav() {
 
   return (
     <GluestackUIProvider mode={colorMode}>
-      <EventsProvider>
+      <EventsProvider key={session ?? 'unauthenticated'}>
         <GestureHandlerRootView style={{ flex: 1 }}>
           <View className="h-full w-full bg-background-0">
             <SafeAreaView
               className="h-full w-full max-w-7xl mx-auto bg-background-0"
               edges={["top"]}
             >
-              <ThemeProvider
-                value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-              >
-                <Stack>
-                  {/* Authenticated routes — only accessible when session exists */}
-                  <Stack.Protected guard={!!session}>
-                    <Stack.Screen
-                      name="(tabs)"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="edit-event"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="manage-exclusions"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="event-details"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="my-wishlist"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="edit-wishlist-item"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="modal"
-                      options={{ presentation: "modal" }}
-                    />
-                  </Stack.Protected>
+              <>
+                <OfflineBanner />
+                <ThemeProvider
+                  value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+                >
+                  <Stack>
+                    {/* Authenticated routes — only accessible when session exists */}
+                    <Stack.Protected guard={!!session}>
+                      <Stack.Screen
+                        name="(tabs)"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="edit-event"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="manage-exclusions"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="event-details"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="my-wishlist"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="edit-wishlist-item"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="modal"
+                        options={{ presentation: "modal" }}
+                      />
+                    </Stack.Protected>
 
-                  {/* Unauthenticated routes — only accessible when no session */}
-                  <Stack.Protected guard={!session}>
-                    <Stack.Screen
-                      name="sign-in"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="register"
-                      options={{ headerShown: false }}
-                    />
-                  </Stack.Protected>
+                    {/* Unauthenticated routes — only accessible when no session */}
+                    <Stack.Protected guard={!session}>
+                      <Stack.Screen
+                        name="sign-in"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="register"
+                        options={{ headerShown: false }}
+                      />
+                    </Stack.Protected>
 
-                  {/* Public routes — accessible regardless of auth state */}
-                  <Stack.Screen name="join" options={{ headerShown: false, gestureEnabled: false }} />
-                </Stack>
-              </ThemeProvider>
+                    {/* Public routes — accessible regardless of auth state */}
+                    <Stack.Screen name="join" options={{ headerShown: false, gestureEnabled: false }} />
+                  </Stack>
+                </ThemeProvider>
+              </>
             </SafeAreaView>
           </View>
         </GestureHandlerRootView>

@@ -8,6 +8,8 @@ import {
 import * as SecureStore from "expo-secure-store";
 import { setAccessToken, setSignOutCallback } from "../api/client";
 import { authApi, type User } from "../api/auth";
+import { clearCache } from "@/lib/cache";
+import { initDatabase } from "@/lib/database";
 
 type AuthContextValue = {
   session: string | null; // accessToken — used by _layout.tsx Stack.Protected guard
@@ -40,10 +42,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
         const response = await authApi.refresh();
         // Store new access token and user in SecureStore
         await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, response.accessToken);
-        await SecureStore.setItemAsync(
-          USER_KEY,
-          JSON.stringify(response.user),
-        );
+        await SecureStore.setItemAsync(USER_KEY, JSON.stringify(response.user));
         setAccessToken(response.accessToken);
         setSession(response.accessToken);
         setUser(response.user);
@@ -73,12 +72,22 @@ export function SessionProvider({ children }: PropsWithChildren) {
 
   const signOut = async (): Promise<void> => {
     try {
+      console.log("Signing out...");
       await authApi.logout();
     } catch {
       // Don't fail sign-out if API is unreachable
     }
     await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
     await SecureStore.deleteItemAsync(USER_KEY);
+    // Clear SQLite cache on sign-out
+    try {
+      const db = await initDatabase();
+      console.log("Clearing cache...");
+      await clearCache(db);
+      console.log();
+    } catch (err) {
+      console.log("Failed to clear cache on sign-out:", err);
+    }
     setAccessToken(null);
     setSession(null);
     setUser(null);
