@@ -196,9 +196,9 @@ export default function EventsScreen() {
         contentContainerStyle={{
           paddingHorizontal: 20,
           gap: 8,
-          paddingBottom: 4,
+          paddingBottom: 16,
         }}
-        className="mb-3"
+        className="mb-4"
       >
         {filterPills.map((pill) => (
           <Button
@@ -223,7 +223,7 @@ export default function EventsScreen() {
 
       {/* FAB */}
       <Fab
-        size="lg"
+        size="xl"
         onPress={createEvent}
         isDisabled={false}
         isHovered={false}

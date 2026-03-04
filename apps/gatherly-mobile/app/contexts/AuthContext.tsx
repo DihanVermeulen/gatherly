@@ -42,10 +42,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
         const response = await authApi.refresh();
         // Store new access token and user in SecureStore
         await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, response.accessToken);
-        await SecureStore.setItemAsync(
-          USER_KEY,
-          JSON.stringify(response.user),
-        );
+        await SecureStore.setItemAsync(USER_KEY, JSON.stringify(response.user));
         setAccessToken(response.accessToken);
         setSession(response.accessToken);
         setUser(response.user);
@@ -75,6 +72,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
 
   const signOut = async (): Promise<void> => {
     try {
+      console.log("Signing out...");
       await authApi.logout();
     } catch {
       // Don't fail sign-out if API is unreachable
@@ -84,7 +82,9 @@ export function SessionProvider({ children }: PropsWithChildren) {
     // Clear SQLite cache on sign-out
     try {
       const db = await initDatabase();
+      console.log("Clearing cache...");
       await clearCache(db);
+      console.log();
     } catch (err) {
       console.log("Failed to clear cache on sign-out:", err);
     }

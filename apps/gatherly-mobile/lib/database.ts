@@ -35,7 +35,8 @@ export async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
       participant_count INTEGER DEFAULT 0,
       gift_count INTEGER DEFAULT 0,
       data TEXT NOT NULL,
-      cached_at INTEGER NOT NULL
+      cached_at INTEGER NOT NULL,
+      user_id TEXT
     );
 
     CREATE TABLE IF NOT EXISTS cache_meta (
@@ -44,6 +45,13 @@ export async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
       updated_at INTEGER NOT NULL
     );
   `);
+
+  // Migration: add user_id column to existing databases that predate this column
+  try {
+    await instance.execAsync("ALTER TABLE events ADD COLUMN user_id TEXT;");
+  } catch {
+    // Column already exists — ignore
+  }
 
   db = instance;
   return db;
