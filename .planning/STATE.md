@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 
 ## Current Position
 
-Phase: 19 of 19 (Offline Storage Strategy — SQLite Migration) — COMPLETE
-Plan: 5 of 5 complete (19-01, 19-02, 19-03, 19-04, 19-05 done)
-Status: Phase 19 gap closure complete — all v2.1 phases complete
-Last activity: 2026-03-03 — Completed 19-05-PLAN.md (key-based EventsProvider remount — reverted broken 19-04 approach)
+Phase: 16 of 19+ (Event Wishlists Claiming)
+Plan: 1 of 2 complete (16-01 done)
+Status: In progress — claim/unclaim data layer complete, Wishlists screen UI (16-02) pending
+Last activity: 2026-03-05 — Completed 16-01-PLAN.md (claim/unclaim data layer: TWishlistItem fields, wishlistsApi methods, EventsContext reducer)
 
 Progress: [████████████████████] ~100% — v2.1 Phase 19 all 5 plans complete
 
@@ -105,8 +105,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-03 09:55 UTC
-Stopped at: Completed 19-05-PLAN.md — key-based EventsProvider remount — Phase 19 fully closed
+Last session: 2026-03-05 UTC
+Stopped at: Completed 16-01-PLAN.md — claim/unclaim data layer (TWishlistItem + wishlistsApi + EventsContext reducer)
 Resume file: None
 
-Next step: All planned phases complete. Phase 18 (Organizer Invite Management) skipped — template missing.
+Next step: Execute 16-02-PLAN.md (Wishlists screen UI — claim/unclaim interactions using the data layer built in 16-01).
