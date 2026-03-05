@@ -41,7 +41,9 @@ type EventsAction =
   | {
       type: "SET_WISHLISTS";
       payload: { eventId: string; items: WishlistItem[] };
-    };
+    }
+  | { type: "CLAIM_WISHLIST_ITEM"; payload: { eventId: string; itemId: number } }
+  | { type: "UNCLAIM_WISHLIST_ITEM"; payload: { eventId: string; itemId: number } };
 
 const initialState: EventsState = {
   events: [],
@@ -143,6 +145,38 @@ const eventsReducer = (
           event.id === action.payload.eventId
             ? { ...event, wishlists: action.payload.items }
             : event,
+        ),
+      };
+    case "CLAIM_WISHLIST_ITEM":
+      return {
+        ...state,
+        events: state.events.map((event) =>
+          event.id === action.payload.eventId
+            ? {
+                ...event,
+                wishlists: (event.wishlists || []).map((item) =>
+                  item.id === action.payload.itemId
+                    ? { ...item, isClaimed: true, claimedByMe: true }
+                    : item
+                ),
+              }
+            : event
+        ),
+      };
+    case "UNCLAIM_WISHLIST_ITEM":
+      return {
+        ...state,
+        events: state.events.map((event) =>
+          event.id === action.payload.eventId
+            ? {
+                ...event,
+                wishlists: (event.wishlists || []).map((item) =>
+                  item.id === action.payload.itemId
+                    ? { ...item, isClaimed: false, claimedByMe: false }
+                    : item
+                ),
+              }
+            : event
         ),
       };
     default:

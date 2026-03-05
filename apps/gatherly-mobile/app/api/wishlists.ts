@@ -47,6 +47,16 @@ export const wishlistsApi = {
       data: { participantId }
     });
   },
+
+  // Claim a wishlist item
+  claim: async (eventId: string, itemId: number): Promise<void> => {
+    await apiClient.post(`/api/events/${eventId}/wishlists/${itemId}/claim`);
+  },
+
+  // Unclaim a wishlist item
+  unclaim: async (eventId: string, itemId: number): Promise<void> => {
+    await apiClient.delete(`/api/events/${eventId}/wishlists/${itemId}/claim`);
+  },
 };
 
 export default wishlistsApi;

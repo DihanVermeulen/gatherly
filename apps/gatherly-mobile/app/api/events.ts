@@ -10,6 +10,8 @@ export type TWishlistItem = {
   imageUrl?: string;
   productUrl?: string;
   priority: "low" | "medium" | "high";
+  isClaimed: boolean;
+  claimedByMe: boolean;
   claimedBy?: number;
   claimedByName?: string;
   createdAt?: string;
