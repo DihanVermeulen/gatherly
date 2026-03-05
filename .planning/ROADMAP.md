@@ -191,6 +191,18 @@ Plans:
 
 ---
 
+### Phase 20: Magic Link Redirect Website
+
+**Goal:** A hosted redirect page handles magic link email URLs and routes users to the correct destination — mobile app via deep link if installed, or web redemption as fallback
+**Depends on:** Phase 17
+**Plans:** 2 plans
+
+Plans:
+- [ ] 20-01-PLAN.md — .well-known/ AASA + assetlinks.json files in web SPA public dir + simplify magic-link.tsx (remove gatherly:// custom scheme)
+- [ ] 20-02-PLAN.md — app.json Universal Links config: associatedDomains (iOS) + intentFilters (Android) + bundleIdentifier
+
+---
+
 ## Progress
 
 **Execution Order:** 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18 → 19
@@ -207,3 +219,4 @@ Plans:
 | 17. Join Event Screen | v2.1 | 2/2 | Complete | 2026-02-27 |
 | 18. Organizer Invite Management | v2.1 | 0/2 | Not started | - |
 | 19. Offline Storage Strategy | v2.1 | 4/4 | Complete | 2026-03-03 |
+| 20. Magic Link Redirect Website | v2.1 | 0/2 | Not started | - |
