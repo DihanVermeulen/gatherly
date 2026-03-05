@@ -301,14 +301,11 @@ export default function EventDetailsScreen() {
           <Button
             variant="outline"
             className="flex-1 rounded-xl border-outline-300"
-            onPress={() => {
-              // Stub: gifts screen not yet implemented
-              console.log("View All Gifts — coming soon");
-            }}
+            onPress={() => router.push(`/view-wishlists?id=${id}`)}
           >
             <Gift size={16} color="#64748b" style={{ marginRight: 6 }} />
             <ButtonText className="text-typography-700 font-semibold">
-              View All Gifts
+              View Wishlists
             </ButtonText>
           </Button>
           <Button

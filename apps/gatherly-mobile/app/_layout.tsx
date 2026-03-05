@@ -79,11 +79,11 @@ function RootLayoutNav() {
 
   return (
     <GluestackUIProvider mode={colorMode}>
-      <EventsProvider key={session ?? 'unauthenticated'}>
+      <EventsProvider key={session ?? "unauthenticated"}>
         <GestureHandlerRootView style={{ flex: 1 }}>
-          <View className="h-full w-full bg-background-0">
+          <View className="h-full w-full bg-background-500">
             <SafeAreaView
-              className="h-full w-full max-w-7xl mx-auto bg-background-0"
+              className="h-full w-full max-w-7xl mx-auto bg-background-500"
               edges={["top"]}
             >
               <>
@@ -119,6 +119,10 @@ function RootLayoutNav() {
                         options={{ headerShown: false }}
                       />
                       <Stack.Screen
+                        name="view-wishlists"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
                         name="modal"
                         options={{ presentation: "modal" }}
                       />
@@ -137,7 +141,10 @@ function RootLayoutNav() {
                     </Stack.Protected>
 
                     {/* Public routes — accessible regardless of auth state */}
-                    <Stack.Screen name="join" options={{ headerShown: false, gestureEnabled: false }} />
+                    <Stack.Screen
+                      name="join"
+                      options={{ headerShown: false, gestureEnabled: false }}
+                    />
                   </Stack>
                 </ThemeProvider>
               </>
