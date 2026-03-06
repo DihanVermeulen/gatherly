@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 
 ## Current Position
 
-Phase: 16 of 19+ (Event Wishlists Claiming)
-Plan: 1 of 2 complete (16-01 done)
-Status: In progress — claim/unclaim data layer complete, Wishlists screen UI (16-02) pending
-Last activity: 2026-03-05 — Completed 16-01-PLAN.md (claim/unclaim data layer: TWishlistItem fields, wishlistsApi methods, EventsContext reducer)
+Phase: 20 of v2.1 (Magic Link Redirect Website)
+Plan: 2 of 2+ complete (20-02 done)
+Status: In progress
+Last activity: 2026-03-06 — Completed 20-02-PLAN.md (Universal Links + App Links config in app.json: bundleIdentifier, associatedDomains, android package, intentFilters)
 
 Progress: [████████████████████] ~100% — v2.1 Phase 19 all 5 plans complete
 
@@ -86,6 +86,9 @@ Progress: [████████████████████] ~100% �
 - initDatabase() direct call in signOut — SessionProvider is outside DatabaseProvider; singleton pattern makes direct call safe and returns same instance
 - clearCache called after SecureStore.deleteItemAsync but before state setters in signOut — ensures data cleared before UI reacts to null session
 - isConnected !== false pattern for offline detection — null (NetInfo initializing) treated as online; only false triggers offline banner
+- app.json YOUR_DOMAIN placeholder pattern — use literal "YOUR_DOMAIN" in associatedDomains and intentFilters host; replace with production domain (e.g., gatherly.app, no https://) before EAS Build
+- bundleIdentifier and android package both "com.gatherly.gatherly" — must match AASA appID and assetlinks.json package_name
+- autoVerify: true required on Android intentFilters — without it, Android shows disambiguation dialog instead of opening app directly
 - Fragment wrapper for SafeAreaView children — avoids extra View in layout tree while allowing OfflineBanner + ThemeProvider as siblings
 - networkMode: 'online' per-mutation (not via QueryClient defaults) — no central QueryClient config in codebase; added inline to each useMutation
 
@@ -93,6 +96,7 @@ Progress: [████████████████████] ~100% �
 
 - Phase 19 added: Offline Storage Strategy — AsyncStorage → SQLite + SecureStore (read-only offline caching, no offline mutations, scoped to paid-feature model)
 - Phase 19 COMPLETE: All 5 plans executed (SQLite foundation, EventsContext migration, offline UI + mutation blocking, sign-out state reset gap closure, key-based EventsProvider remount fix)
+- Phase 20 added: Magic Link Redirect Website — hosted redirect page that routes magic link email URLs to the mobile app via deep link (if installed) or falls back to web redemption
 
 ### Pending Todos
 
@@ -105,8 +109,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-05 UTC
-Stopped at: Completed 16-01-PLAN.md — claim/unclaim data layer (TWishlistItem + wishlistsApi + EventsContext reducer)
+Last session: 2026-03-06 UTC
+Stopped at: Completed 20-02-PLAN.md — Universal Links and App Links config in apps/gatherly-mobile/app.json
 Resume file: None
 
-Next step: Execute 16-02-PLAN.md (Wishlists screen UI — claim/unclaim interactions using the data layer built in 16-01).
+Next step: Execute remaining plans in Phase 20 (magic-link redirect website).
