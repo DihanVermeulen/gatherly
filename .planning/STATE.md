@@ -110,7 +110,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-06 UTC
-Stopped at: Completed 20-02-PLAN.md — Universal Links and App Links config in apps/gatherly-mobile/app.json
+Stopped at: Completed 20-01-PLAN.md — .well-known AASA + assetlinks.json files and magic-link.tsx simplification
 Resume file: None
 
-Next step: Execute remaining plans in Phase 20 (magic-link redirect website).
+Next step: Phase 20 Plans 01 and 02 both complete. Proceed to next phase.
