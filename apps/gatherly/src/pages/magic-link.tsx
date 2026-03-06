@@ -18,21 +18,18 @@ export const MagicLinkPage: React.FC = () => {
       return;
     }
 
-    const redeem = async () => {
-      try {
-        await loginWithMagicLink(token);
-        setPageState("success");
-      } catch (err: any) {
+    // Universal Links handle app routing at the OS level.
+    // This page only loads when the app is NOT installed — authenticate directly.
+    loginWithMagicLink(token)
+      .then(() => setPageState("success"))
+      .catch((err: any) => {
         const status = err.response?.status;
         if (status === 429) {
           setPageState("rate-limited");
         } else {
           setPageState("invalid");
         }
-      }
-    };
-
-    redeem();
+      });
   }, [token, navigate, loginWithMagicLink]);
 
   if (pageState === "redeeming") {
@@ -44,7 +41,7 @@ export const MagicLinkPage: React.FC = () => {
             size={48}
           />
           <h2 className="text-xl font-semibold mb-2">Signing You In</h2>
-          <p className="">Please wait...</p>
+          <p className="">Authenticating...</p>
         </div>
       </div>
     );
