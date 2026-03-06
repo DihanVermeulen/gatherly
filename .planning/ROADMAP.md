@@ -203,9 +203,27 @@ Plans:
 
 ---
 
+### Phase 21: Gatherly Next.js Website
+
+**Goal:** A Next.js marketing website in `apps/web` showcasing Gatherly's features with a home page, download page, and a magic link redirect page that opens the mobile app directly at the magic link redemption screen via Universal Links / App Links deep link
+**Depends on:** Phase 20
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 21 to break down)
+
+**Details:**
+- Framework: Next.js (latest version), App Router
+- Location: `apps/web/`
+- Screen templates: `apps/web/screen-templates/`
+- Pages: Home (feature showcase), Download, Magic Link redirect
+- Magic link redirect page: intercepts `/magic-link/:token` URL and redirects the user to the mobile app via Universal Links / Android App Links; falls back to web if app not installed
+
+---
+
 ## Progress
 
-**Execution Order:** 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18 → 19
+**Execution Order:** 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18 → 19 → 20 → 21
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -219,4 +237,5 @@ Plans:
 | 17. Join Event Screen | v2.1 | 2/2 | Complete | 2026-02-27 |
 | 18. Organizer Invite Management | v2.1 | 0/2 | Not started | - |
 | 19. Offline Storage Strategy | v2.1 | 4/4 | Complete | 2026-03-03 |
-| 20. Magic Link Redirect Website | v2.1 | 0/2 | Not started | - |
+| 20. Magic Link Redirect Website | v2.1 | 2/2 | Complete | 2026-03-06 |
+| 21. Gatherly Next.js Website | v2.1 | 0/0 | Not started | - |

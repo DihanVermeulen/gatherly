@@ -97,6 +97,7 @@ Progress: [████████████████████] ~100% �
 - Phase 19 added: Offline Storage Strategy — AsyncStorage → SQLite + SecureStore (read-only offline caching, no offline mutations, scoped to paid-feature model)
 - Phase 19 COMPLETE: All 5 plans executed (SQLite foundation, EventsContext migration, offline UI + mutation blocking, sign-out state reset gap closure, key-based EventsProvider remount fix)
 - Phase 20 added: Magic Link Redirect Website — hosted redirect page that routes magic link email URLs to the mobile app via deep link (if installed) or falls back to web redemption
+- Phase 21 added: Gatherly Next.js Website — Next.js marketing site in apps/web with home page (feature showcase), download page, and magic link redirect page that opens the mobile app via Universal Links / App Links
 
 ### Pending Todos
 
