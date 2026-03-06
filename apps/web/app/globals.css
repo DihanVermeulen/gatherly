@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@theme {
+  /* Brand teal extracted from templates (~#1DB8A0) */
+  --color-brand-400: #25d0b4;
+  --color-brand-500: #1db8a0;
+  --color-brand-600: #189e88;
+  --color-brand-800: #0f766e;
+
+  /* Typography — Inter via next/font/google set via CSS variable */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
