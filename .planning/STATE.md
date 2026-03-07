@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 21 of v2.1 (Gatherly Next.js Website)
-Plan: 4 of 4+ complete (21-04 done)
+Plan: 5 of 5+ complete (21-05 done)
 Status: In progress
-Last activity: 2026-03-07 — Completed 21-04-PLAN.md (Download page matching Download.png + Pricing coming-soon stub: /download and /pricing routes)
+Last activity: 2026-03-07 — Completed 21-05-PLAN.md (Magic link redirect page: /magic-link/[token] client component with deep link logic, layout override, loading + not-installed states)
 
-Progress: [████████████████████] ~100% — v2.1 Phase 19 all 5 plans complete; Phase 21 plans 01, 02, 03, 04 complete
+Progress: [████████████████████] ~100% — v2.1 Phase 19 all 5 plans complete; Phase 21 plans 01, 02, 03, 04, 05 complete
 
 ## Performance Metrics
 
@@ -116,7 +116,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-07 UTC
-Stopped at: Completed 21-02-PLAN.md — Home page (hero, feature grid, mobile CTA) + VideoModal component
+Stopped at: Completed 21-05-PLAN.md — Magic link redirect page at /magic-link/[token] with deep link logic
 Resume file: None
 
-Next step: Phase 21 Plan 05 (magic link redirect page) if not yet done; plans 01–04 are all complete.
+Next step: Phase 21 plans 01-05 all done. Awaiting next phase.
