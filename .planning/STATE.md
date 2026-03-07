@@ -91,6 +91,9 @@ Progress: [████████████████████] ~100% �
 - autoVerify: true required on Android intentFilters — without it, Android shows disambiguation dialog instead of opening app directly
 - Fragment wrapper for SafeAreaView children — avoids extra View in layout tree while allowing OfflineBanner + ThemeProvider as siblings
 - networkMode: 'online' per-mutation (not via QueryClient defaults) — no central QueryClient config in codebase; added inline to each useMutation
+- VideoModal triggerClassName prop pattern — caller owns button styling; modal component stays generic
+- App store icons use inline SVG in page.tsx — lucide-react has no brand logos (Apple/Google)
+- Hero plant image uses Unsplash URL with TODO comment — real brand asset replaces URL before launch
 - App store buttons on web use href="#" and default state only — PLAY_INSTALLED badge in Download.png is a mockup artifact; JS cannot reliably detect app installation
 - web /pricing is a coming-soon stub — no pricing structure decided yet; replace when plans are defined
 
@@ -113,7 +116,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-07 UTC
-Stopped at: Completed 21-04-PLAN.md — Download page + Pricing stub (/download and /pricing routes)
+Stopped at: Completed 21-02-PLAN.md — Home page (hero, feature grid, mobile CTA) + VideoModal component
 Resume file: None
 
-Next step: Phase 21 Plan 02 (home page) remains. /download and /pricing are complete.
+Next step: Phase 21 Plan 05 (magic link redirect page) if not yet done; plans 01–04 are all complete.
