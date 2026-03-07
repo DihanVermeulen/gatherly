@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 21 of v2.1 (Gatherly Next.js Website)
-Plan: 3 of 4+ complete (21-03 done)
+Plan: 4 of 4+ complete (21-04 done)
 Status: In progress
-Last activity: 2026-03-07 — Completed 21-03-PLAN.md (Features page + How it Works page: /features and /how-it-works routes, server components, Tailwind v4 brand tokens)
+Last activity: 2026-03-07 — Completed 21-04-PLAN.md (Download page matching Download.png + Pricing coming-soon stub: /download and /pricing routes)
 
-Progress: [████████████████████] ~100% — v2.1 Phase 19 all 5 plans complete; Phase 21 plans 01 and 03 complete
+Progress: [████████████████████] ~100% — v2.1 Phase 19 all 5 plans complete; Phase 21 plans 01, 02, 03, 04 complete
 
 ## Performance Metrics
 
@@ -91,6 +91,8 @@ Progress: [████████████████████] ~100% �
 - autoVerify: true required on Android intentFilters — without it, Android shows disambiguation dialog instead of opening app directly
 - Fragment wrapper for SafeAreaView children — avoids extra View in layout tree while allowing OfflineBanner + ThemeProvider as siblings
 - networkMode: 'online' per-mutation (not via QueryClient defaults) — no central QueryClient config in codebase; added inline to each useMutation
+- App store buttons on web use href="#" and default state only — PLAY_INSTALLED badge in Download.png is a mockup artifact; JS cannot reliably detect app installation
+- web /pricing is a coming-soon stub — no pricing structure decided yet; replace when plans are defined
 
 ### Roadmap Evolution
 
@@ -111,7 +113,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-07 UTC
-Stopped at: Completed 21-03-PLAN.md — Features page + How it Works page (two full marketing pages)
+Stopped at: Completed 21-04-PLAN.md — Download page + Pricing stub (/download and /pricing routes)
 Resume file: None
 
-Next step: Phase 21 Plan 02 (home page) and Plan 04 (magic link redirect) remain.
+Next step: Phase 21 Plan 02 (home page) remains. /download and /pricing are complete.
