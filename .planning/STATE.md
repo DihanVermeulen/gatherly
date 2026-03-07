@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 
 ## Current Position
 
-Phase: 20 of v2.1 (Magic Link Redirect Website)
-Plan: 2 of 2+ complete (20-02 done)
+Phase: 21 of v2.1 (Gatherly Next.js Website)
+Plan: 3 of 4+ complete (21-03 done)
 Status: In progress
-Last activity: 2026-03-06 — Completed 20-02-PLAN.md (Universal Links + App Links config in app.json: bundleIdentifier, associatedDomains, android package, intentFilters)
+Last activity: 2026-03-07 — Completed 21-03-PLAN.md (Features page + How it Works page: /features and /how-it-works routes, server components, Tailwind v4 brand tokens)
 
-Progress: [████████████████████] ~100% — v2.1 Phase 19 all 5 plans complete
+Progress: [████████████████████] ~100% — v2.1 Phase 19 all 5 plans complete; Phase 21 plans 01 and 03 complete
 
 ## Performance Metrics
 
@@ -110,8 +110,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-06 UTC
-Stopped at: Completed 20-01-PLAN.md — .well-known AASA + assetlinks.json files and magic-link.tsx simplification
+Last session: 2026-03-07 UTC
+Stopped at: Completed 21-03-PLAN.md — Features page + How it Works page (two full marketing pages)
 Resume file: None
 
-Next step: Phase 20 Plans 01 and 02 both complete. Proceed to next phase.
+Next step: Phase 21 Plan 02 (home page) and Plan 04 (magic link redirect) remain.
