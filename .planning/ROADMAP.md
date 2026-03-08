@@ -203,18 +203,18 @@ Plans:
 
 ---
 
-### Phase 21: Gatherly Next.js Website
+### ✅ Phase 21: Gatherly Next.js Website — COMPLETE 2026-03-07
 
 **Goal:** A Next.js marketing website in `apps/web` showcasing Gatherly's features with a home page, download page, and a magic link redirect page that opens the mobile app directly at the magic link redemption screen via Universal Links / App Links deep link
 **Depends on:** Phase 20
 **Plans:** 5 plans
 
 Plans:
-- [ ] 21-01-PLAN.md — Monorepo scaffold: package.json, next.config.ts, tsconfig, postcss, globals.css, Nav, Footer, root layout, .well-known files
-- [ ] 21-02-PLAN.md — Home page matching Home.png (hero, feature grid, mobile CTA) + VideoModal component
-- [ ] 21-03-PLAN.md — Features page matching Features.png + How it Works page matching HowItWorks.png
-- [ ] 21-04-PLAN.md — Download page matching Download.png + Pricing coming-soon stub
-- [ ] 21-05-PLAN.md — Magic link redirect page (/magic-link/[token]) with deep link logic, intent:// fallback, not-installed state
+- [x] 21-01-PLAN.md — Monorepo scaffold: package.json, next.config.ts, tsconfig, postcss, globals.css, Nav, Footer, root layout, .well-known files
+- [x] 21-02-PLAN.md — Home page matching Home.png (hero, feature grid, mobile CTA) + VideoModal component
+- [x] 21-03-PLAN.md — Features page matching Features.png + How it Works page matching HowItWorks.png
+- [x] 21-04-PLAN.md — Download page matching Download.png + Pricing coming-soon stub
+- [x] 21-05-PLAN.md — Magic link redirect page (/magic-link/[token]) with deep link logic, intent:// fallback, not-installed state
 
 ---
 
@@ -235,4 +235,4 @@ Plans:
 | 18. Organizer Invite Management | v2.1 | 0/2 | Not started | - |
 | 19. Offline Storage Strategy | v2.1 | 4/4 | Complete | 2026-03-03 |
 | 20. Magic Link Redirect Website | v2.1 | 2/2 | Complete | 2026-03-06 |
-| 21. Gatherly Next.js Website | v2.1 | 0/5 | Not started | - |
+| 21. Gatherly Next.js Website | v2.1 | 5/5 | Complete | 2026-03-07 |

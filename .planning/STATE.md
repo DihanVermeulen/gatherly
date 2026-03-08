@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** v2.1 — Phase 19 COMPLETE (offline storage SQLite migration + gap closure)
+**Current focus:** v2.1 — Phase 21 COMPLETE (Next.js marketing website)
 
 ## Current Position
 
 Phase: 21 of v2.1 (Gatherly Next.js Website)
 Plan: 5 of 5+ complete (21-05 done)
-Status: In progress
-Last activity: 2026-03-07 — Completed 21-05-PLAN.md (Magic link redirect page: /magic-link/[token] client component with deep link logic, layout override, loading + not-installed states)
+Status: Complete
+Last activity: 2026-03-08 — Phase 21 complete (all 5 plans executed, verification passed 17/17)
 
-Progress: [████████████████████] ~100% — v2.1 Phase 19 all 5 plans complete; Phase 21 plans 01, 02, 03, 04, 05 complete
+Progress: [████████████████████] 100% — v2.1 Phase 21 all 5 plans complete; verification passed
 
 ## Performance Metrics
 
@@ -115,8 +115,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-07 UTC
-Stopped at: Completed 21-05-PLAN.md — Magic link redirect page at /magic-link/[token] with deep link logic
+Last session: 2026-03-08 UTC
+Stopped at: Phase 21 complete — all plans executed and verified (17/17 must-haves passed)
 Resume file: None
 
-Next step: Phase 21 plans 01-05 all done. Awaiting next phase.
+Next step: v2.1 milestone audit or continue with remaining phases (12, 15, 16, 18).
