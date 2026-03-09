@@ -3,6 +3,7 @@ import { query, getClient } from "../db/connection";
 import { asyncHandler } from "../middleware/asyncHandler";
 import { authenticateJWT, optionalAuth } from "../middleware/auth";
 import { requireOrganizer } from "../middleware/requireOrganizer.js";
+import { sendAssignmentReadyEmail } from "../services/emailService";
 
 const router: Router = Router();
 
@@ -20,6 +21,10 @@ router.get(
       e.couple_crossing,
       e.created_at,
       e.updated_at,
+      e.event_date,
+      e.wishlist_deadline,
+      e.event_type,
+      e.feature_flags,
       COALESCE(json_agg(DISTINCT p.name) FILTER (WHERE p.name IS NOT NULL), '[]') as people,
       COALESCE(
         json_agg(
@@ -72,6 +77,10 @@ router.get(
       gifts: {},
       date: row.created_at,
       participants: row.people || [],
+      eventDate: row.event_date || null,
+      wishlistDeadline: row.wishlist_deadline || null,
+      eventType: row.event_type || 'secret_santa',
+      featureFlags: row.feature_flags || {},
     }));
 
     res.json(events);
@@ -156,6 +165,18 @@ router.get(
       };
     });
 
+    // Get wishlist stats
+    const wishlistStatsResult = await query(
+      `SELECT
+        COUNT(w.id)::int as total_wishlist_count,
+        COUNT(wc.id)::int as claimed_count
+      FROM wishlists w
+      LEFT JOIN wishlist_claims wc ON w.id = wc.wishlist_id
+      WHERE w.event_id = $1`,
+      [id],
+    );
+    const wishlistStats = wishlistStatsResult.rows[0] || { total_wishlist_count: 0, claimed_count: 0 };
+
     res.json({
       id: event.id.toString(),
       name: event.name,
@@ -170,6 +191,12 @@ router.get(
         id: p.id,
         name: p.name,
       })),
+      eventDate: event.event_date || null,
+      wishlistDeadline: event.wishlist_deadline || null,
+      eventType: event.event_type || 'secret_santa',
+      featureFlags: event.feature_flags || {},
+      totalWishlistCount: wishlistStats.total_wishlist_count,
+      claimedCount: wishlistStats.claimed_count,
     });
   }),
 );
@@ -180,15 +207,15 @@ router.post(
   authenticateJWT,
   requireOrganizer,
   asyncHandler(async (req: Request, res: Response) => {
-    const { name, coupleCrossing = false } = req.body;
+    const { name, coupleCrossing = false, eventDate, wishlistDeadline, eventType = 'secret_santa', featureFlags = {} } = req.body;
 
     if (!name || !name.trim()) {
       return res.status(400).json({ error: "Event name is required" });
     }
 
     const result = await query(
-      "INSERT INTO events (name, couple_crossing, organizer_id) VALUES ($1, $2, $3) RETURNING *",
-      [name.trim(), coupleCrossing, (req as any).user.userId],
+      "INSERT INTO events (name, couple_crossing, organizer_id, event_date, wishlist_deadline, event_type, feature_flags) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
+      [name.trim(), coupleCrossing, (req as any).user.userId, eventDate || null, wishlistDeadline || null, eventType, JSON.stringify(featureFlags)],
     );
 
     const event = result.rows[0];
@@ -202,6 +229,10 @@ router.post(
       gifts: {},
       date: event.created_at,
       participants: [],
+      eventDate: event.event_date || null,
+      wishlistDeadline: event.wishlist_deadline || null,
+      eventType: event.event_type || 'secret_santa',
+      featureFlags: event.feature_flags || {},
     });
   }),
 );
@@ -217,12 +248,19 @@ router.put(
       await client.query("BEGIN");
 
       const { id } = req.params;
-      const { name, coupleCrossing, people, couples, assignments } = req.body;
+      const { name, coupleCrossing, people, couples, assignments, eventDate, wishlistDeadline, eventType, featureFlags } = req.body;
 
       // Update event basic info
       await client.query(
-        "UPDATE events SET name = COALESCE($1, name), couple_crossing = COALESCE($2, couple_crossing) WHERE id = $3",
-        [name, coupleCrossing, id],
+        `UPDATE events SET
+          name = COALESCE($1, name),
+          couple_crossing = COALESCE($2, couple_crossing),
+          event_date = CASE WHEN $3::text IS NOT NULL THEN $3::timestamp ELSE event_date END,
+          wishlist_deadline = CASE WHEN $4::text IS NOT NULL THEN $4::timestamp ELSE wishlist_deadline END,
+          event_type = COALESCE($5, event_type),
+          feature_flags = CASE WHEN $6::text IS NOT NULL THEN $6::jsonb ELSE feature_flags END
+        WHERE id = $7`,
+        [name, coupleCrossing, eventDate || null, wishlistDeadline || null, eventType, featureFlags ? JSON.stringify(featureFlags) : null, id],
       );
 
       // If people array is provided, sync participants
@@ -599,6 +637,27 @@ router.post("/:id/generate", authenticateJWT, requireOrganizer, async (req: Requ
 
     await client.query("COMMIT");
 
+    // Fire-and-forget assignment notification emails
+    try {
+      const eventNameResult = await client.query(
+        "SELECT name FROM events WHERE id = $1", [id]
+      );
+      const eventName = eventNameResult.rows[0]?.name || '';
+      const participantEmailsResult = await client.query(
+        `SELECT DISTINCT ON (p.id) p.name, i.email
+         FROM participants p
+         LEFT JOIN invites i ON i.participant_id = p.id
+         WHERE p.event_id = $1 AND i.email IS NOT NULL
+         ORDER BY p.id`,
+        [id],
+      );
+      for (const row of participantEmailsResult.rows) {
+        sendAssignmentReadyEmail(row.email, row.name, eventName);
+      }
+    } catch (_emailErr) {
+      // Don't fail the generate request if email fails
+    }
+
     res.json({ assignments });
   } catch (error) {
     await client.query("ROLLBACK");
@@ -741,6 +800,17 @@ async function fetchEventById(id: string) {
     [id],
   );
 
+  const wishlistStatsResult = await query(
+    `SELECT
+      COUNT(w.id)::int as total_wishlist_count,
+      COUNT(wc.id)::int as claimed_count
+    FROM wishlists w
+    LEFT JOIN wishlist_claims wc ON w.id = wc.wishlist_id
+    WHERE w.event_id = $1`,
+    [id],
+  );
+  const wishlistStats = wishlistStatsResult.rows[0] || { total_wishlist_count: 0, claimed_count: 0 };
+
   const assignments: Record<string, string[]> = {};
   assignmentsResult.rows.forEach((row) => {
     if (!assignments[row.giver]) {
@@ -771,6 +841,12 @@ async function fetchEventById(id: string) {
     gifts,
     date: event.created_at,
     participants: participantsResult.rows.map((p) => p.name),
+    eventDate: event.event_date || null,
+    wishlistDeadline: event.wishlist_deadline || null,
+    eventType: event.event_type || 'secret_santa',
+    featureFlags: event.feature_flags || {},
+    totalWishlistCount: wishlistStats.total_wishlist_count,
+    claimedCount: wishlistStats.claimed_count,
   };
 }
 

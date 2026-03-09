@@ -197,3 +197,17 @@ CREATE TRIGGER update_users_updated_at
     BEFORE UPDATE ON users
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
+
+-- Phase 22: Event metadata columns
+ALTER TABLE events ADD COLUMN IF NOT EXISTS organizer_id INTEGER REFERENCES users(id) ON DELETE SET NULL;
+ALTER TABLE events ADD COLUMN IF NOT EXISTS event_date TIMESTAMP DEFAULT NULL;
+ALTER TABLE events ADD COLUMN IF NOT EXISTS wishlist_deadline TIMESTAMP DEFAULT NULL;
+CREATE INDEX IF NOT EXISTS idx_events_organizer_id ON events(organizer_id);
+CREATE INDEX IF NOT EXISTS idx_events_event_date ON events(event_date);
+
+-- Phase 24: Event type and feature flags
+ALTER TABLE events ADD COLUMN IF NOT EXISTS event_type VARCHAR(50) DEFAULT 'secret_santa';
+ALTER TABLE events ADD COLUMN IF NOT EXISTS feature_flags JSONB DEFAULT '{}';
+
+-- Phase 24: Budget tracking
+ALTER TABLE wishlists ADD COLUMN IF NOT EXISTS price_pence INTEGER DEFAULT NULL;

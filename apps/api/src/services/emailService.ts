@@ -15,6 +15,7 @@ export async function sendMagicLinkEmail(
 ): Promise<void> {
   try {
     const testAccount = await nodemailer.createTestAccount();
+    console.log("🚀 ~ sendMagicLinkEmail ~ testAccount:", testAccount);
 
     // Create nodemailer transporter using environment variables
     // Defaults suitable for MailHog/Mailpit local development (host=localhost, port=1025)
@@ -78,5 +79,106 @@ export async function sendMagicLinkEmail(
   } catch (error) {
     console.error(`Failed to send magic link email to ${to}:`, error);
     // Do NOT rethrow - fire-and-don't-block pattern
+  }
+}
+
+/**
+ * Send assignment-ready notification email to a participant
+ * Fire-and-don't-block: logs errors but does NOT throw
+ */
+export async function sendAssignmentReadyEmail(
+  to: string,
+  participantName: string,
+  eventName: string,
+): Promise<void> {
+  try {
+    const testAccount = await nodemailer.createTestAccount();
+    const transporter = nodemailer.createTransport({
+      host: testAccount.smtp.host,
+      port: testAccount.smtp.port,
+      secure: testAccount.smtp.secure,
+      auth: { user: testAccount.user, pass: testAccount.pass },
+    });
+
+    const info = await transporter.sendMail({
+      from: `"Gatherly" <${testAccount.user}>`,
+      to,
+      subject: `Your secret assignment for ${eventName} is ready!`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /></head>
+          <body style="font-family: sans-serif; background: #f9fafb; margin: 0; padding: 40px 20px;">
+            <div style="max-width: 480px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 40px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
+              <h1 style="font-size: 22px; color: #111827; margin-top: 0;">
+                Your assignment is ready, ${participantName}!
+              </h1>
+              <p style="color: #4b5563; font-size: 15px; line-height: 1.6;">
+                The organiser of <strong>${eventName}</strong> has generated the secret assignments. Open the Gatherly app to see who you're buying for!
+              </p>
+              <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+              <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+                You're receiving this because you're a participant in ${eventName}.
+              </p>
+            </div>
+          </body>
+        </html>
+      `,
+    });
+    logger.log(`Assignment email sent to ${to}`);
+    logger.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+  } catch (error) {
+    console.error(`Failed to send assignment email to ${to}:`, error);
+  }
+}
+
+/**
+ * Send wishlist deadline reminder email
+ * Fire-and-don't-block: logs errors but does NOT throw
+ */
+export async function sendDeadlineReminderEmail(
+  to: string,
+  participantName: string,
+  eventName: string,
+  deadlineDate: string,
+): Promise<void> {
+  try {
+    const testAccount = await nodemailer.createTestAccount();
+    const transporter = nodemailer.createTransport({
+      host: testAccount.smtp.host,
+      port: testAccount.smtp.port,
+      secure: testAccount.smtp.secure,
+      auth: { user: testAccount.user, pass: testAccount.pass },
+    });
+
+    const info = await transporter.sendMail({
+      from: `"Gatherly" <${testAccount.user}>`,
+      to,
+      subject: `Reminder: Wishlist deadline for ${eventName}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /></head>
+          <body style="font-family: sans-serif; background: #f9fafb; margin: 0; padding: 40px 20px;">
+            <div style="max-width: 480px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 40px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
+              <h1 style="font-size: 22px; color: #111827; margin-top: 0;">
+                Wishlist deadline reminder, ${participantName}!
+              </h1>
+              <p style="color: #4b5563; font-size: 15px; line-height: 1.6;">
+                The wishlist deadline for <strong>${eventName}</strong> is on <strong>${deadlineDate}</strong>. Make sure you've added your items!
+              </p>
+              <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+              <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+                You're receiving this because you're a participant in ${eventName}.
+              </p>
+            </div>
+          </body>
+        </html>
+      `,
+    });
+    logger.log(`Deadline reminder sent to ${to}`);
+    logger.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+  } catch (error) {
+    console.error(`Failed to send deadline reminder to ${to}:`, error);
   }
 }

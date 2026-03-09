@@ -25,6 +25,7 @@ router.get(
       w.product_url,
       w.priority,
       w.sort_order,
+      w.price_pence,
       wc.claimed_by,
       w.created_at,
       w.updated_at
@@ -50,6 +51,7 @@ router.get(
       productUrl: row.product_url,
       priority: row.priority,
       sortOrder: row.sort_order,
+      pricePence: row.price_pence ?? null,
       isClaimed: row.claimed_by !== null,
       claimedByMe:
         currentParticipantId != null &&
@@ -75,6 +77,7 @@ router.post(
       imageUrl,
       productUrl,
       priority,
+      pricePence,
     } = req.body;
 
     if (!participantId) {
@@ -93,9 +96,9 @@ router.post(
     const nextSortOrder = orderResult.rows[0].next_order;
 
     const result = await query(
-      `INSERT INTO wishlists (event_id, participant_id, item_name, description, image_url, product_url, priority, sort_order)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-     RETURNING *`,
+      `INSERT INTO wishlists (event_id, participant_id, item_name, description, image_url, product_url, priority, sort_order, price_pence)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       RETURNING *`,
       [
         eventId,
         participantId,
@@ -105,6 +108,7 @@ router.post(
         productUrl || null,
         priority || "medium",
         nextSortOrder,
+        pricePence ?? null,
       ],
     );
 
@@ -127,6 +131,7 @@ router.post(
       productUrl: wishlist.product_url,
       priority: wishlist.priority,
       sortOrder: wishlist.sort_order,
+      pricePence: wishlist.price_pence ?? null,
       isClaimed: false,
       claimedByMe: false,
       createdAt: wishlist.created_at,
@@ -197,6 +202,7 @@ router.put(
       imageUrl,
       productUrl,
       priority,
+      pricePence,
     } = req.body;
 
     // Check ownership
@@ -217,14 +223,15 @@ router.put(
 
     const result = await query(
       `UPDATE wishlists
-     SET item_name = $1,
-         description = $2,
-         image_url = $3,
-         product_url = $4,
-         priority = $5
-     WHERE id = $6 AND event_id = $7
-     RETURNING *`,
-      [itemName, description, imageUrl, productUrl, priority, id, eventId],
+       SET item_name = $1,
+           description = $2,
+           image_url = $3,
+           product_url = $4,
+           priority = $5,
+           price_pence = $6
+       WHERE id = $7 AND event_id = $8
+       RETURNING *`,
+      [itemName, description, imageUrl, productUrl, priority, pricePence ?? null, id, eventId],
     );
 
     const wishlist = result.rows[0];
@@ -254,6 +261,7 @@ router.put(
       productUrl: wishlist.product_url,
       priority: wishlist.priority,
       sortOrder: wishlist.sort_order,
+      pricePence: wishlist.price_pence ?? null,
       isClaimed: claimedById !== null,
       claimedByMe:
         currentParticipantId != null && currentParticipantId === claimedById,
