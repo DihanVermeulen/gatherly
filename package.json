@@ -1,6 +1,7 @@
 {
   "name": "gatherly",
   "private": true,
+  "license": "Elastic-2.0",
   "scripts": {
     "build": "pnpm run build:packages && pnpm run build:apps",
     "build:packages": "turbo run build --filter=\"./packages/*\"",
