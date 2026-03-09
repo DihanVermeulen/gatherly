@@ -10,6 +10,7 @@ export type TWishlistItem = {
   imageUrl?: string;
   productUrl?: string;
   priority: "low" | "medium" | "high";
+  pricePence?: number | null;
   isClaimed: boolean;
   claimedByMe: boolean;
   claimedBy?: number;
@@ -32,6 +33,14 @@ export type TEvent = {
   wishlists?: TWishlistItem[];
   hash?: string;
   description?: string;
+  // Phase 22 additions
+  eventDate?: string | null;
+  wishlistDeadline?: string | null;
+  totalWishlistCount?: number;
+  claimedCount?: number;
+  // Phase 24 additions
+  eventType?: string;
+  featureFlags?: Record<string, any>;
 };
 
 // Type aliases for backward compatibility

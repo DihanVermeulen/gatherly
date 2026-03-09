@@ -73,6 +73,9 @@ export default function EditEventScreen() {
     {},
   );
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [inviteList, setInviteList] = useState<Invite[]>([]);
+  const [inviteListLoading, setInviteListLoading] = useState(false);
+  const [resendingInvite, setResendingInvite] = useState<number | null>(null);
 
   // ── Derived values ───────────────────────────────────────────────
   const event = events.find((e) => e.id === id) ?? null;
@@ -95,10 +98,43 @@ export default function EditEventScreen() {
         );
       });
     }
+    loadInvites();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event?.id]);
 
   // ── Handlers ─────────────────────────────────────────────────────
+
+  const loadInvites = async () => {
+    setInviteListLoading(true);
+    try {
+      const data = await invitesApi.list(id);
+      setInviteList(data.invites);
+    } catch (err) {
+      console.error("Failed to load invites:", err);
+    } finally {
+      setInviteListLoading(false);
+    }
+  };
+
+  const handleResendInvite = async (inviteId: number) => {
+    setResendingInvite(inviteId);
+    try {
+      await invitesApi.resend(id, inviteId);
+    } catch (err) {
+      console.error("Failed to resend invite:", err);
+    } finally {
+      setResendingInvite(null);
+    }
+  };
+
+  const handleRevokeInvite = async (inviteId: number) => {
+    try {
+      await invitesApi.delete(id, inviteId);
+      setInviteList((prev) => prev.filter((inv) => inv.id !== inviteId));
+    } catch (err) {
+      console.error("Failed to revoke invite:", err);
+    }
+  };
 
   const handleRemoveParticipant = async (participantName: string) => {
     try {
@@ -115,6 +151,7 @@ export default function EditEventScreen() {
       const invite = await invitesApi.create(id);
       setCurrentInvite(invite);
       setShowInviteModal(true);
+      await loadInvites(); // refresh list
     } catch (err) {
       console.error("Failed to create invite:", err);
     } finally {
@@ -312,6 +349,75 @@ export default function EditEventScreen() {
               </View>
             )}
           </View>
+
+          {/* ── Invites section ──────────────────────────────── */}
+          {!isLocked && (
+            <View className="mx-4 mb-4 rounded-2xl border border-outline-100 bg-white p-4">
+              <View className="flex-row items-center justify-between mb-3">
+                <Text className="text-base font-bold text-typography-900">
+                  Invites
+                </Text>
+                {inviteListLoading && (
+                  <Text className="text-xs text-typography-400">Loading...</Text>
+                )}
+              </View>
+
+              {inviteList.length === 0 ? (
+                <Text className="text-sm text-typography-400 text-center py-2">
+                  No invites sent yet.
+                </Text>
+              ) : (
+                inviteList.map((invite, idx) => {
+                  const isPending = invite.status === 'pending';
+                  const isResending = resendingInvite === invite.id;
+                  return (
+                    <View
+                      key={invite.id}
+                      className={`flex-row items-center justify-between py-2.5 ${
+                        idx < inviteList.length - 1 ? "border-b border-outline-100" : ""
+                      }`}
+                    >
+                      <View className="flex-1 mr-2">
+                        <Text className="text-sm font-semibold text-typography-800" numberOfLines={1}>
+                          {invite.email || invite.invite_url?.split('/').pop() || `Invite #${invite.id}`}
+                        </Text>
+                        <View
+                          className="mt-1 self-start rounded-full px-2 py-0.5"
+                          style={{ backgroundColor: isPending ? '#fef9c3' : '#dcfce7' }}
+                        >
+                          <Text
+                            className="text-xs font-bold uppercase tracking-wide"
+                            style={{ color: isPending ? '#92400e' : '#15803d' }}
+                          >
+                            {invite.status}
+                          </Text>
+                        </View>
+                      </View>
+                      <View className="flex-row gap-2">
+                        {isPending && (
+                          <Pressable
+                            onPress={() => handleResendInvite(invite.id)}
+                            disabled={isResending}
+                            className="px-3 py-1.5 rounded-lg border border-outline-200 active:opacity-70"
+                          >
+                            <Text className="text-xs font-semibold text-typography-600">
+                              {isResending ? '...' : 'Resend'}
+                            </Text>
+                          </Pressable>
+                        )}
+                        <Pressable
+                          onPress={() => handleRevokeInvite(invite.id)}
+                          className="h-8 w-8 rounded-full bg-red-50 items-center justify-center active:opacity-70"
+                        >
+                          <X size={14} color="#ef4444" />
+                        </Pressable>
+                      </View>
+                    </View>
+                  );
+                })
+              )}
+            </View>
+          )}
 
           {/* ── Wishlists Status card ─────────────────────────────── */}
           <View className="mx-4 mb-4 rounded-2xl border border-outline-100 bg-white p-4">

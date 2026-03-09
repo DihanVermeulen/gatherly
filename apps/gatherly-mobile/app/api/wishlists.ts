@@ -18,6 +18,7 @@ export const wishlistsApi = {
       imageUrl?: string;
       productUrl?: string;
       priority?: 'low' | 'medium' | 'high';
+      pricePence?: number | null;
     }
   ): Promise<WishlistItem> => {
     const response = await apiClient.post(`/api/events/${eventId}/wishlists`, item);
@@ -35,6 +36,7 @@ export const wishlistsApi = {
       imageUrl?: string;
       productUrl?: string;
       priority?: 'low' | 'medium' | 'high';
+      pricePence?: number | null;
     }
   ): Promise<WishlistItem> => {
     const response = await apiClient.put(`/api/events/${eventId}/wishlists/${itemId}`, item);

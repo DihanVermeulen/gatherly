@@ -153,7 +153,54 @@ export default function EventDetailsScreen() {
                   {giftCount} {giftCount === 1 ? "Gift" : "Gifts"}
                 </Text>
               </View>
+              {event.eventDate ? (
+                <>
+                  <Text className="text-typography-300 text-sm">|</Text>
+                  <View className="flex-row items-center gap-1.5">
+                    <Text className="text-sm text-typography-500">
+                      {new Date(event.eventDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                    </Text>
+                  </View>
+                </>
+              ) : null}
             </View>
+
+            {/* ── Wishlist progress ─────────────────────────── */}
+            {(event.totalWishlistCount ?? 0) > 0 ? (
+              <View className="rounded-2xl border border-outline-100 bg-white p-4 mb-4">
+                <View className="flex-row items-center justify-between mb-2">
+                  <Text className="text-sm font-bold text-typography-700">Wishlists Progress</Text>
+                  <Text className="text-sm font-bold text-teal-600">
+                    {event.claimedCount ?? 0}/{event.totalWishlistCount ?? 0} claimed
+                  </Text>
+                </View>
+                <View className="h-2 rounded-full bg-background-100 overflow-hidden">
+                  <View
+                    className="h-full rounded-full bg-teal-500"
+                    style={{
+                      width: `${Math.round(((event.claimedCount ?? 0) / (event.totalWishlistCount ?? 1)) * 100)}%`,
+                    }}
+                  />
+                </View>
+              </View>
+            ) : null}
+
+            {/* ── Countdown banner ──────────────────────────── */}
+            {event.eventDate ? (() => {
+              const now = new Date();
+              const eventDate = new Date(event.eventDate);
+              const diffMs = eventDate.getTime() - now.getTime();
+              const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+              if (diffDays <= 0) return null;
+              return (
+                <View className="rounded-2xl px-4 py-3 mb-4 flex-row items-center gap-2" style={{ backgroundColor: "#fef3c7" }}>
+                  <Text className="text-2xl">🎁</Text>
+                  <Text className="text-sm font-semibold" style={{ color: "#92400e" }}>
+                    {diffDays === 1 ? "Tomorrow is the day!" : `${diffDays} days to go!`}
+                  </Text>
+                </View>
+              );
+            })() : null}
 
             {/* ── Secret Assignment card ─────────────────────────────── */}
             <View

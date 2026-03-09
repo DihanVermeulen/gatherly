@@ -47,6 +47,12 @@ export const invitesApi = {
       .delete(`/api/events/${eventId}/invites/${inviteId}`)
       .then((r) => r.data),
 
+  // Resend magic link for a pending invite
+  resend: (eventId: string, inviteId: number): Promise<{ magic_link_url: string; email_sent: boolean }> =>
+    apiClient
+      .post(`/api/events/${eventId}/invites/${inviteId}/resend-magic-link`)
+      .then((r) => r.data),
+
   // Validate an invite code (public endpoint, no auth required)
   validate: (code: string): Promise<InvitePreview> =>
     apiClient

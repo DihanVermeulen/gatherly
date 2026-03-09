@@ -42,6 +42,9 @@ export default function EditWishlistItemScreen() {
   const [description, setDescription] = useState<string>(item?.description ?? "");
   const [imageUrl, setImageUrl] = useState<string | null>(item?.imageUrl ?? null);
   const [priority, setPriority] = useState<Priority>(item?.priority ?? "low");
+  const [priceInput, setPriceInput] = useState<string>(
+    item?.pricePence ? (item.pricePence / 100).toFixed(2) : ""
+  );
 
   // Save state
   const [isSaving, setIsSaving] = useState(false);
@@ -93,12 +96,16 @@ export default function EditWishlistItemScreen() {
 
     setIsSaving(true);
     try {
+      const pricePence = priceInput.trim()
+        ? Math.round(parseFloat(priceInput.replace(/[^0-9.]/g, "")) * 100) || null
+        : null;
       const updatedItem = await wishlistsApi.update(eventId, Number(id), {
         participantId: item.participantId,
         itemName: itemName.trim(),
         description: description.trim() || undefined,
         imageUrl: imageUrl || undefined,
         priority,
+        pricePence,
       });
 
       dispatch({
@@ -115,7 +122,7 @@ export default function EditWishlistItemScreen() {
     } finally {
       setIsSaving(false);
     }
-  }, [eventId, id, item, itemName, description, imageUrl, priority, dispatch, router]);
+  }, [eventId, id, item, itemName, description, imageUrl, priority, priceInput, dispatch, router]);
 
   // ── Item not found guard ─────────────────────────────────────────────────
 
@@ -280,6 +287,26 @@ export default function EditWishlistItemScreen() {
                   </Text>
                 </Pressable>
               )}
+            </View>
+
+            {/* Price */}
+            <View className="mb-4">
+              <Text className="text-sm font-semibold text-typography-700 mb-2">
+                Price{" "}
+                <Text className="text-typography-400 font-normal">(optional)</Text>
+              </Text>
+              <View className="flex-row items-center border border-outline-200 rounded-xl px-4 py-3 bg-background-50">
+                <Text className="text-typography-500 mr-2 text-base">£</Text>
+                <TextInput
+                  value={priceInput}
+                  onChangeText={setPriceInput}
+                  placeholder="0.00"
+                  placeholderTextColor="#94a3b8"
+                  keyboardType="decimal-pad"
+                  style={{ fontSize: 15, color: "#0f172a", flex: 1 }}
+                  returnKeyType="done"
+                />
+              </View>
             </View>
 
             {/* Priority segmented control */}
