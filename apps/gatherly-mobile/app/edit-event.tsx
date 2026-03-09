@@ -554,6 +554,22 @@ export default function EditEventScreen() {
               </View>
               <ChevronRight size={18} color="#94a3b8" />
             </Pressable>
+
+            {/* Manage Modules row */}
+            <Pressable
+              onPress={() => router.push(`/modules-config?id=${id}`)}
+              className="flex-row items-center justify-between py-3 active:opacity-70"
+            >
+              <View className="flex-1 mr-3">
+                <Text className="text-sm font-semibold text-typography-800">
+                  Manage Modules
+                </Text>
+                <Text className="text-xs text-typography-400 mt-0.5">
+                  Enable Polls, RSVP, Potluck, and more
+                </Text>
+              </View>
+              <ChevronRight size={18} color="#94a3b8" />
+            </Pressable>
           </View>
 
           {/* ── Generate Secret Codes button ──────────────────────── */}

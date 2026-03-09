@@ -25,6 +25,7 @@ router.get(
       e.wishlist_deadline,
       e.event_type,
       e.feature_flags,
+      e.plan_tier,
       COALESCE(json_agg(DISTINCT p.name) FILTER (WHERE p.name IS NOT NULL), '[]') as people,
       COALESCE(
         json_agg(
@@ -81,6 +82,7 @@ router.get(
       wishlistDeadline: row.wishlist_deadline || null,
       eventType: row.event_type || 'secret_santa',
       featureFlags: row.feature_flags || {},
+      planTier: row.plan_tier || 'free',
     }));
 
     res.json(events);
@@ -195,6 +197,7 @@ router.get(
       wishlistDeadline: event.wishlist_deadline || null,
       eventType: event.event_type || 'secret_santa',
       featureFlags: event.feature_flags || {},
+      planTier: event.plan_tier || 'free',
       totalWishlistCount: wishlistStats.total_wishlist_count,
       claimedCount: wishlistStats.claimed_count,
     });
@@ -219,6 +222,13 @@ router.post(
     );
 
     const event = result.rows[0];
+
+    // Auto-insert gift_exchange module for new events
+    await query(
+      "INSERT INTO event_modules (event_id, module_type, status, sort_order) VALUES ($1, 'gift_exchange', 'active', 0) ON CONFLICT (event_id, module_type) DO NOTHING",
+      [event.id],
+    );
+
     res.status(201).json({
       id: event.id.toString(),
       name: event.name,
@@ -233,6 +243,7 @@ router.post(
       wishlistDeadline: event.wishlist_deadline || null,
       eventType: event.event_type || 'secret_santa',
       featureFlags: event.feature_flags || {},
+      planTier: event.plan_tier || 'free',
     });
   }),
 );

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
@@ -9,7 +9,12 @@ import {
   Users,
   Gift,
   ChevronRight,
+  BarChart2,
+  CheckSquare,
+  Utensils,
 } from "lucide-react-native";
+import { modulesApi } from "./api/modules";
+import { TEventModule } from "./api/events";
 
 import { useEvents } from "./contexts/EventsContext";
 import { useSession } from "./contexts/AuthContext";
@@ -40,6 +45,11 @@ export default function EventDetailsScreen() {
   const { user } = useSession();
 
   const [assignmentRevealed, setAssignmentRevealed] = useState(false);
+  const [activeModules, setActiveModules] = useState<TEventModule[]>([]);
+
+  useEffect(() => {
+    modulesApi.getModules(id).then(setActiveModules).catch(() => {});
+  }, [id]);
 
   // Find the event
   const eventIndex = events.findIndex((e) => e.id === id);
@@ -257,6 +267,56 @@ export default function EventDetailsScreen() {
                 </>
               )}
             </View>
+
+            {/* ── Modules section ────────────────────────────────────── */}
+            {activeModules.filter((m) => m.moduleType !== "gift_exchange" && m.status === "active").length > 0 ? (
+              <View className="mb-6">
+                <Text className="text-lg font-bold text-typography-900 mb-3">
+                  Event Modules
+                </Text>
+                <View className="rounded-2xl border border-outline-100 overflow-hidden">
+                  {activeModules
+                    .filter((m) => m.moduleType !== "gift_exchange" && m.status === "active")
+                    .map((mod, idx, arr) => {
+                      const isLast = idx === arr.length - 1;
+                      let icon = <Gift size={18} color="#0d9488" />;
+                      let label: string = mod.moduleType;
+                      let route = "";
+                      if (mod.moduleType === "polls") {
+                        icon = <BarChart2 size={18} color="#0d9488" />;
+                        label = "Polls";
+                        route = `/polls?id=${id}`;
+                      } else if (mod.moduleType === "rsvp") {
+                        icon = <CheckSquare size={18} color="#0d9488" />;
+                        label = "RSVP";
+                        route = `/rsvp?id=${id}`;
+                      } else if (mod.moduleType === "potluck") {
+                        icon = <Utensils size={18} color="#0d9488" />;
+                        label = "Potluck";
+                      }
+                      return (
+                        <Pressable
+                          key={mod.id}
+                          onPress={() => route && router.push(route as any)}
+                          disabled={!route}
+                          className={`flex-row items-center px-4 py-3 active:opacity-70 ${!isLast ? "border-b border-outline-100" : ""}`}
+                        >
+                          <View
+                            className="h-9 w-9 rounded-xl items-center justify-center mr-3 flex-shrink-0"
+                            style={{ backgroundColor: "#f0fdfa" }}
+                          >
+                            {icon}
+                          </View>
+                          <Text className="flex-1 text-sm font-semibold text-typography-900 capitalize">
+                            {label}
+                          </Text>
+                          {route ? <ChevronRight size={16} color="#94a3b8" /> : null}
+                        </Pressable>
+                      );
+                    })}
+                </View>
+              </View>
+            ) : null}
 
             {/* ── Participants section ───────────────────────────────── */}
             <View>

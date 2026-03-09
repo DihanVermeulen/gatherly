@@ -151,7 +151,7 @@ export default function HowItWorksPage() {
             Ready to plan your next great gathering?
           </h2>
           <p className="text-gray-500 mb-8">
-            Join over 50,000 organisers who use Gatherly to create unforgettable experiences.
+            Everything you need to host a great gathering — gift exchanges, potluck planning, and shared memories — in one place.
           </p>
           <a
             href="#"

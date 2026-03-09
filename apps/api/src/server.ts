@@ -10,6 +10,7 @@ import decipherRouter from "./routes/decipher";
 import invitesRouter from "./routes/invites";
 import magicLinkRouter from "./routes/magicLink";
 import usersRouter from "./routes/users";
+import modulesRouter from "./routes/modules";
 
 export const createServer = (): Express => {
   const app = express();
@@ -45,6 +46,7 @@ export const createServer = (): Express => {
     .use("/api/events", eventsRouter)
     .use("/api/events", giftsRouter)
     .use("/api/events", wishlistsRouter)
+    .use("/api/events", modulesRouter)
     .use("/api/decipher", decipherRouter)
     .use("/api/auth/magic-link", magicLinkRouter)
     // Legacy route

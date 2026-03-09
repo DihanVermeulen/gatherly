@@ -41,6 +41,17 @@ export type TEvent = {
   // Phase 24 additions
   eventType?: string;
   featureFlags?: Record<string, any>;
+  // Phase 25 additions
+  planTier?: 'free' | 'standard';
+};
+
+export type TEventModule = {
+  id: number;
+  eventId: number;
+  moduleType: 'gift_exchange' | 'polls' | 'potluck' | 'rsvp' | 'white_elephant';
+  config: Record<string, any>;
+  status: 'active' | 'closed' | 'draft';
+  sortOrder: number;
 };
 
 // Type aliases for backward compatibility

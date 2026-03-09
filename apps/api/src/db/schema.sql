@@ -211,3 +211,61 @@ ALTER TABLE events ADD COLUMN IF NOT EXISTS feature_flags JSONB DEFAULT '{}';
 
 -- Phase 24: Budget tracking
 ALTER TABLE wishlists ADD COLUMN IF NOT EXISTS price_pence INTEGER DEFAULT NULL;
+
+-- Phase 25: Plan tier + Modules
+ALTER TABLE events ADD COLUMN IF NOT EXISTS plan_tier VARCHAR(50) DEFAULT 'free';
+
+CREATE TABLE IF NOT EXISTS event_modules (
+  id SERIAL PRIMARY KEY,
+  event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  module_type VARCHAR(50) NOT NULL,
+  config JSONB DEFAULT '{}',
+  status VARCHAR(20) DEFAULT 'active',
+  sort_order INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(event_id, module_type)
+);
+
+CREATE TABLE IF NOT EXISTS module_polls (
+  id SERIAL PRIMARY KEY,
+  event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  module_id INTEGER NOT NULL REFERENCES event_modules(id) ON DELETE CASCADE,
+  question TEXT NOT NULL,
+  allow_multiple BOOLEAN DEFAULT false,
+  deadline TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS module_poll_options (
+  id SERIAL PRIMARY KEY,
+  poll_id INTEGER NOT NULL REFERENCES module_polls(id) ON DELETE CASCADE,
+  option_text TEXT NOT NULL,
+  sort_order INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS module_poll_votes (
+  id SERIAL PRIMARY KEY,
+  poll_id INTEGER NOT NULL REFERENCES module_polls(id) ON DELETE CASCADE,
+  option_id INTEGER NOT NULL REFERENCES module_poll_options(id) ON DELETE CASCADE,
+  participant_id INTEGER NOT NULL REFERENCES participants(id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(poll_id, option_id, participant_id)
+);
+
+CREATE TABLE IF NOT EXISTS module_rsvp_responses (
+  id SERIAL PRIMARY KEY,
+  event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  participant_id INTEGER NOT NULL REFERENCES participants(id) ON DELETE CASCADE,
+  status VARCHAR(20) DEFAULT 'pending',
+  headcount INTEGER DEFAULT 1,
+  note TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(event_id, participant_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_event_modules_event_id ON event_modules(event_id);
+CREATE INDEX IF NOT EXISTS idx_module_polls_event_id ON module_polls(event_id);
+CREATE INDEX IF NOT EXISTS idx_module_poll_votes_poll_id ON module_poll_votes(poll_id);
+CREATE INDEX IF NOT EXISTS idx_module_rsvp_event_id ON module_rsvp_responses(event_id);
