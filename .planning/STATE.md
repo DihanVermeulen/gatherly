@@ -5,21 +5,21 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** v2.1 — Phase 21 COMPLETE (Next.js marketing website)
+**Current focus:** v2.1 — Phases 22-24 COMPLETE (Profile, Event Metadata, Invite Management, Pricing)
 
 ## Current Position
 
-Phase: 21 of v2.1 (Gatherly Next.js Website)
-Plan: 5 of 5+ complete (21-05 done)
+Phase: 22-24 of v2.1 (Profile + Event Metadata + Invite Management + Pricing)
+Plan: 22-24 complete
 Status: Complete
-Last activity: 2026-03-08 — Phase 21 complete (all 5 plans executed, verification passed 17/17)
+Last activity: 2026-03-09 — Phases 22-24 complete (14 files changed across backend + mobile)
 
-Progress: [████████████████████] 100% — v2.1 Phase 21 all 5 plans complete; verification passed
+Progress: [████████████████████] 100% — v2.1 Phases 22-24 all changes committed
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 36 (27 v2.0 + 9 v2.1)
+- Total plans completed: 37 (27 v2.0 + 10 v2.1)
 - Average duration: —
 - Total execution time: —
 
@@ -115,8 +115,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-08 UTC
-Stopped at: Phase 21 complete — all plans executed and verified (17/17 must-haves passed)
+Last session: 2026-03-09 UTC
+Stopped at: Phases 22-24 complete — profile screen, event metadata, invite management, price field
 Resume file: None
 
-Next step: v2.1 milestone audit or continue with remaining phases (12, 15, 16, 18).
+Next step: Apply schema migration to dev database (ALTER TABLE statements in schema.sql). Continue with remaining phases or v2.1 milestone audit.
