@@ -14,8 +14,7 @@ export function Footer() {
               <span>Gatherly</span>
             </div>
             <p className="text-sm text-gray-500 leading-relaxed">
-              Gatherly is dedicated to bringing people together. Our mission is to make every event
-              stress-free and memorable.
+              Gather without the chaos. Gatherly handles the details so you can focus on the memories.
             </p>
           </div>
 

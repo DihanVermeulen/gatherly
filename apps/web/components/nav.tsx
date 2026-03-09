@@ -25,7 +25,7 @@ export function Nav() {
           href="#"
           className="bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
         >
-          Get Started
+          Get Started Free
         </Link>
       </div>
     </header>
