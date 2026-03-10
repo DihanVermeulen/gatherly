@@ -106,7 +106,7 @@ Progress: [████████████████████] 100% �
 
 ### Pending Todos
 
-None yet.
+- `.planning/todos/pending/2026-03-10-phase-26-planning.md` — Plan Phase 26 (Public Wishlist + Push Notifications + Groups)
 
 ### Blockers/Concerns
 
