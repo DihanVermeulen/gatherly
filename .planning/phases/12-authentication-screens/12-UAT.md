@@ -1,9 +1,9 @@
 ---
 status: complete
 phase: 12-authentication-screens
-source: 12-01-SUMMARY.md
+source: 12-01-SUMMARY.md, 12-02-PLAN.md
 started: 2026-02-24T00:00:00Z
-updated: 2026-02-24T00:00:00Z
+updated: 2026-03-10T00:00:00Z
 ---
 
 ## Current Test
@@ -36,10 +36,26 @@ result: pass
 expected: While logged in, navigate to the Profile tab. A "Log Out" button with a LogOut icon is visible. Tap it — the session clears and the app returns to the Login screen.
 result: pass
 
+### 7. Register Screen Appearance
+expected: Tapping the Sign Up link on Login opens a Register screen with name, email, and password fields and a Create Account button.
+result: pass
+
+### 8. Register with Valid Details
+expected: Fill in name, email, and password on the Register screen and tap Create Account. A spinner appears while the request is in-flight, then the Events screen loads — logged in immediately, no separate login step needed.
+result: pass
+
+### 9. Register Error Display
+expected: Submit the Register form with an already-used email. An inline error message appears on the Register screen (no alert popup, no screen change).
+result: pass
+
+### 10. Session Persistence After Register
+expected: After registering, close the app fully and reopen it. The app goes directly to the Events screen — the new session persists across restart.
+result: pass
+
 ## Summary
 
-total: 6
-passed: 6
+total: 10
+passed: 10
 issues: 0
 pending: 0
 skipped: 0
