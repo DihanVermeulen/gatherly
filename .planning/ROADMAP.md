@@ -43,7 +43,7 @@ Plans:
 
 ---
 
-### Phase 12: Authentication Screens
+### ✅ Phase 12: Authentication Screens — COMPLETE 2026-02-26
 
 **Goal**: Users can create accounts, log in, and log out — with sessions that survive app restarts via JWT auto-refresh
 **Depends on**: Phase 11
@@ -57,8 +57,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 12-01-PLAN.md — Login screen (matching Register.png) + AuthContext upgrade with expo-secure-store + client.ts interceptor fix
-- [ ] 12-02-PLAN.md — Register screen (matching Login.png) + backend refresh endpoint body fallback
+- [x] 12-01-PLAN.md — Login screen (matching Register.png) + AuthContext upgrade with expo-secure-store + client.ts interceptor fix
+- [x] 12-02-PLAN.md — Register screen (matching Login.png) + backend refresh endpoint body fallback
 
 ---
 
@@ -226,7 +226,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 1–10. v2.0 Phases | v2.0 | 27/27 | Complete | 2026-02-22 |
 | 11. Navigation Foundation | v2.1 | 2/2 | Complete | 2026-02-23 |
-| 12. Authentication Screens | v2.1 | 0/2 | Not started | - |
+| 12. Authentication Screens | v2.1 | 2/2 | Complete | 2026-02-26 |
 | 13. Events List + Details Screens | v2.1 | 2/2 | Complete | 2026-02-24 |
 | 14. Edit Event Screen | v2.1 | 2/2 | Complete | 2026-02-25 |
 | 15. My Wishlist Screen | v2.1 | 0/2 | Not started | - |

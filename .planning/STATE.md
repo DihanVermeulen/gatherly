@@ -5,7 +5,7 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** v2.1 — Phases 22-24 COMPLETE (Profile, Event Metadata, Invite Management, Pricing)
+**Current focus:** v2.1 — UAT sweep in progress; Phase 12 verified complete
 
 ## Current Position
 
