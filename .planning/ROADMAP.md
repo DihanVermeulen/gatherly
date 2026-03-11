@@ -218,6 +218,34 @@ Plans:
 
 ---
 
+---
+
+### Phase 26: Public Wishlist (share_token)
+
+**Goal:** Allow participants to share their personal event wishlist via a public URL so people outside Gatherly can see what they want — without needing an account
+**Depends on:** Phase 15 (My Wishlist)
+**Plans:** TBD
+
+---
+
+### Phase 27: Smart Invite Join + Account Linking
+
+**Goal:** Existing account holders who receive a magic link are automatically joined to the event under their real account (not a participant-only session). Magic-link-only participants who later register get their participant records linked to their new account, so the event appears in their events list.
+**Depends on:** Phase 17 (Join Event), Phase 12 (Authentication)
+**Success Criteria** (what must be TRUE):
+  1. An existing Gatherly user who opens a magic link invite is joined to the event under their user account — not issued a participant-only session
+  2. A participant (no account) who registers a full account has their existing participant records automatically linked — their events appear in the list after registration
+  3. The events list correctly shows events where the user is a participant (not just organizer)
+**Plans:** TBD
+
+Key changes:
+- Schema: `ALTER TABLE participants ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE SET NULL`
+- `magicLink.ts /redeem`: email→user lookup; if match, generate user-scoped token + set participant.user_id
+- `auth.ts /register`: post-registration, link accepted invites by email to new user_id
+- `events.ts GET /`: include events where user has a participant record (not just organizer)
+
+---
+
 ## Progress
 
 **Execution Order:** 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18 → 19 → 20 → 21
@@ -229,10 +257,12 @@ Plans:
 | 12. Authentication Screens | v2.1 | 2/2 | Complete | 2026-02-26 |
 | 13. Events List + Details Screens | v2.1 | 2/2 | Complete | 2026-02-24 |
 | 14. Edit Event Screen | v2.1 | 2/2 | Complete | 2026-02-25 |
-| 15. My Wishlist Screen | v2.1 | 0/2 | Not started | - |
+| 15. My Wishlist Screen | v2.1 | 2/2 | Complete | 2026-02-26 |
 | 16. Event Wishlists + Claiming | v2.1 | 0/2 | Not started | - |
 | 17. Join Event Screen | v2.1 | 2/2 | Complete | 2026-02-27 |
-| 18. Organizer Invite Management | v2.1 | 0/2 | Not started | - |
+| 18. Organizer Invite Management | v2.1 | 2/2 | Complete | 2026-03-09 |
 | 19. Offline Storage Strategy | v2.1 | 4/4 | Complete | 2026-03-03 |
 | 20. Magic Link Redirect Website | v2.1 | 2/2 | Complete | 2026-03-06 |
 | 21. Gatherly Next.js Website | v2.1 | 5/5 | Complete | 2026-03-07 |
+| 26. Public Wishlist | v2.2 | 0/TBD | Not started | - |
+| 27. Smart Invite Join + Account Linking | v2.2 | 0/TBD | Not started | - |
