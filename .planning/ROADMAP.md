@@ -228,7 +228,7 @@ Plans:
 
 ---
 
-### Phase 27: Smart Invite Join + Account Linking
+### ✅ Phase 27: Smart Invite Join + Account Linking — COMPLETE 2026-03-12
 
 **Goal:** Existing account holders who receive a magic link are automatically joined to the event under their real account (not a participant-only session). Magic-link-only participants who later register get their participant records linked to their new account, so the event appears in their events list.
 **Depends on:** Phase 17 (Join Event), Phase 12 (Authentication)
@@ -269,4 +269,4 @@ Key changes:
 | 20. Magic Link Redirect Website | v2.1 | 2/2 | Complete | 2026-03-06 |
 | 21. Gatherly Next.js Website | v2.1 | 5/5 | Complete | 2026-03-07 |
 | 26. Public Wishlist | v2.2 | 0/TBD | Not started | - |
-| 27. Smart Invite Join + Account Linking | v2.2 | 0/2 | Not started | - |
+| 27. Smart Invite Join + Account Linking | v2.2 | 2/2 | Complete | 2026-03-12 |
