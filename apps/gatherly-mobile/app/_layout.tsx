@@ -145,6 +145,10 @@ function RootLayoutNav() {
                       name="join"
                       options={{ headerShown: false, gestureEnabled: false }}
                     />
+                    <Stack.Screen
+                      name="magic-link/[token]"
+                      options={{ headerShown: false, gestureEnabled: false }}
+                    />
                   </Stack>
                 </ThemeProvider>
               </>
