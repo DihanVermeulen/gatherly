@@ -236,7 +236,11 @@ Plans:
   1. An existing Gatherly user who opens a magic link invite is joined to the event under their user account — not issued a participant-only session
   2. A participant (no account) who registers a full account has their existing participant records automatically linked — their events appear in the list after registration
   3. The events list correctly shows events where the user is a participant (not just organizer)
-**Plans:** TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 27-01-PLAN.md — Schema migration (participants.user_id) + magicLink.ts smart redemption (user-scoped tokens for existing users)
+- [ ] 27-02-PLAN.md — Mobile client dual-shape response handling for magic link redemption
 
 Key changes:
 - Schema: `ALTER TABLE participants ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE SET NULL`
@@ -265,4 +269,4 @@ Key changes:
 | 20. Magic Link Redirect Website | v2.1 | 2/2 | Complete | 2026-03-06 |
 | 21. Gatherly Next.js Website | v2.1 | 5/5 | Complete | 2026-03-07 |
 | 26. Public Wishlist | v2.2 | 0/TBD | Not started | - |
-| 27. Smart Invite Join + Account Linking | v2.2 | 0/TBD | Not started | - |
+| 27. Smart Invite Join + Account Linking | v2.2 | 0/2 | Not started | - |
