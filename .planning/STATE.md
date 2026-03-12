@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 27 (Smart Invite Join + Account Linking)
-Plan: 27-01 complete (1/1 in phase)
+Plan: 27-02 complete (2/2 in phase)
 Status: Phase complete
-Last activity: 2026-03-12 — Completed 27-01-PLAN.md (account linking + smart magic-link redemption)
+Last activity: 2026-03-12 — Completed 27-02-PLAN.md (mobile dual-shape magic-link handler)
 
 Progress: [████████████████████] Phase 27 Plan 01 committed
 
@@ -100,6 +100,7 @@ Progress: [████████████████████] Phase 2
 - Post-registration linking: after INSERT INTO users, UPDATE participants SET user_id for accepted invites with matching email (fire-and-forget, non-fatal)
 - Participant-inclusive events query: OR EXISTS (SELECT 1 FROM participants p2 WHERE p2.event_id = e.id AND p2.user_id = $1) in organizer branch; GROUP BY e.id handles dedup
 - participants.user_id FK: REFERENCES users(id) ON DELETE SET NULL — losing user account does not delete participant records
+- redeemMagicLink dual-shape detection: "id" in userData && !("participantId" in userData) distinguishes user-scoped from participant-scoped; role is "participant" in both so is not a reliable discriminant
 
 ### Roadmap Evolution
 
@@ -118,12 +119,12 @@ Progress: [████████████████████] Phase 2
 - Phase 18: Organizer Invite Management template MISSING — must request from user; backend endpoint may also be missing
 - Existing dev databases need manual migration: ALTER TABLE invites ADD COLUMN IF NOT EXISTS created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;
 - Phase 27: Dev databases need migration 012: `psql -d gatherly -f apps/api/src/db/migrations/012-phase27-account-linking.sql`
-- Phase 27: Mobile app /redeem handler not yet updated to handle upgraded user-scoped response shape (`id`, `email`, `name`, `role`, `eventId`, `eventName`) — needed before mobile testing
+- Phase 27: RESOLVED — Mobile /redeem handler now handles both user-scoped and participant-scoped response shapes
 
 ## Session Continuity
 
 Last session: 2026-03-12 UTC
-Stopped at: Phase 27 Plan 01 complete — participants.user_id, smart magic-link redemption, post-registration linking, expanded events query
+Stopped at: Phase 27 Plan 02 complete — mobile dual-shape magic-link handler, redeemMagicLink branches on user-scoped vs participant-scoped response
 Resume file: None
 
-Next step: Apply migration 012 to dev database. Update mobile magic-link handler to handle user-scoped response shape from /redeem.
+Next step: Apply migration 012 to dev database. Phase 27 fully complete — smart invite join + account linking shipped end-to-end (API + mobile).
