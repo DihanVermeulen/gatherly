@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 
 ## Current Position
 
-Phase: 22-24 of v2.1 (Profile + Event Metadata + Invite Management + Pricing)
-Plan: 22-24 complete
-Status: Complete
-Last activity: 2026-03-09 — Phases 22-24 complete (14 files changed across backend + mobile)
+Phase: 27 (Smart Invite Join + Account Linking)
+Plan: 27-01 complete (1/1 in phase)
+Status: Phase complete
+Last activity: 2026-03-12 — Completed 27-01-PLAN.md (account linking + smart magic-link redemption)
 
-Progress: [████████████████████] 100% — v2.1 Phases 22-24 all changes committed
+Progress: [████████████████████] Phase 27 Plan 01 committed
 
 ## Performance Metrics
 
@@ -96,6 +96,10 @@ Progress: [████████████████████] 100% �
 - Hero plant image uses Unsplash URL with TODO comment — real brand asset replaces URL before launch
 - App store buttons on web use href="#" and default state only — PLAY_INSTALLED badge in Download.png is a mockup artifact; JS cannot reliably detect app installation
 - web /pricing is a coming-soon stub — no pricing structure decided yet; replace when plans are defined
+- Smart magic-link redemption: /redeem email-matches users table; if match found, issues user-scoped JWT (generateTokens) not participant-scoped; participant record gets user_id linked
+- Post-registration linking: after INSERT INTO users, UPDATE participants SET user_id for accepted invites with matching email (fire-and-forget, non-fatal)
+- Participant-inclusive events query: OR EXISTS (SELECT 1 FROM participants p2 WHERE p2.event_id = e.id AND p2.user_id = $1) in organizer branch; GROUP BY e.id handles dedup
+- participants.user_id FK: REFERENCES users(id) ON DELETE SET NULL — losing user account does not delete participant records
 
 ### Roadmap Evolution
 
@@ -113,11 +117,13 @@ Progress: [████████████████████] 100% �
 
 - Phase 18: Organizer Invite Management template MISSING — must request from user; backend endpoint may also be missing
 - Existing dev databases need manual migration: ALTER TABLE invites ADD COLUMN IF NOT EXISTS created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;
+- Phase 27: Dev databases need migration 012: `psql -d gatherly -f apps/api/src/db/migrations/012-phase27-account-linking.sql`
+- Phase 27: Mobile app /redeem handler not yet updated to handle upgraded user-scoped response shape (`id`, `email`, `name`, `role`, `eventId`, `eventName`) — needed before mobile testing
 
 ## Session Continuity
 
-Last session: 2026-03-09 UTC
-Stopped at: Phases 22-24 complete — profile screen, event metadata, invite management, price field
+Last session: 2026-03-12 UTC
+Stopped at: Phase 27 Plan 01 complete — participants.user_id, smart magic-link redemption, post-registration linking, expanded events query
 Resume file: None
 
-Next step: Apply schema migration to dev database (ALTER TABLE statements in schema.sql). Continue with remaining phases or v2.1 milestone audit.
+Next step: Apply migration 012 to dev database. Update mobile magic-link handler to handle user-scoped response shape from /redeem.
