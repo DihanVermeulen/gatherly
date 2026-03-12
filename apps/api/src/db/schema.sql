@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS participants (
     id SERIAL PRIMARY KEY,
     event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(event_id, name)
 );
@@ -136,6 +137,7 @@ CREATE TABLE IF NOT EXISTS magic_link_tokens (
 
 -- Indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_participants_event_id ON participants(event_id);
+CREATE INDEX IF NOT EXISTS idx_participants_user_id ON participants(user_id);
 CREATE INDEX IF NOT EXISTS idx_couples_event_id ON couples(event_id);
 CREATE INDEX IF NOT EXISTS idx_assignments_event_id ON assignments(event_id);
 CREATE INDEX IF NOT EXISTS idx_assignments_giver_id ON assignments(giver_id);
@@ -205,8 +207,7 @@ ALTER TABLE events ADD COLUMN IF NOT EXISTS wishlist_deadline TIMESTAMP DEFAULT 
 CREATE INDEX IF NOT EXISTS idx_events_organizer_id ON events(organizer_id);
 CREATE INDEX IF NOT EXISTS idx_events_event_date ON events(event_date);
 
--- Phase 24: Event type and feature flags
-ALTER TABLE events ADD COLUMN IF NOT EXISTS event_type VARCHAR(50) DEFAULT 'secret_santa';
+-- Phase 24: Feature flags
 ALTER TABLE events ADD COLUMN IF NOT EXISTS feature_flags JSONB DEFAULT '{}';
 
 -- Phase 24: Budget tracking

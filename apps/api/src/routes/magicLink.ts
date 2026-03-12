@@ -3,7 +3,11 @@ import rateLimit from "express-rate-limit";
 import crypto from "crypto";
 import { query, getClient } from "../db/connection.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
-import { generateParticipantTokens } from "../services/tokenService.js";
+import {
+  generateTokens,
+  generateParticipantTokens,
+} from "../services/tokenService.js";
+import { logger } from "tsdown";
 
 const router: Router = Router();
 
@@ -37,6 +41,7 @@ router.post(
   redeemRateLimiter,
   asyncHandler(async (req: Request, res: Response) => {
     const { token } = req.body;
+    console.log('[redeem] received token:', token);
 
     // Validate token exists and is a non-empty string
     if (!token || typeof token !== "string" || token.trim().length === 0) {
@@ -44,10 +49,8 @@ router.post(
     }
 
     // Hash the raw token to look up the stored hash
-    const tokenHash = crypto
-      .createHash("sha256")
-      .update(token)
-      .digest("hex");
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+    console.log('[redeem] computed hash:', tokenHash);
 
     // Look up the token non-destructively — token persists for reuse within 7-day window
     const lookupResult = await query(
@@ -134,7 +137,57 @@ router.post(
       }
     }
 
-    // Generate participant-scoped tokens
+    // Smart redemption: if invite has an email, check if a registered user account exists.
+    // If so, link the participant to that user and return a user-scoped JWT instead.
+    if (invite.invite_email && invite.invite_email.trim().length > 0) {
+      const userLookup = await query(
+        "SELECT id, email, name, role FROM users WHERE LOWER(email) = LOWER($1)",
+        [invite.invite_email],
+      );
+
+      if (userLookup.rows.length > 0) {
+        const matchedUser = userLookup.rows[0];
+
+        // Link participant record to the matched user account (fire-and-forget safe — non-fatal)
+        try {
+          await query(
+            "UPDATE participants SET user_id = $1 WHERE id = $2",
+            [matchedUser.id, participantId],
+          );
+        } catch (linkErr) {
+          console.error("Participant user_id link failed (non-fatal):", linkErr);
+        }
+
+        // Issue a full user-scoped JWT (not participant-scoped)
+        const { accessToken, refreshToken } = await generateTokens({
+          userId: matchedUser.id,
+          email: matchedUser.email,
+          role: matchedUser.role,
+        });
+
+        res.cookie("refreshToken", refreshToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
+          path: "/api/auth",
+        });
+
+        return res.status(200).json({
+          accessToken,
+          user: {
+            id: matchedUser.id,
+            email: matchedUser.email,
+            name: matchedUser.name,
+            role: matchedUser.role,
+            eventId: invite.event_id,
+            eventName: invite.event_name,
+          },
+        });
+      }
+    }
+
+    // No matching user account — proceed with existing participant-scoped token path
     const { accessToken, refreshToken } = await generateParticipantTokens({
       participantId,
       eventId: invite.event_id,
