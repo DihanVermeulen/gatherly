@@ -1,42 +1,47 @@
-'use client'
-import { use, useEffect, useState } from 'react'
+"use client";
+import { use, useEffect, useState } from "react";
 
-type State = 'loading' | 'not_installed'
+type State = "loading" | "not_installed";
 
-type PageProps = { params: Promise<{ token: string }> }
-
-const PACKAGE_NAME = 'com.gatherly.gatherly'
+type PageProps = { params: Promise<{ token: string }> };
 
 export default function MagicLinkPage({ params }: PageProps) {
-  const { token } = use(params)
-  const [state, setState] = useState<State>('loading')
+  const { token } = use(params);
+  const [state, setState] = useState<State>("loading");
 
   useEffect(() => {
-    const currentUrl = typeof window !== 'undefined' ? window.location.href : ''
-    const intentUrl = `intent://magic-link/${token}#Intent;scheme=https;package=${PACKAGE_NAME};S.browser_fallback_url=${encodeURIComponent(currentUrl)};end`
+    const appURL = process.env.NEXT_PUBLIC_EXPO_URL;
 
-    // Attempt intent:// redirect for older Android Chrome.
+    // For development: redirect to Expo Go using a clean URL (no #Intent fragment).
+    // For production: use the proper intent:// scheme with Android intent syntax.
+    const redirectUrl = appURL
+      ? `${appURL}/--/magic-link/${token}`     // Expo Go dev override
+      : `gatherly://magic-link/${token}`;      // custom scheme: dev builds + production
+
+    // Attempt deep link redirect.
     // NOTE: Chrome may block this from a timer (no user gesture) — the visible
     // "Open in app" <a> link below is the reliable click-based fallback.
     const intentTimer = setTimeout(() => {
-      window.location.href = intentUrl
-    }, 300)
+      window.location.href = redirectUrl;
+    }, 300);
 
     // If still on page after 2s, app is not installed
     const fallbackTimer = setTimeout(() => {
-      setState('not_installed')
-    }, 2000)
+      setState("not_installed");
+    }, 2000);
 
     return () => {
-      clearTimeout(intentTimer)
-      clearTimeout(fallbackTimer)
-    }
-  }, [token])
+      clearTimeout(intentTimer);
+      clearTimeout(fallbackTimer);
+    };
+  }, [token]);
 
-  const currentUrl = typeof window !== 'undefined' ? window.location.href : ''
-  const intentUrl = `intent://magic-link/${token}#Intent;scheme=https;package=${PACKAGE_NAME};S.browser_fallback_url=${encodeURIComponent(currentUrl)};end`
+  const appURL = process.env.NEXT_PUBLIC_EXPO_URL;
+  const deepLinkUrl = appURL
+    ? `${appURL}/--/magic-link/${token}`     // Expo Go dev override
+    : `gatherly://magic-link/${token}`;      // custom scheme: dev builds + production
 
-  if (state === 'not_installed') {
+  if (state === "not_installed") {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 text-center">
         {/* Gatherly logo */}
@@ -45,8 +50,8 @@ export default function MagicLinkPage({ params }: PageProps) {
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Get Gatherly</h1>
         <p className="text-gray-500 mb-8 max-w-sm leading-relaxed">
-          It looks like you don&apos;t have the Gatherly app installed. Download it to open this
-          magic link and join your event.
+          It looks like you don&apos;t have the Gatherly app installed. Download
+          it to open this magic link and join your event.
         </p>
 
         {/* App store buttons */}
@@ -80,13 +85,13 @@ export default function MagicLinkPage({ params }: PageProps) {
 
         {/* Visible intent:// link for Android (reliable, user-gesture triggered) */}
         <a
-          href={intentUrl}
+          href={deepLinkUrl}
           className="text-brand-500 hover:text-brand-600 text-sm underline"
         >
           Already installed? Try opening the app
         </a>
       </div>
-    )
+    );
   }
 
   // Loading state — shown briefly before OS intercept or fallback triggers
@@ -100,10 +105,13 @@ export default function MagicLinkPage({ params }: PageProps) {
       {/* Spinner */}
       <div className="w-10 h-10 border-4 border-brand-500/20 border-t-brand-500 rounded-full animate-spin mb-6" />
 
-      <h1 className="text-xl font-semibold text-gray-900 mb-2">Opening the app...</h1>
+      <h1 className="text-xl font-semibold text-gray-900 mb-2">
+        Opening the app...
+      </h1>
       <p className="text-gray-400 text-sm max-w-xs">
-        If the app doesn&apos;t open automatically, you may need to install Gatherly first.
+        If the app doesn&apos;t open automatically, you may need to install
+        Gatherly first.
       </p>
     </div>
-  )
+  );
 }
