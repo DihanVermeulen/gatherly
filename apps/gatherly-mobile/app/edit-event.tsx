@@ -708,7 +708,7 @@ export default function EditEventScreen() {
               <>
                 {/* QR Code */}
                 <View className="items-center py-4">
-                  <QRCode value={currentInvite.invite_url} size={200} />
+                  <QRCode value={currentInvite.magic_link_url} size={200} />
                 </View>
 
                 {/* Helper text */}
@@ -723,10 +723,10 @@ export default function EditEventScreen() {
                     numberOfLines={1}
                     ellipsizeMode="middle"
                   >
-                    {currentInvite.invite_url}
+                    {currentInvite.magic_link_url}
                   </Text>
                   <Pressable
-                    onPress={() => handleCopyInviteLink(currentInvite.invite_url)}
+                    onPress={() => handleCopyInviteLink(currentInvite.magic_link_url)}
                     className="h-8 w-8 items-center justify-center rounded-lg bg-background-100 active:opacity-70"
                   >
                     <Copy size={14} color="#64748b" />
@@ -735,7 +735,7 @@ export default function EditEventScreen() {
 
                 {/* Share button */}
                 <Pressable
-                  onPress={() => handleShare(currentInvite.invite_url)}
+                  onPress={() => handleShare(currentInvite.magic_link_url)}
                   className="flex-row items-center justify-center rounded-xl border border-outline-300 py-3 gap-2 active:opacity-70"
                 >
                   <Share2 size={16} color="#0d9488" />
