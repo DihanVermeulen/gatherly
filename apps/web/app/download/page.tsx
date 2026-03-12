@@ -81,9 +81,7 @@ export default function DownloadPage() {
           {/* Trust badge */}
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <Shield size={16} className="text-brand-500" />
-            <span>
-              Trusted by <strong className="text-gray-700">50,000+</strong> organisers
-            </span>
+            <span>Free to download. No account required to explore.</span>
           </div>
         </div>
 
@@ -149,21 +147,15 @@ export default function DownloadPage() {
             Ready to simplify your next event?
           </h2>
           <p className="text-brand-400 mb-8 leading-relaxed">
-            Join thousands of organisers who use Gatherly to create unforgettable experiences.
+            Gift exchanges, potluck coordination, shared photo albums — all in one app.
             Available now for iOS and Android.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <a
               href="#"
-              className="border-2 border-white hover:bg-white hover:text-brand-800 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
-            >
-              Get Started for Free
-            </a>
-            <a
-              href="#"
               className="bg-white text-brand-800 hover:bg-gray-100 font-semibold px-6 py-3 rounded-lg transition-colors"
             >
-              View Live Demo
+              Get Started for Free
             </a>
           </div>
         </div>

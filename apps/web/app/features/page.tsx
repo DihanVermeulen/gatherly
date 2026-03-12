@@ -59,8 +59,8 @@ export default function FeaturesPage() {
       <section className="bg-brand-800 py-20 text-white">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mb-6">
-            The modern toolkit for{' '}
-            <span className="text-brand-400 italic">unforgettable</span> gatherings
+            Gather without{' '}
+            <span className="text-brand-400 italic">the chaos</span>
           </h1>
           <p className="text-brand-400 text-lg mb-8 max-w-2xl mx-auto leading-relaxed">
             Every feature is purpose-built for the moments that matter most. No generic tools, no
@@ -128,7 +128,7 @@ export default function FeaturesPage() {
               Ready to simplify your next gathering?
             </h2>
             <p className="text-gray-500 mb-8">
-              Join thousands of organisers who use Gatherly to create unforgettable experiences.
+              Gift exchanges, potluck coordination, shared photo albums — everything your gathering needs, in one place.
             </p>
             <a
               href="#"
