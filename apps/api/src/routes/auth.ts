@@ -73,6 +73,25 @@ router.post(
 
     const user = result.rows[0];
 
+    // Link any previously-accepted magic-link invites to this new user account.
+    // Participants created from magic links that used the same email are now associated
+    // with the registered user so they appear in the user's events list.
+    try {
+      await query(
+        `UPDATE participants SET user_id = $1
+         WHERE id IN (
+           SELECT p.id FROM participants p
+           JOIN invites i ON i.participant_id = p.id
+           WHERE LOWER(i.email) = $2
+             AND i.status = 'accepted'
+             AND p.user_id IS NULL
+         )`,
+        [user.id, email.toLowerCase()],
+      );
+    } catch (linkErr) {
+      console.error("Participant linking failed (non-fatal):", linkErr);
+    }
+
     // Generate tokens
     const tokens = await generateTokens({
       userId: user.id,

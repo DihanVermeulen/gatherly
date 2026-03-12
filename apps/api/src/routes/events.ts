@@ -23,7 +23,6 @@ router.get(
       e.updated_at,
       e.event_date,
       e.wishlist_deadline,
-      e.event_type,
       e.feature_flags,
       e.plan_tier,
       COALESCE(json_agg(DISTINCT p.name) FILTER (WHERE p.name IS NOT NULL), '[]') as people,
@@ -61,9 +60,15 @@ router.get(
         [user.eventId],
       );
     } else {
-      // Organizer — see events they own, plus legacy events with no organizer
+      // Organizer — see events they own, legacy events with no organizer,
+      // and events where they are a linked participant (joined via magic link)
       result = await query(
-        `${baseSelect} WHERE e.organizer_id = $1 OR e.organizer_id IS NULL GROUP BY e.id ORDER BY e.created_at DESC`,
+        `${baseSelect} WHERE e.organizer_id = $1
+            OR e.organizer_id IS NULL
+            OR EXISTS (
+              SELECT 1 FROM participants p2
+              WHERE p2.event_id = e.id AND p2.user_id = $1
+            ) GROUP BY e.id ORDER BY e.created_at DESC`,
         [user.userId],
       );
     }
@@ -80,7 +85,6 @@ router.get(
       participants: row.people || [],
       eventDate: row.event_date || null,
       wishlistDeadline: row.wishlist_deadline || null,
-      eventType: row.event_type || 'secret_santa',
       featureFlags: row.feature_flags || {},
       planTier: row.plan_tier || 'free',
     }));
@@ -195,7 +199,6 @@ router.get(
       })),
       eventDate: event.event_date || null,
       wishlistDeadline: event.wishlist_deadline || null,
-      eventType: event.event_type || 'secret_santa',
       featureFlags: event.feature_flags || {},
       planTier: event.plan_tier || 'free',
       totalWishlistCount: wishlistStats.total_wishlist_count,
@@ -210,15 +213,15 @@ router.post(
   authenticateJWT,
   requireOrganizer,
   asyncHandler(async (req: Request, res: Response) => {
-    const { name, coupleCrossing = false, eventDate, wishlistDeadline, eventType = 'secret_santa', featureFlags = {} } = req.body;
+    const { name, coupleCrossing = false, eventDate, wishlistDeadline, featureFlags = {} } = req.body;
 
     if (!name || !name.trim()) {
       return res.status(400).json({ error: "Event name is required" });
     }
 
     const result = await query(
-      "INSERT INTO events (name, couple_crossing, organizer_id, event_date, wishlist_deadline, event_type, feature_flags) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
-      [name.trim(), coupleCrossing, (req as any).user.userId, eventDate || null, wishlistDeadline || null, eventType, JSON.stringify(featureFlags)],
+      "INSERT INTO events (name, couple_crossing, organizer_id, event_date, wishlist_deadline, feature_flags) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+      [name.trim(), coupleCrossing, (req as any).user.userId, eventDate || null, wishlistDeadline || null, JSON.stringify(featureFlags)],
     );
 
     const event = result.rows[0];
@@ -241,7 +244,6 @@ router.post(
       participants: [],
       eventDate: event.event_date || null,
       wishlistDeadline: event.wishlist_deadline || null,
-      eventType: event.event_type || 'secret_santa',
       featureFlags: event.feature_flags || {},
       planTier: event.plan_tier || 'free',
     });
@@ -259,7 +261,7 @@ router.put(
       await client.query("BEGIN");
 
       const { id } = req.params;
-      const { name, coupleCrossing, people, couples, assignments, eventDate, wishlistDeadline, eventType, featureFlags } = req.body;
+      const { name, coupleCrossing, people, couples, assignments, eventDate, wishlistDeadline, featureFlags } = req.body;
 
       // Update event basic info
       await client.query(
@@ -268,10 +270,9 @@ router.put(
           couple_crossing = COALESCE($2, couple_crossing),
           event_date = CASE WHEN $3::text IS NOT NULL THEN $3::timestamp ELSE event_date END,
           wishlist_deadline = CASE WHEN $4::text IS NOT NULL THEN $4::timestamp ELSE wishlist_deadline END,
-          event_type = COALESCE($5, event_type),
-          feature_flags = CASE WHEN $6::text IS NOT NULL THEN $6::jsonb ELSE feature_flags END
-        WHERE id = $7`,
-        [name, coupleCrossing, eventDate || null, wishlistDeadline || null, eventType, featureFlags ? JSON.stringify(featureFlags) : null, id],
+          feature_flags = CASE WHEN $5::text IS NOT NULL THEN $5::jsonb ELSE feature_flags END
+        WHERE id = $6`,
+        [name, coupleCrossing, eventDate || null, wishlistDeadline || null, featureFlags ? JSON.stringify(featureFlags) : null, id],
       );
 
       // If people array is provided, sync participants
@@ -854,7 +855,6 @@ async function fetchEventById(id: string) {
     participants: participantsResult.rows.map((p) => p.name),
     eventDate: event.event_date || null,
     wishlistDeadline: event.wishlist_deadline || null,
-    eventType: event.event_type || 'secret_santa',
     featureFlags: event.feature_flags || {},
     totalWishlistCount: wishlistStats.total_wishlist_count,
     claimedCount: wishlistStats.claimed_count,
