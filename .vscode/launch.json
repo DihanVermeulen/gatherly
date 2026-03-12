@@ -1,0 +1,65 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "API",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/apps/api",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["run", "dev"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Web",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/apps/web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["run", "dev"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Mobile",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/apps/gatherly-mobile",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["run", "dev"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Mobile (Android)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/apps/gatherly-mobile",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["run", "android"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Mobile (iOS)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/apps/gatherly-mobile",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["run", "ios"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Mobile (Web)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/apps/gatherly-mobile",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["run", "web"],
+      "console": "integratedTerminal"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full Stack (API + Mobile)",
+      "configurations": ["API", "Mobile"]
+    }
+  ]
+}
