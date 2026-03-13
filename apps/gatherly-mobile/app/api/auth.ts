@@ -98,20 +98,25 @@ export const authApi = {
     }
 
     // Participant-scoped response (existing behavior)
-    const { participantId, participantName, eventId, eventName, role } =
-      userData as {
-        participantId: number;
-        eventId: number;
-        participantName: string;
-        eventName: string;
-        role: "participant";
-      };
+    const {
+      participantId,
+      participantName: storedParticipantName,
+      eventId,
+      eventName,
+      role,
+    } = userData as {
+      participantId: number;
+      eventId: number;
+      participantName: string;
+      eventName: string;
+      role: "participant";
+    };
     return {
       accessToken,
       user: {
         id: participantId,
         email: "",
-        name: participantName,
+        name: participantName ?? storedParticipantName,
         role,
         participantId,
         eventId,
