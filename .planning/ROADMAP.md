@@ -266,6 +266,19 @@ Plans:
 
 ---
 
+### Phase 29: Phase 27 still is not working
+
+**Goal:** Fix the Smart Invite Join flow so that opening a magic link actually runs the full join flow (event preview, user choice, participant creation), creates a participant record, and leaves the user in the correct state. Add a `/lookup` endpoint for read-only magic token validation, rewrite the magic-link screen with proper join UX (two-option split for logged-out users), and add a login/register banner to event-details for participant-only sessions.
+**Depends on:** Phase 27
+**Plans:** 3 plans
+
+Plans:
+- [ ] 29-01-PLAN.md — Backend /lookup endpoint + authApi client method + fix join.tsx navigation (router.push, remove refreshEvents)
+- [ ] 29-02-PLAN.md — Rewrite magic-link/[token].tsx with full join flow (preview, two-option split, name-prompt, success) + pendingMagicToken utility
+- [ ] 29-03-PLAN.md — Add login/register banner to event-details for participant-only sessions
+
+---
+
 ## Progress
 
 **Execution Order:** 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18 → 19 → 20 → 21
@@ -287,3 +300,4 @@ Plans:
 | 26. Public Wishlist | v2.2 | 0/TBD | Not started | - |
 | 27. Smart Invite Join + Account Linking | v2.2 | 4/4 | Complete | 2026-03-13 |
 | 28. Remove Account Roles | v2.2 | 0/TBD | Not started | - |
+| 29. Phase 27 still is not working | v2.2 | 0/TBD | Not started | - |
