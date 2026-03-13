@@ -139,12 +139,18 @@ router.post(
       }
     }
 
-    // Smart redemption: if invite has an email, check if a registered user account exists.
-    // If so, link the participant to that user and return a user-scoped JWT instead.
-    if (invite.invite_email && invite.invite_email.trim().length > 0) {
+    // Smart redemption: if invite has an email (or client supplied one for QR/link invites),
+    // check if a registered user account exists. If so, link the participant to that user
+    // and return a user-scoped JWT instead.
+    // Use stored invite email; fall back to client-supplied email for QR/link invites
+    const effectiveEmail = (invite.invite_email?.trim().length > 0)
+      ? invite.invite_email
+      : (clientEmail?.trim().length > 0 ? clientEmail.trim() : null);
+
+    if (effectiveEmail) {
       const userLookup = await query(
         "SELECT id, email, name, role FROM users WHERE LOWER(email) = LOWER($1)",
-        [invite.invite_email],
+        [effectiveEmail],
       );
 
       if (userLookup.rows.length > 0) {
