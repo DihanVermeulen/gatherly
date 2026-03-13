@@ -1,0 +1,169 @@
+{
+  "name": "@repo/ui-react",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "sideEffects": [
+    "*.css"
+  ],
+  "files": [
+    "dist/**",
+    "dist"
+  ],
+  "exports": {
+    "./styles": "./dist/styles.css",
+    "./lib/utils": {
+      "import": {
+        "types": "./dist/es/lib/utils.d.mts",
+        "default": "./dist/es/lib/utils.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/lib/utils.d.ts",
+        "default": "./dist/cjs/lib/utils.js"
+      }
+    },
+    "./button": {
+      "import": {
+        "types": "./dist/es/button.d.mts",
+        "default": "./dist/es/button.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/button.d.ts",
+        "default": "./dist/cjs/button.js"
+      }
+    },
+    "./card": {
+      "import": {
+        "types": "./dist/es/card.d.mts",
+        "default": "./dist/es/card.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/card.d.ts",
+        "default": "./dist/cjs/card.js"
+      }
+    },
+    "./badge": {
+      "import": {
+        "types": "./dist/es/badge.d.mts",
+        "default": "./dist/es/badge.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/badge.d.ts",
+        "default": "./dist/cjs/badge.js"
+      }
+    },
+    "./input": {
+      "import": {
+        "types": "./dist/es/input.d.mts",
+        "default": "./dist/es/input.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/input.d.ts",
+        "default": "./dist/cjs/input.js"
+      }
+    },
+    "./textarea": {
+      "import": {
+        "types": "./dist/es/textarea.d.mts",
+        "default": "./dist/es/textarea.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/textarea.d.ts",
+        "default": "./dist/cjs/textarea.js"
+      }
+    },
+    "./label": {
+      "import": {
+        "types": "./dist/es/label.d.mts",
+        "default": "./dist/es/label.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/label.d.ts",
+        "default": "./dist/cjs/label.js"
+      }
+    },
+    "./separator": {
+      "import": {
+        "types": "./dist/es/separator.d.mts",
+        "default": "./dist/es/separator.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/separator.d.ts",
+        "default": "./dist/cjs/separator.js"
+      }
+    },
+    "./avatar": {
+      "import": {
+        "types": "./dist/es/avatar.d.mts",
+        "default": "./dist/es/avatar.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/avatar.d.ts",
+        "default": "./dist/cjs/avatar.js"
+      }
+    },
+    "./checkbox": {
+      "import": {
+        "types": "./dist/es/checkbox.d.mts",
+        "default": "./dist/es/checkbox.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/checkbox.d.ts",
+        "default": "./dist/cjs/checkbox.js"
+      }
+    },
+    "./switch": {
+      "import": {
+        "types": "./dist/es/switch.d.mts",
+        "default": "./dist/es/switch.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/switch.d.ts",
+        "default": "./dist/cjs/switch.js"
+      }
+    },
+    "./text-shimmer": {
+      "import": {
+        "types": "./dist/es/text-shimmer.d.mts",
+        "default": "./dist/es/text-shimmer.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/text-shimmer.d.ts",
+        "default": "./dist/cjs/text-shimmer.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "pnpm build:css && pnpm build:js",
+    "build:css": "tailwindcss -i ./src/index.css -o ./dist/styles.css --minify",
+    "build:js": "bunchee",
+    "dev": "concurrently \"tailwindcss -i ./src/index.css -o ./dist/styles.css --watch\" \"bunchee --watch\"",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.36.0",
+    "tailwind-merge": "^2.6.0"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@tailwindcss/cli": "^4.0.0",
+    "@types/node": "^22.15.3",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "bunchee": "^6.4.0",
+    "concurrently": "^9.0.0",
+    "eslint": "^9.39.0",
+    "tailwindcss": "^4.0.0",
+    "tw-animate-css": "^1.0.0",
+    "typescript": "5.9.3"
+  },
+  "peerDependencies": {
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  }
+}
