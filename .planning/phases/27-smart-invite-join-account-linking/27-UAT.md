@@ -1,9 +1,9 @@
 ---
-status: complete
+status: diagnosed
 phase: 27-smart-invite-join-account-linking
 source: 27-01-SUMMARY.md, 27-02-SUMMARY.md
 started: 2026-03-12T08:00:00Z
-updated: 2026-03-12T14:00:00Z
+updated: 2026-03-13T00:00:00Z
 ---
 
 ## Current Test
@@ -65,27 +65,44 @@ skipped: 4
   reason: "User reported: No email gets sent, because we don't pass in an email. Plus using the magic link does not automatically sign me in as well"
   severity: blocker
   test: 1
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "invite_email is NULL for QR/link invites — /redeem's user-lookup block (magicLink.ts lines 142-188) is skipped. Falls through to participant-scoped JWT. signIn() IS called correctly but with participant identity (email='')."
+  artifacts:
+    - path: "apps/api/src/routes/magicLink.ts"
+      issue: "user-lookup block unreachable when invite_email IS NULL"
+    - path: "apps/api/src/routes/invites.ts"
+      issue: "stores email || null at invite creation — QR/link invites store NULL"
+  missing:
+    - "Backend /redeem should accept optional email from client as fallback when invite_email is NULL"
+    - "Mobile client should pass currently-authenticated user's email (if signed in) when calling redeemMagicLink"
+  debug_session: ".planning/debug/magic-link-no-email-no-autosignin.md"
 
 - truth: "Magic link join flow prompts for participant name and adds the user as a participant to the event"
   status: failed
   reason: "User reported: When accessing the magic link I'm not even asked for my name or anything... When I join a participant isn't even added to the event"
   severity: blocker
   test: 3
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "[token].tsx has no name collection step (no TextInput, no name state). Backend /redeem fabricates participant name from email prefix or hardcodes 'Participant' — accepts no participantName from client."
+  artifacts:
+    - path: "apps/gatherly-mobile/app/magic-link/[token].tsx"
+      issue: "missing name-prompt state — no TextInput, no name collection anywhere in the flow"
+    - path: "apps/api/src/routes/magicLink.ts"
+      issue: "participant name derived from email prefix or hardcoded 'Participant' — no participantName accepted from client"
+  missing:
+    - "Add name-prompt state to [token].tsx after successful participant-scoped redemption"
+    - "Backend /redeem should accept optional participantName in request body"
+  debug_session: ".planning/debug/magic-link-no-name-prompt-no-participant.md"
 
-- truth: "After redeeming a magic link, the joined event appears in the events list and the user is added as a participant"
+- truth: "After redeeming a magic link, the joined event appears in the events list and the user can navigate back"
   status: failed
   reason: "User reported: It takes me to the event, but I can't go back, and also my participant isn't added to the event."
   severity: blocker
   test: 2
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Two bugs in [token].tsx: (1) router.replace() removes screen from nav stack + gestureEnabled:false disables swipe-back; (2) refreshEvents() never called after signIn() so stale event list doesn't include newly joined event."
+  artifacts:
+    - path: "apps/gatherly-mobile/app/magic-link/[token].tsx"
+      issue: "router.replace() on line 55 and gestureEnabled:false on line 63 — no back navigation possible. No refreshEvents() call after signIn()."
+  missing:
+    - "Change router.replace() to router.push() (or navigate to events tab)"
+    - "Remove gestureEnabled:false"
+    - "Call refreshEvents() after signIn() before navigation"
+  debug_session: ".planning/debug/magic-link-join-no-back-no-participant.md"
