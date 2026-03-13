@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 29 (Phase 27 Still Is Not Working)
-Plan: 29-01 complete (1/3 in phase) — In progress
-Status: Plan 29-01 executed; lookup endpoint + join.tsx fixes committed
-Last activity: 2026-03-13 — Completed 29-01-PLAN.md (lookup endpoint, router.push, no refreshEvents)
+Plan: 29-03 complete (3/3 in phase) — Phase complete
+Status: All plans executed; Phase 29 fully closed
+Last activity: 2026-03-13 — Completed 29-03-PLAN.md (event-details login/register banner)
 
-Progress: [████████████████████] Phase 27 complete + Phase 29 in progress (29-01 done)
+Progress: [████████████████████] Phase 29 complete (29-01, 29-02, 29-03 all done)
 
 ## Performance Metrics
 
@@ -136,7 +136,7 @@ Progress: [████████████████████] Phase 2
 ## Session Continuity
 
 Last session: 2026-03-13 UTC
-Stopped at: Phase 29 Plan 01 complete — /lookup endpoint, lookupMagicLink client, router.push + no refreshEvents in join.tsx
+Stopped at: Phase 29 Plan 03 complete — event-details login/register banner for participant-only sessions
 Resume file: None
 
-Next step: Phase 29 Plan 02 (magic-link/[token].tsx two-option UI for logged-out users).
+Next step: Phase 28 (Remove Account Roles) or Phase 26 planning.
