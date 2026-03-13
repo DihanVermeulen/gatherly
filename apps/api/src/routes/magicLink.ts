@@ -40,7 +40,7 @@ router.post(
   "/redeem",
   redeemRateLimiter,
   asyncHandler(async (req: Request, res: Response) => {
-    const { token } = req.body;
+    const { token, participantName: clientParticipantName, email: clientEmail } = req.body;
     console.log('[redeem] received token:', token);
 
     // Validate token exists and is a non-empty string
@@ -102,8 +102,10 @@ router.post(
       try {
         await client.query("BEGIN");
 
-        // Derive participant name from email address prefix (part before @)
-        const emailPrefix = invite.invite_email
+        // Use client-supplied name if provided; fall back to email prefix or "Participant"
+        const resolvedName = clientParticipantName?.trim()
+          ? clientParticipantName.trim()
+          : invite.invite_email
           ? invite.invite_email.includes("@")
             ? invite.invite_email.split("@")[0]
             : invite.invite_email
@@ -116,7 +118,7 @@ router.post(
           `INSERT INTO participants (event_id, name) VALUES ($1, $2)
            ON CONFLICT (event_id, name) DO UPDATE SET name = EXCLUDED.name
            RETURNING id, name`,
-          [invite.event_id, emailPrefix],
+          [invite.event_id, resolvedName],
         );
 
         participantId = newParticipantResult.rows[0].id;
