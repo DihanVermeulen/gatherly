@@ -26,6 +26,77 @@ const redeemRateLimiter = rateLimit({
 });
 
 /**
+ * POST /lookup
+ * Look up event preview data from a magic link token WITHOUT consuming it or creating a participant.
+ *
+ * Security properties:
+ * - Read-only: does not create participant records, does not update invite status
+ * - Token NOT consumed: same token can still be redeemed after lookup
+ * - Rate limited: shares the same rate limiter as /redeem
+ */
+router.post(
+  "/lookup",
+  redeemRateLimiter,
+  asyncHandler(async (req: Request, res: Response) => {
+    const { token } = req.body;
+
+    // Validate token exists and is a non-empty string
+    if (!token || typeof token !== "string" || token.trim().length === 0) {
+      return res.status(400).json({ error: "Token is required" });
+    }
+
+    // Hash the raw token to look up the stored hash
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+    // Look up the token non-destructively — token persists for reuse within 7-day window
+    const lookupResult = await query(
+      `SELECT invite_id FROM magic_link_tokens
+       WHERE token_hash = $1 AND expires_at > NOW()`,
+      [tokenHash],
+    );
+
+    if (lookupResult.rows.length === 0) {
+      return res.status(401).json({ error: "Invalid or expired magic link" });
+    }
+
+    const inviteId = lookupResult.rows[0].invite_id;
+
+    // JOIN invites, events, and LEFT JOIN users (organizer) to return preview data
+    const previewResult = await query(
+      `SELECT
+         i.invite_code,
+         i.event_id,
+         i.email AS invite_email,
+         e.name AS event_name,
+         e.event_date,
+         u.name AS organizer_name,
+         (SELECT COUNT(*) FROM participants p WHERE p.event_id = e.id)::int AS participant_count
+       FROM invites i
+       JOIN events e ON i.event_id = e.id
+       LEFT JOIN users u ON e.organizer_id = u.id
+       WHERE i.id = $1`,
+      [inviteId],
+    );
+
+    if (previewResult.rows.length === 0) {
+      return res.status(401).json({ error: "Invalid or expired magic link" });
+    }
+
+    const row = previewResult.rows[0];
+
+    return res.status(200).json({
+      eventId: row.event_id,
+      eventName: row.event_name,
+      inviteCode: row.invite_code,
+      organizerName: row.organizer_name ?? null,
+      participantCount: row.participant_count,
+      eventDate: row.event_date ? row.event_date.toISOString() : null,
+      inviteEmail: row.invite_email ?? null,
+    });
+  }),
+);
+
+/**
  * POST /redeem
  * Redeem a magic link token and return a participant-scoped JWT
  *

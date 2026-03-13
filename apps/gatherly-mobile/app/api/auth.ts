@@ -16,6 +16,16 @@ export interface AuthResponse {
   user: User;
 }
 
+export interface MagicLinkPreview {
+  eventId: number;
+  eventName: string;
+  inviteCode: string;
+  organizerName: string | null;
+  participantCount: number;
+  eventDate: string | null;
+  inviteEmail: string | null;
+}
+
 export const authApi = {
   async login(email: string, password: string): Promise<AuthResponse> {
     const response = await apiClient.post<AuthResponse>("/api/auth/login", {
@@ -50,6 +60,14 @@ export const authApi = {
 
   async logout(): Promise<void> {
     await apiClient.post("/api/auth/logout");
+  },
+
+  async lookupMagicLink(token: string): Promise<MagicLinkPreview> {
+    const response = await apiClient.post<MagicLinkPreview>(
+      "/api/auth/magic-link/lookup",
+      { token }
+    );
+    return response.data;
   },
 
   async redeemMagicLink(token: string, email?: string, participantName?: string): Promise<AuthResponse> {
