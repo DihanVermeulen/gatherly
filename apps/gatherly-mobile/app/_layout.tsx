@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 import { useColorScheme } from "@/components/useColorScheme";
 import { Stack, useRouter } from "expo-router";
 import { View } from "react-native";
-import { consumePendingInviteCode } from "./utils/pendingInvite";
+import { consumePendingInviteCode, consumePendingMagicToken } from "./utils/pendingInvite";
 import { SafeAreaView } from "@/components/ui/safe-area-view";
 import { SessionProvider, useSession } from "./contexts/AuthContext";
 import { EventsProvider } from "./contexts/EventsContext";
@@ -58,11 +58,20 @@ function RootLayoutNav() {
     }
   }, [isLoading]);
 
-  // After authentication, check for pending invite code and redirect to join screen.
+  // After authentication, check for pending magic token or invite code and redirect.
+  // Magic token takes priority — it came from the user's original deep link.
   // This handles the race condition where Stack.Protected redirects away from
-  // sign-in/register before they can navigate to /join themselves.
+  // sign-in/register before they can navigate back themselves.
   useEffect(() => {
     if (session && !isLoading) {
+      const magicToken = consumePendingMagicToken();
+      if (magicToken) {
+        // Small delay to let the Stack.Protected navigation settle
+        const timer = setTimeout(() => {
+          router.replace(`/magic-link/${magicToken}` as never);
+        }, 100);
+        return () => clearTimeout(timer);
+      }
       const pendingCode = consumePendingInviteCode();
       if (pendingCode) {
         // Small delay to let the Stack.Protected navigation settle
