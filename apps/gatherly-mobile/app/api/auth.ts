@@ -52,7 +52,7 @@ export const authApi = {
     await apiClient.post("/api/auth/logout");
   },
 
-  async redeemMagicLink(token: string): Promise<AuthResponse> {
+  async redeemMagicLink(token: string, email?: string, participantName?: string): Promise<AuthResponse> {
     const response = await apiClient.post<{
       accessToken: string;
       user:
@@ -73,7 +73,11 @@ export const authApi = {
             eventName: string;
             role: "participant";
           };
-    }>("/api/auth/magic-link/redeem", { token });
+    }>("/api/auth/magic-link/redeem", {
+      token,
+      ...(email ? { email } : {}),
+      ...(participantName ? { participantName } : {}),
+    });
 
     const { accessToken } = response.data;
     const userData = response.data.user;
