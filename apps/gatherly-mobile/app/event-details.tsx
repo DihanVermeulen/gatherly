@@ -125,6 +125,31 @@ export default function EventDetailsScreen() {
             </Text>
           </View>
 
+          {/* ── Create account banner (participant-only sessions) ──── */}
+          {user?.participantId !== undefined ? (
+            <View
+              className="mx-4 mt-4 rounded-xl p-4"
+              style={{ backgroundColor: "#f0fdfa" }}
+            >
+              <Text className="text-sm font-semibold text-typography-900 mb-1">
+                Create an account
+              </Text>
+              <Text className="text-sm text-typography-500 mb-3">
+                Sign up to manage your events and wishlists across devices
+              </Text>
+              <Button
+                size="sm"
+                className="self-start rounded-lg"
+                style={{ backgroundColor: "#0d9488" }}
+                onPress={() => router.push("/register" as never)}
+              >
+                <ButtonText className="text-white font-semibold">
+                  Sign Up
+                </ButtonText>
+              </Button>
+            </View>
+          ) : null}
+
           <View className="px-4 mt-4">
             {/* ── Status badge ───────────────────────────────────────── */}
             <View className="flex-row mb-2">
