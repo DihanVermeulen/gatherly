@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 27 (Smart Invite Join + Account Linking)
-Plan: 27-03 complete (gap closure 1/2)
-Status: Executing gap closure plans 27-03 and 27-04
-Last activity: 2026-03-13 — Completed 27-03-PLAN.md (/redeem participantName + effectiveEmail fallback)
+Plan: 27-04 complete (gap closure 2/2) — Phase 27 COMPLETE
+Status: Phase 27 fully executed; all UAT gaps closed
+Last activity: 2026-03-13 — Completed 27-04-PLAN.md (name-prompt, refreshEvents, router.push, gestureEnabled fix)
 
-Progress: [████████████████████] Phase 27 Plan 01 committed
+Progress: [████████████████████] Phase 27 all plans committed
 
 ## Performance Metrics
 
@@ -103,6 +103,9 @@ Progress: [████████████████████] Phase 2
 - redeemMagicLink dual-shape detection: "id" in userData && !("participantId" in userData) distinguishes user-scoped from participant-scoped; role is "participant" in both so is not a reliable discriminant
 - /redeem resolvedName: prefers clientParticipantName over email-prefix derivation; falls back to email prefix or "Participant"
 - /redeem effectiveEmail: prefers stored invite_email; falls back to clientEmail only when invite_email IS NULL — stored email always takes precedence for security
+- pendingToken pattern for name-prompt: re-calls /redeem with user-supplied participantName rather than caching partial response — ensures DB and final JWT both reflect correct name
+- storedParticipantName rename in auth.ts: destructured userData.participantName renamed to avoid shadowing optional function param of same name (prevents TS2300 duplicate identifier)
+- router.push in magic-link screen: event-details pushed (not replaced) so back arrow and iOS swipe gesture work after joining
 
 ### Roadmap Evolution
 
@@ -123,12 +126,12 @@ Progress: [████████████████████] Phase 2
 - Phase 18: Organizer Invite Management template MISSING — must request from user; backend endpoint may also be missing
 - Existing dev databases need manual migration: ALTER TABLE invites ADD COLUMN IF NOT EXISTS created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;
 - Phase 27: Dev databases need migration 012: `psql -d gatherly -f apps/api/src/db/migrations/012-phase27-account-linking.sql`
-- Phase 27: RESOLVED — Mobile /redeem handler now handles both user-scoped and participant-scoped response shapes
+- Phase 27: FULLY RESOLVED — All UAT gaps closed: name-prompt stores correct participant name (Gap 2), router.push restores back navigation (Gap 3), user email passed to /redeem enables account detection for QR invites (Gap 1)
 
 ## Session Continuity
 
 Last session: 2026-03-13 UTC
-Stopped at: Phase 27 Plan 03 complete — /redeem now accepts participantName + email fallback for QR/link invites
+Stopped at: Phase 27 Plan 04 complete — name-prompt, refreshEvents, router.push, gestureEnabled fix
 Resume file: None
 
-Next step: Execute 27-04 (mobile name-prompt and account-detection flows).
+Next step: Phase 28 (Remove Account Roles) or Phase 26 (Public Wishlist + Push Notifications + Groups).
