@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 27 (Smart Invite Join + Account Linking)
-Plan: 27-02 complete (2/2 in phase)
-Status: Phase complete
-Last activity: 2026-03-12 — Completed 27-02-PLAN.md (mobile dual-shape magic-link handler)
+Plan: 27-03 complete (gap closure 1/2)
+Status: Executing gap closure plans 27-03 and 27-04
+Last activity: 2026-03-13 — Completed 27-03-PLAN.md (/redeem participantName + effectiveEmail fallback)
 
 Progress: [████████████████████] Phase 27 Plan 01 committed
 
@@ -101,8 +101,12 @@ Progress: [████████████████████] Phase 2
 - Participant-inclusive events query: OR EXISTS (SELECT 1 FROM participants p2 WHERE p2.event_id = e.id AND p2.user_id = $1) in organizer branch; GROUP BY e.id handles dedup
 - participants.user_id FK: REFERENCES users(id) ON DELETE SET NULL — losing user account does not delete participant records
 - redeemMagicLink dual-shape detection: "id" in userData && !("participantId" in userData) distinguishes user-scoped from participant-scoped; role is "participant" in both so is not a reliable discriminant
+- /redeem resolvedName: prefers clientParticipantName over email-prefix derivation; falls back to email prefix or "Participant"
+- /redeem effectiveEmail: prefers stored invite_email; falls back to clientEmail only when invite_email IS NULL — stored email always takes precedence for security
 
 ### Roadmap Evolution
+
+- Phase 28 added: Remove Account Roles — drop `role` from users table + JWT, replace `user.role === "participant"` gate in events.ts with `user.participantId !== undefined`
 
 - Phase 19 added: Offline Storage Strategy — AsyncStorage → SQLite + SecureStore (read-only offline caching, no offline mutations, scoped to paid-feature model)
 - Phase 19 COMPLETE: All 5 plans executed (SQLite foundation, EventsContext migration, offline UI + mutation blocking, sign-out state reset gap closure, key-based EventsProvider remount fix)
@@ -123,8 +127,8 @@ Progress: [████████████████████] Phase 2
 
 ## Session Continuity
 
-Last session: 2026-03-12 UTC
-Stopped at: Phase 27 Plan 02 complete — mobile dual-shape magic-link handler, redeemMagicLink branches on user-scoped vs participant-scoped response
+Last session: 2026-03-13 UTC
+Stopped at: Phase 27 Plan 03 complete — /redeem now accepts participantName + email fallback for QR/link invites
 Resume file: None
 
-Next step: Apply migration 012 to dev database. Phase 27 fully complete — smart invite join + account linking shipped end-to-end (API + mobile).
+Next step: Execute 27-04 (mobile name-prompt and account-detection flows).
