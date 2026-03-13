@@ -228,7 +228,7 @@ Plans:
 
 ---
 
-### 🚧 Phase 27: Smart Invite Join + Account Linking — UAT gaps in progress
+### ✅ Phase 27: Smart Invite Join + Account Linking — COMPLETE 2026-03-13
 
 **Goal:** Existing account holders who receive a magic link are automatically joined to the event under their real account (not a participant-only session). Magic-link-only participants who later register get their participant records linked to their new account, so the event appears in their events list.
 **Depends on:** Phase 17 (Join Event), Phase 12 (Authentication)
@@ -241,8 +241,8 @@ Plans:
 Plans:
 - [x] 27-01-PLAN.md — Schema migration (participants.user_id) + magicLink.ts smart redemption (user-scoped tokens for existing users)
 - [x] 27-02-PLAN.md — Mobile client dual-shape response handling for magic link redemption
-- [ ] 27-03-PLAN.md — Gap closure: /redeem accepts participantName + email fallback for NULL invite_email
-- [ ] 27-04-PLAN.md — Gap closure: [token].tsx name-prompt state + navigation fixes + refreshEvents after sign-in
+- [x] 27-03-PLAN.md — Gap closure: /redeem accepts participantName + email fallback for NULL invite_email
+- [x] 27-04-PLAN.md — Gap closure: [token].tsx name-prompt state + navigation fixes + refreshEvents after sign-in
 
 Key changes:
 - Schema: `ALTER TABLE participants ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE SET NULL`
@@ -285,5 +285,5 @@ Plans:
 | 20. Magic Link Redirect Website | v2.1 | 2/2 | Complete | 2026-03-06 |
 | 21. Gatherly Next.js Website | v2.1 | 5/5 | Complete | 2026-03-07 |
 | 26. Public Wishlist | v2.2 | 0/TBD | Not started | - |
-| 27. Smart Invite Join + Account Linking | v2.2 | 2/4 | UAT gaps | - |
+| 27. Smart Invite Join + Account Linking | v2.2 | 4/4 | Complete | 2026-03-13 |
 | 28. Remove Account Roles | v2.2 | 0/TBD | Not started | - |
