@@ -95,7 +95,7 @@ export default function JoinScreen() {
   useEffect(() => {
     if (joinState === "success" && joinedEventId !== null) {
       const timer = setTimeout(() => {
-        router.replace(`/event-details?id=${joinedEventId}` as never);
+        router.push(`/event-details?id=${joinedEventId}` as never);
       }, 2000);
       return () => clearTimeout(timer); // cleanup prevents memory leak
     }
@@ -117,7 +117,6 @@ export default function JoinScreen() {
         user.email ?? undefined
       );
       setJoinedEventId(result.eventId);
-      await refreshEvents();
       setJoinState("success");
     } catch (err: unknown) {
       const anyErr = err as { response?: { status?: number } };
