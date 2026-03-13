@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 
 ## Current Position
 
-Phase: 27 (Smart Invite Join + Account Linking)
-Plan: 27-04 complete (gap closure 2/2) — Phase 27 COMPLETE
-Status: Phase 27 fully executed; all UAT gaps closed
-Last activity: 2026-03-13 — Completed 27-04-PLAN.md (name-prompt, refreshEvents, router.push, gestureEnabled fix)
+Phase: 29 (Phase 27 Still Is Not Working)
+Plan: 29-01 complete (1/3 in phase) — In progress
+Status: Plan 29-01 executed; lookup endpoint + join.tsx fixes committed
+Last activity: 2026-03-13 — Completed 29-01-PLAN.md (lookup endpoint, router.push, no refreshEvents)
 
-Progress: [████████████████████] Phase 27 all plans committed
+Progress: [████████████████████] Phase 27 complete + Phase 29 in progress (29-01 done)
 
 ## Performance Metrics
 
@@ -106,10 +106,15 @@ Progress: [████████████████████] Phase 2
 - pendingToken pattern for name-prompt: re-calls /redeem with user-supplied participantName rather than caching partial response — ensures DB and final JWT both reflect correct name
 - storedParticipantName rename in auth.ts: destructured userData.participantName renamed to avoid shadowing optional function param of same name (prevents TS2300 duplicate identifier)
 - router.push in magic-link screen: event-details pushed (not replaced) so back arrow and iOS swipe gesture work after joining
+- /lookup endpoint read-only pattern: POST /api/auth/magic-link/lookup hashes token, JOINs invites+events+users, returns event preview with invite_code — no participant creation, no token consumption, no invite status change
+- lookup organizer_name via LEFT JOIN users ON events.organizer_id = u.id (event owner), not invites.created_by_user_id
+- participant_count cast ::int in lookup query — pg COUNT(*) returns string without explicit cast
+- refreshEvents removed from join.tsx handleJoin — pull-to-refresh is sufficient; only destructuring remains (used in auto-join effect)
 
 ### Roadmap Evolution
 
 - Phase 28 added: Remove Account Roles — drop `role` from users table + JWT, replace `user.role === "participant"` gate in events.ts with `user.participantId !== undefined`
+- Phase 29 added: Phase 27 still is not working — gap closure for Phase 27 Smart Invite Join issues
 
 - Phase 19 added: Offline Storage Strategy — AsyncStorage → SQLite + SecureStore (read-only offline caching, no offline mutations, scoped to paid-feature model)
 - Phase 19 COMPLETE: All 5 plans executed (SQLite foundation, EventsContext migration, offline UI + mutation blocking, sign-out state reset gap closure, key-based EventsProvider remount fix)
@@ -131,7 +136,7 @@ Progress: [████████████████████] Phase 2
 ## Session Continuity
 
 Last session: 2026-03-13 UTC
-Stopped at: Phase 27 Plan 04 complete — name-prompt, refreshEvents, router.push, gestureEnabled fix
+Stopped at: Phase 29 Plan 01 complete — /lookup endpoint, lookupMagicLink client, router.push + no refreshEvents in join.tsx
 Resume file: None
 
-Next step: Phase 28 (Remove Account Roles) or Phase 26 (Public Wishlist + Push Notifications + Groups).
+Next step: Phase 29 Plan 02 (magic-link/[token].tsx two-option UI for logged-out users).
