@@ -256,13 +256,10 @@ Key changes:
 
 **Goal:** The `role` field is removed from the `users` table and JWT payload. The one remaining `role`-based gate in `events.ts` (`user.role === "participant"`) is replaced with `user.participantId !== undefined`, which is already the correct discriminant for magic-link-only sessions (introduced in Phase 27). New registrations can create events immediately.
 **Depends on:** Phase 27 (Smart Invite Join + Account Linking)
-**Plans:** 0 plans
+**Plans:** 1 plan
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 28 to break down)
-
-**Details:**
-[To be added during planning]
+- [ ] 28-01-PLAN.md — Remove role from DB (migration 013), JWT payload, TypeScript types, all API routes, mobile client, and legacy web client
 
 ---
 
@@ -299,5 +296,5 @@ Plans:
 | 21. Gatherly Next.js Website | v2.1 | 5/5 | Complete | 2026-03-07 |
 | 26. Public Wishlist | v2.2 | 0/TBD | Not started | - |
 | 27. Smart Invite Join + Account Linking | v2.2 | 4/4 | Complete | 2026-03-13 |
-| 28. Remove Account Roles | v2.2 | 0/TBD | Not started | - |
+| 28. Remove Account Roles | v2.2 | 0/1 | Not started | - |
 | 29. Phase 27 still is not working | v2.2 | 3/3 | Complete | 2026-03-13 |
