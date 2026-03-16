@@ -15,5 +15,10 @@ export function requireOrganizer(
     return;
   }
 
+  if (req.user.participantId !== undefined) {
+    res.status(403).json({ error: "Full account required" });
+    return;
+  }
+
   next();
 }
