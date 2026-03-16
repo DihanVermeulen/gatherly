@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 
 ## Current Position
 
-Phase: 29 (Phase 27 Still Is Not Working)
-Plan: 29-03 complete (3/3 in phase) — Phase complete
-Status: All plans executed; Phase 29 fully closed
-Last activity: 2026-03-13 — Completed 29-03-PLAN.md (event-details login/register banner)
+Phase: 28 (Remove Account Roles)
+Plan: 28-01 complete (1/1 in phase) — Phase complete
+Status: All plans executed; Phase 28 fully closed
+Last activity: 2026-03-16 — Completed 28-01-PLAN.md (role removal across full stack)
 
-Progress: [████████████████████] Phase 29 complete (29-01, 29-02, 29-03 all done)
+Progress: [████████████████████] Phase 28 complete (28-01 done)
 
 ## Performance Metrics
 
@@ -57,7 +57,7 @@ Progress: [████████████████████] Phase 2
 - eventIndex-for-hero-color: Use events.findIndex (not find) to get index for hero colour cycling — visual consistency between list and details
 - Inline style for dynamic hex heroColor: NativeWind cannot use dynamic hex values as Tailwind className at runtime
 - Assignment card has three states: null (not generated), empty array (no match), populated (has assignment, show toggle)
-- Role badge shows Organizer only when name === user?.name AND user.role === organizer
+- Role badge shows Organizer only when name === user?.name AND user.participantId === undefined (Phase 28: role field removed)
 - PUT /api/events/:id confirmed to accept couples field — deletes all existing couples and re-inserts full array (full-array-replace)
 - Manage Exclusions save pattern: eventsApi.update(id, { couples }) then refreshEvents() then router.back()
 - react-qr-code@2.0.18 installed in gatherly-mobile
@@ -100,7 +100,8 @@ Progress: [████████████████████] Phase 2
 - Post-registration linking: after INSERT INTO users, UPDATE participants SET user_id for accepted invites with matching email (fire-and-forget, non-fatal)
 - Participant-inclusive events query: OR EXISTS (SELECT 1 FROM participants p2 WHERE p2.event_id = e.id AND p2.user_id = $1) in organizer branch; GROUP BY e.id handles dedup
 - participants.user_id FK: REFERENCES users(id) ON DELETE SET NULL — losing user account does not delete participant records
-- redeemMagicLink dual-shape detection: "id" in userData && !("participantId" in userData) distinguishes user-scoped from participant-scoped; role is "participant" in both so is not a reliable discriminant
+- redeemMagicLink dual-shape detection: "id" in userData && !("participantId" in userData) distinguishes user-scoped from participant-scoped (Phase 28: role field removed; participantId presence is the sole discriminant)
+- participantId-as-session-discriminant: user.participantId !== undefined = magic-link participant; absence = full account user — role field dropped from JWT, DB, and all clients
 - /redeem resolvedName: prefers clientParticipantName over email-prefix derivation; falls back to email prefix or "Participant"
 - /redeem effectiveEmail: prefers stored invite_email; falls back to clientEmail only when invite_email IS NULL — stored email always takes precedence for security
 - pendingToken pattern for name-prompt: re-calls /redeem with user-supplied participantName rather than caching partial response — ensures DB and final JWT both reflect correct name
@@ -132,11 +133,12 @@ Progress: [████████████████████] Phase 2
 - Existing dev databases need manual migration: ALTER TABLE invites ADD COLUMN IF NOT EXISTS created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;
 - Phase 27: Dev databases need migration 012: `psql -d gatherly -f apps/api/src/db/migrations/012-phase27-account-linking.sql`
 - Phase 27: FULLY RESOLVED — All UAT gaps closed: name-prompt stores correct participant name (Gap 2), router.push restores back navigation (Gap 3), user email passed to /redeem enables account detection for QR invites (Gap 1)
+- Phase 28: Dev databases need migration 013: `psql -d gatherly -f apps/api/src/db/migrations/013-remove-role-from-users.sql` — also rotate JWT_SECRET + REFRESH_SECRET to invalidate tokens containing old role field
 
 ## Session Continuity
 
-Last session: 2026-03-13 UTC
-Stopped at: Phase 29 Plan 03 complete — event-details login/register banner for participant-only sessions
+Last session: 2026-03-16 UTC
+Stopped at: Phase 28 Plan 01 complete — role removal across full stack
 Resume file: None
 
-Next step: Phase 28 (Remove Account Roles) or Phase 26 planning.
+Next step: Phase 26 planning (Public Wishlist + Push Notifications + Groups) or next queued phase.
