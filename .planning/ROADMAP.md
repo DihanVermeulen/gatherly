@@ -120,7 +120,7 @@ Plans:
 
 ---
 
-### Phase 16: Event Wishlists + Claiming
+### ✅ Phase 16: Event Wishlists + Claiming — COMPLETE 2026-03-16
 
 **Goal**: Users can browse all participants' wishlists in an event and claim or unclaim gifts — with claimed status hidden from the wishlist owner
 **Depends on**: Phase 15
@@ -134,8 +134,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 16-01-PLAN.md — Request Wishlists screen template + build claim/unclaim data layer (type, API, reducer)
-- [ ] 16-02-PLAN.md — Create view-wishlists.tsx screen (SectionList + claim/unclaim + privacy) + wire navigation
+- [x] 16-01-PLAN.md — Request Wishlists screen template + build claim/unclaim data layer (type, API, reducer)
+- [x] 16-02-PLAN.md — Create view-wishlists.tsx screen (SectionList + claim/unclaim + privacy) + wire navigation
 
 ---
 
@@ -288,7 +288,7 @@ Plans:
 | 13. Events List + Details Screens | v2.1 | 2/2 | Complete | 2026-02-24 |
 | 14. Edit Event Screen | v2.1 | 2/2 | Complete | 2026-02-25 |
 | 15. My Wishlist Screen | v2.1 | 2/2 | Complete | 2026-02-26 |
-| 16. Event Wishlists + Claiming | v2.1 | 0/2 | Not started | - |
+| 16. Event Wishlists + Claiming | v2.1 | 2/2 | Complete | 2026-03-16 |
 | 17. Join Event Screen | v2.1 | 2/2 | Complete | 2026-02-27 |
 | 18. Organizer Invite Management | v2.1 | 2/2 | Complete | 2026-03-09 |
 | 19. Offline Storage Strategy | v2.1 | 4/4 | Complete | 2026-03-03 |

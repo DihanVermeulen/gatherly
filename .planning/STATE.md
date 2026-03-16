@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 
 ## Current Position
 
-Phase: 28 (Remove Account Roles)
-Plan: 28-01 complete (1/1 in phase) — Phase complete
-Status: All plans executed; Phase 28 fully closed
-Last activity: 2026-03-16 — Completed 28-01-PLAN.md (role removal across full stack)
+Phase: 16 (Event Wishlists + Claiming)
+Plan: 16-02 complete (2/2 in phase) — Phase complete
+Status: All plans executed; Phase 16 fully closed
+Last activity: 2026-03-16 — Completed 16-02-PLAN.md (view-wishlists screen, claim/unclaim, human verified)
 
-Progress: [████████████████████] Phase 28 complete (28-01 done)
+Progress: [████████████████████] Phase 16 complete (16-01, 16-02 done)
 
 ## Performance Metrics
 

@@ -40,10 +40,10 @@ Port Gatherly to React Native (Expo + GlueStack) as the primary mobile client wi
 - [ ] **WISH-01**: User can view their own wishlist for an event
 - [ ] **WISH-02**: User can add a wishlist item with name, description, image, and priority
 - [ ] **WISH-03**: User can edit and delete their own wishlist items
-- [ ] **WISH-04**: User can browse all participants' wishlists in an event
-- [ ] **WISH-05**: User can claim a gift from another participant's wishlist (anonymous to wishlist owner)
-- [ ] **WISH-06**: User can unclaim a gift they previously claimed
-- [ ] **WISH-07**: Claimed status is hidden from the wishlist owner (privacy preserved)
+- [x] **WISH-04**: User can browse all participants' wishlists in an event
+- [x] **WISH-05**: User can claim a gift from another participant's wishlist (anonymous to wishlist owner)
+- [x] **WISH-06**: User can unclaim a gift they previously claimed
+- [x] **WISH-07**: Claimed status is hidden from the wishlist owner (privacy preserved)
 
 ### Invites
 
@@ -116,10 +116,10 @@ Not in v2.1 scope — tracked for later.
 | WISH-01 | Phase 15 | Pending |
 | WISH-02 | Phase 15 | Pending |
 | WISH-03 | Phase 15 | Pending |
-| WISH-04 | Phase 16 | Pending |
-| WISH-05 | Phase 16 | Pending |
-| WISH-06 | Phase 16 | Pending |
-| WISH-07 | Phase 16 | Pending |
+| WISH-04 | Phase 16 | Complete |
+| WISH-05 | Phase 16 | Complete |
+| WISH-06 | Phase 16 | Complete |
+| WISH-07 | Phase 16 | Complete |
 | INVT-01 | Phase 17 | Complete |
 | INVT-02 | Phase 17 | Complete |
 | INVT-03 | Phase 18 | Pending |
