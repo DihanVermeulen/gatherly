@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A gift exchange app that helps groups organize gift-giving events. Users create events, add participants, generate secret assignments, and manage personal wishlists. Participants discover what people want and claim gifts anonymously. The app features JWT authentication, offline-first sync, email-based magic link participant invites with role-based access, and an inline assignment reveal. v2.1 ships gatherly-mobile — a full React Native client (Expo + GlueStack) replacing the web app as the primary mobile experience.
+A gift exchange app that helps groups organize gift-giving events. Users create events, add participants, generate secret assignments, and manage personal wishlists. Participants discover what people want and claim gifts anonymously. The app features JWT authentication, offline SQLite caching, email-based magic link participant invites with smart account linking, and an inline assignment reveal. The primary client is gatherly-mobile — a React Native app (Expo 54 + GlueStack UI). A Next.js marketing website (apps/web) handles the public-facing pages and magic-link email redirect.
 
 ## Core Value
 
@@ -37,21 +37,19 @@ Participants can easily discover what gifts people actually want and claim them 
 - ✓ Inline assignment reveal — participants see receivers without Base64 decipher codes — v2.0
 - ✓ Resend magic link capability for organizers — v2.0
 - ✓ Decipher page retained as legacy path for printed codes at physical events — v2.0
+- ✓ Full React Native mobile app (Expo 54 + GlueStack UI + Expo Router) with all core screens — v2.1
+- ✓ Offline SQLite caching with NetInfo-based offline banner and mutation blocking — v2.1
+- ✓ Smart magic-link account linking: existing users auto-joined; new registrations link prior participant records — v2.1
+- ✓ participantId discriminant replaces role field in JWT and DB — v2.1
+- ✓ Organizer invite management: view/resend/revoke sent invites — v2.1
+- ✓ Next.js marketing website (apps/web) with Home, Features, Download, magic-link redirect — v2.1
+- ✓ User profile screen, event date/deadline metadata, email notifications, price tracking — v2.1
 
 ### Active
 
-<!-- Current scope for v2.1 — Gatherly Mobile (React Native). -->
+<!-- Current scope for next milestone — TBD -->
 
-- [ ] Events screen — list all events, create/delete, matches Events.png template — v2.1
-- [ ] Event details screen — inline assignment reveal, participant list, matches Details.png template — v2.1
-- [ ] Edit/Create event screen — participants, couples, gift count, code generation, matches Edit.png template — v2.1
-- [ ] Login + Register screens — JWT auth with email/password (screen templates needed) — v2.1
-- [ ] My Wishlist screen — add/edit/delete/reorder own wishlist items (screen template needed) — v2.1
-- [ ] Event Wishlists screen — browse all participants' wishlists, claim/unclaim gifts (screen template needed) — v2.1
-- [ ] Join Event screen — join via invite link, 5-state flow (screen template needed) — v2.1
-- [ ] Organizer Invite Management screen — view/resend/revoke sent invites (screen template needed) — v2.1
-- [ ] Full navigation setup — Expo Router routes wired, bottom tab navigation or equivalent — v2.1
-- [ ] Screen template rule — if a screen template is missing, ask user to create it before implementation — v2.1
+(No active requirements — define in /gsd:new-milestone)
 
 ### Out of Scope
 
@@ -65,22 +63,22 @@ Participants can easily discover what gifts people actually want and claim them 
 
 ## Context
 
-**Current Codebase (v2.0 web + v2.1 mobile in progress):**
+**Current Codebase (v2.1 shipped):**
 
-- React 19 + React Router 7 frontend (apps/gatherly) — web app, maintained as-is
-- React Native 0.81.5 + Expo 54 mobile app (apps/gatherly-mobile) — PRIMARY for v2.1
-- Express + PostgreSQL backend API (apps/api) — shared by both clients
+- React Native 0.81.5 + Expo 54 mobile app (apps/gatherly-mobile) — PRIMARY client, fully shipped
+- Next.js 15 marketing website (apps/web) — public pages + magic-link redirect
+- React 19 + React Router 7 frontend (apps/gatherly) — legacy web app, maintained as-is
+- Express + PostgreSQL backend API (apps/api) — shared by all clients
 - Turborepo monorepo structure
+- ~22,927 lines TypeScript across mobile + web
 
-**gatherly-mobile current state (v2.1 start):**
+**gatherly-mobile shipped state (v2.1):**
 
-- Framework: Expo 54, Expo Router 6, React 19, GlueStack UI v3 (51 components), NativeWind 4.2
-- API client: Axios with JWT in-memory storage, auto-refresh interceptor, request queuing on 401
-- Auth API: login, register, refresh, logout functions
-- EventsContext: hybrid storage (API/localStorage fallback), same pattern as web app
-- API modules: events, gifts, wishlists, decipher — all ported from web
-- Screens partially done: Events list (index.tsx), Edit event (edit-event.tsx), Create event component
-- Screen templates: Events.png, Edit.png, Details.png in apps/gatherly-mobile/screen-templates/
+- All core screens complete: Events, Event Details, Edit Event, My Wishlist, View Wishlists, Join Event, Profile, Manage Exclusions, edit-wishlist-item
+- Offline SQLite caching via expo-sqlite; expo-secure-store for tokens; AsyncStorage removed
+- Smart magic-link join: /lookup preview endpoint, /redeem with account linking, 8-state join UX
+- participantId discriminant: user.participantId !== undefined = magic-link session; undefined = full account
+- EventsProvider key={session ?? 'unauthenticated'} outside Stack.Protected for clean remount on session change
 
 **Design System (mobile):**
 
@@ -89,6 +87,10 @@ Participants can easily discover what gifts people actually want and claim them 
 - If a screen template is missing, ask the user to create it before implementing
 - Lucide React Native icons (lucide-react-native installed)
 - NativeWind for styling (Tailwind classes in React Native)
+
+**Known tech debt:**
+- join.tsx: add `await refreshEvents()` after `invitesApi.accept()` before `setJoinState("success")` (GAP-01)
+- assetlinks.json SHA-256 fingerprint + associatedDomains `YOUR_DOMAIN` are placeholders (must replace before production Universal/App Links)
 
 ## Constraints
 
@@ -120,10 +122,14 @@ Participants can easily discover what gifts people actually want and claim them 
 | nanoid for invite codes                            | 21-char URL-safe codes cleaner than 36-char UUIDs                         | ✓ Good - shorter, cleaner invite URLs             |
 | sort_order with composite index (event, participant) | Covers primary ordering query pattern efficiently                         | ✓ Good - efficient query plan for drag-to-reorder |
 | @dnd-kit with activationConstraint distance:8      | Prevents tap-drag conflict on touch devices                                | ✓ Good - smooth mobile drag UX                   |
-| React Native (gatherly-mobile) replaces web as primary app | Mobile-first strategy; Expo + GlueStack already scaffolded         | — Pending v2.1 completion                         |
-| GlueStack UI over Konsta UI                        | GlueStack already installed and scaffolded in gatherly-mobile; Konsta was v2.0 plan | — Pending validation                  |
-| Expo Router for navigation                         | File-based routing matches React Router mental model; good Expo ecosystem fit | — Pending v2.1 completion                      |
+| React Native (gatherly-mobile) replaces web as primary app | Mobile-first strategy; Expo + GlueStack already scaffolded         | ✓ Good — shipped v2.1                             |
+| GlueStack UI over Konsta UI                        | GlueStack already installed and scaffolded in gatherly-mobile; Konsta was v2.0 plan | ✓ Good — consistent design system     |
+| Expo Router for navigation                         | File-based routing matches React Router mental model; good Expo ecosystem fit | ✓ Good — shipped across all screens             |
+| participantId discriminant replaces role field     | Cleaner: participantId presence already encodes magic-link vs full-account; role was redundant | ✓ Good — simpler, less error-prone |
+| SQLite singleton + DatabaseProvider gate          | Single DB instance shared across app; renders blocked until init | ✓ Good — no race conditions on first load          |
+| EventsProvider key={session} outside Stack.Protected | Expo Router expects only Stack.Screen inside Stack.Protected; key triggers clean remount | ✓ Good — correct Expo Router contract |
+| /lookup read-only endpoint before /redeem         | Allows event preview without consuming invite or creating participant | ✓ Good — enables back-navigation from preview |
 
 ---
 
-_Last updated: 2026-02-22 after v2.1 milestone started_
+_Last updated: 2026-03-16 after v2.1 milestone complete_

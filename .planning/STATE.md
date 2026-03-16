@@ -2,28 +2,28 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-22)
+See: .planning/PROJECT.md (updated 2026-03-16)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** v2.1 — UAT sweep in progress; Phase 12 verified complete
+**Current focus:** v2.2 — Planning next milestone
 
 ## Current Position
 
-Phase: 16 (Event Wishlists + Claiming)
-Plan: 16-02 complete (2/2 in phase) — Phase complete
-Status: All plans executed; Phase 16 fully closed
-Last activity: 2026-03-16 — Completed 16-02-PLAN.md (view-wishlists screen, claim/unclaim, human verified)
+Phase: Not started
+Plan: Not started
+Status: Ready to plan next milestone
+Last activity: 2026-03-16 — v2.1 Gatherly Mobile milestone complete (archived)
 
-Progress: [████████████████████] Phase 16 complete (16-01, 16-02 done)
+Progress: [████████████████████] v2.1 complete
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 37 (27 v2.0 + 10 v2.1)
+- Total plans completed: 71 (27 v2.0 + 10 v2.1-core + 24 v2.1-extended)
 - Average duration: —
 - Total execution time: —
 
-**By Phase:**
+**By Phase (v2.1):**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
@@ -33,112 +33,50 @@ Progress: [████████████████████] Phase 1
 | v2.1 Phase 13 | 2/2 | ~9m | ~4.5m |
 | v2.1 Phase 14 | 2/2 | ~7m | ~3.5m |
 | v2.1 Phase 15 | 2/2 | ~7m | ~3.5m |
+| v2.1 Phase 16 | 2/2 | — | — |
 | v2.1 Phase 17 | 2/2 | ~10m | ~5m |
-| v2.1 Phase 19 | 4/4 | ~18m | ~4.5m |
+| v2.1 Phase 19 | 5/5 | ~18m | ~4.5m |
 
 *Updated after each plan completion*
 
 ## Accumulated Context
 
-### Decisions
+### Decisions (active carry-forward)
 
-- GlueStack UI over Konsta UI — already installed and scaffolded; Konsta was v2.0 plan
-- Expo Router for navigation — file-based routing, matches React Router mental model
+- GlueStack UI — use components from components/ui/; no custom UI primitives
 - Screen templates required before implementing any screen — if missing, ask user to create it
-- apps/gatherly-mobile nested .git removed — monorepo pattern, parent repo tracks all files directly
 - SecureStore for token persistence — accessToken + user JSON; refreshToken lives in HttpOnly cookie only
-- signOutCallback pattern — client.ts interceptor calls AuthContext's signOut then router.replace on 401
-- 2-arg signIn(accessToken, user) — no refreshToken in body (HttpOnly cookie pattern)
-- Use `npm install --ignore-scripts` in gatherly-mobile — pnpm virtual store dir length mismatch; --ignore-scripts also needed to bypass @gluestack-ui/core broken postinstall hook that triggers from npm installs
-- EventsProvider key={session ?? 'unauthenticated'} OUTSIDE Stack.Protected — React destroys/remounts on session change; key approach preferred over scoping inside Stack.Protected which breaks Expo Router screen registration (supersedes 19-04 decision)
-- eventToDeleteId state pattern — store id before confirm dialog, dispatch after user confirmation
-- Type aliases (Event/WishlistItem) in events.ts before eventsApi — prevents binding to global DOM Event type
-- Filter pills derive Active/Planning from assignments field: null = Planning, non-null = Active
-- eventIndex-for-hero-color: Use events.findIndex (not find) to get index for hero colour cycling — visual consistency between list and details
-- Inline style for dynamic hex heroColor: NativeWind cannot use dynamic hex values as Tailwind className at runtime
-- Assignment card has three states: null (not generated), empty array (no match), populated (has assignment, show toggle)
-- Role badge shows Organizer only when name === user?.name AND user.participantId === undefined (Phase 28: role field removed)
-- PUT /api/events/:id confirmed to accept couples field — deletes all existing couples and re-inserts full array (full-array-replace)
-- Manage Exclusions save pattern: eventsApi.update(id, { couples }) then refreshEvents() then router.back()
-- react-qr-code@2.0.18 installed in gatherly-mobile
-- ActivityIndicator (not ButtonSpinner) in Pressable context — ButtonSpinner requires GlueStack Button parent context
-- giftCount is local UI state only — not stored in TEvent, always initializes to 1
-- Immediate save pattern for toggles: onValueChange calls API directly, no useEffect debounce
-- getCodes returns Record<string,string> — always transform via Object.entries().map() to array
-- removeParticipant takes participant name string, not numeric ID — backend route: DELETE /events/:id/participants/:name
-- participantDetails-via-getById: eventsApi.getById(id) returns participantDetails; eventsApi.getAll() does NOT — always fetch via getById in wishlist screens for correct participantId
-- BottomSheetTextInput for text inputs inside gorhom sheets — prevents keyboard overlap on Android
-- wishlist optimistic-delete pattern: dispatch DELETE_WISHLIST_ITEM immediately, revert with SET_WISHLISTS + wishlistsApi.getAll() on API failure
-- created_by_user_id on invites table (FK to users ON DELETE SET NULL) — enables organizer name in validate response; stored during invite creation via req.user.id
-- pendingInvite module-level variable pattern — for transient session state that doesn't need to survive app restarts (not AsyncStorage)
-- consumePendingInviteCode() atomic read-and-clear — prevents double redirect; called in _layout.tsx useEffect watching session
-- 100ms setTimeout in post-auth join redirect — lets Stack.Protected navigation settle before router.replace('/join?token=...')
-- JoinState machine pattern: 7-state union type + switch in renderContent() — explicit states prevent impossible UI combinations
-- retryCount in validate effect deps: token doesn't change on retry, retryCount triggers re-fetch
-- Double-call guard in handleJoin: if (joinState === 'joining') return — prevents concurrent join requests
-- Comment-only for sign-in/register pending invite docs: unused imports cause TS errors; comments document flow
-- expo-sqlite via npm --ignore-scripts — pnpm fails due to monorepo virtual store path length (consistent with existing gatherly-mobile install convention)
-- async-storage pinned to 1.24.0 — version 1.24.1 was unpublished from npm registry; 1.24.0 is highest compatible
-- No wishlist_items SQLite table — wishlists embedded in event JSON blob and cached implicitly via cacheEvents(); separate table is dead code
-- SQLite singleton pattern: module-level let db = null in database.ts, repeated initDatabase() calls return same instance
-- DatabaseProvider position: inside SessionProvider, outside RootLayoutNav — db available when EventsProvider (Plan 02) calls useDatabase()
-- gift_count column in SQLite events table is always 0 — giftCount is local UI state, not in TEvent
-- initDatabase() direct call in signOut — SessionProvider is outside DatabaseProvider; singleton pattern makes direct call safe and returns same instance
-- clearCache called after SecureStore.deleteItemAsync but before state setters in signOut — ensures data cleared before UI reacts to null session
-- isConnected !== false pattern for offline detection — null (NetInfo initializing) treated as online; only false triggers offline banner
-- app.json YOUR_DOMAIN placeholder pattern — use literal "YOUR_DOMAIN" in associatedDomains and intentFilters host; replace with production domain (e.g., gatherly.app, no https://) before EAS Build
-- bundleIdentifier and android package both "com.gatherly.gatherly" — must match AASA appID and assetlinks.json package_name
-- autoVerify: true required on Android intentFilters — without it, Android shows disambiguation dialog instead of opening app directly
-- Fragment wrapper for SafeAreaView children — avoids extra View in layout tree while allowing OfflineBanner + ThemeProvider as siblings
-- networkMode: 'online' per-mutation (not via QueryClient defaults) — no central QueryClient config in codebase; added inline to each useMutation
-- VideoModal triggerClassName prop pattern — caller owns button styling; modal component stays generic
-- App store icons use inline SVG in page.tsx — lucide-react has no brand logos (Apple/Google)
-- Hero plant image uses Unsplash URL with TODO comment — real brand asset replaces URL before launch
-- App store buttons on web use href="#" and default state only — PLAY_INSTALLED badge in Download.png is a mockup artifact; JS cannot reliably detect app installation
-- web /pricing is a coming-soon stub — no pricing structure decided yet; replace when plans are defined
-- Smart magic-link redemption: /redeem email-matches users table; if match found, issues user-scoped JWT (generateTokens) not participant-scoped; participant record gets user_id linked
-- Post-registration linking: after INSERT INTO users, UPDATE participants SET user_id for accepted invites with matching email (fire-and-forget, non-fatal)
-- Participant-inclusive events query: OR EXISTS (SELECT 1 FROM participants p2 WHERE p2.event_id = e.id AND p2.user_id = $1) in organizer branch; GROUP BY e.id handles dedup
-- participants.user_id FK: REFERENCES users(id) ON DELETE SET NULL — losing user account does not delete participant records
-- redeemMagicLink dual-shape detection: "id" in userData && !("participantId" in userData) distinguishes user-scoped from participant-scoped (Phase 28: role field removed; participantId presence is the sole discriminant)
+- Use `npm install --ignore-scripts` in gatherly-mobile — pnpm virtual store dir length mismatch
+- EventsProvider key={session ?? 'unauthenticated'} OUTSIDE Stack.Protected — React destroys/remounts on session change
 - participantId-as-session-discriminant: user.participantId !== undefined = magic-link participant; absence = full account user — role field dropped from JWT, DB, and all clients
-- /redeem resolvedName: prefers clientParticipantName over email-prefix derivation; falls back to email prefix or "Participant"
-- /redeem effectiveEmail: prefers stored invite_email; falls back to clientEmail only when invite_email IS NULL — stored email always takes precedence for security
-- pendingToken pattern for name-prompt: re-calls /redeem with user-supplied participantName rather than caching partial response — ensures DB and final JWT both reflect correct name
-- storedParticipantName rename in auth.ts: destructured userData.participantName renamed to avoid shadowing optional function param of same name (prevents TS2300 duplicate identifier)
-- router.push in magic-link screen: event-details pushed (not replaced) so back arrow and iOS swipe gesture work after joining
-- /lookup endpoint read-only pattern: POST /api/auth/magic-link/lookup hashes token, JOINs invites+events+users, returns event preview with invite_code — no participant creation, no token consumption, no invite status change
-- lookup organizer_name via LEFT JOIN users ON events.organizer_id = u.id (event owner), not invites.created_by_user_id
-- participant_count cast ::int in lookup query — pg COUNT(*) returns string without explicit cast
-- refreshEvents removed from join.tsx handleJoin — pull-to-refresh is sufficient; only destructuring remains (used in auto-join effect)
-
-### Roadmap Evolution
-
-- Phase 28 added: Remove Account Roles — drop `role` from users table + JWT, replace `user.role === "participant"` gate in events.ts with `user.participantId !== undefined`
-- Phase 29 added: Phase 27 still is not working — gap closure for Phase 27 Smart Invite Join issues
-
-- Phase 19 added: Offline Storage Strategy — AsyncStorage → SQLite + SecureStore (read-only offline caching, no offline mutations, scoped to paid-feature model)
-- Phase 19 COMPLETE: All 5 plans executed (SQLite foundation, EventsContext migration, offline UI + mutation blocking, sign-out state reset gap closure, key-based EventsProvider remount fix)
-- Phase 20 added: Magic Link Redirect Website — hosted redirect page that routes magic link email URLs to the mobile app via deep link (if installed) or falls back to web redemption
-- Phase 21 added: Gatherly Next.js Website — Next.js marketing site in apps/web with home page (feature showcase), download page, and magic link redirect page that opens the mobile app via Universal Links / App Links
+- /lookup endpoint read-only pattern: POST /api/auth/magic-link/lookup — no participant creation, no token consumption
+- pendingToken pattern for name-prompt: re-calls /redeem with user-supplied participantName
+- JoinState machine pattern: explicit union type + switch in renderContent()
+- SQLite singleton pattern: module-level let db = null in database.ts
+- isConnected !== false pattern for offline detection — null (NetInfo initializing) treated as online
+- app.json YOUR_DOMAIN placeholder pattern — replace with production domain before EAS Build
+- fire-and-forget emails: sendX() called without await after route commits
 
 ### Pending Todos
 
 - `.planning/todos/pending/2026-03-10-phase-26-planning.md` — Plan Phase 26 (Public Wishlist + Push Notifications + Groups)
-- `.planning/todos/pending/2026-03-10-smart-invite-join-with-account-linking.md` — Smart invite join: link existing accounts + promote magic-link-only users on sign-up
 
-### Blockers/Concerns
+### Tech Debt
 
-- Phase 18: Organizer Invite Management template MISSING — must request from user; backend endpoint may also be missing
-- Existing dev databases need manual migration: ALTER TABLE invites ADD COLUMN IF NOT EXISTS created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;
-- Phase 27: Dev databases need migration 012: `psql -d gatherly -f apps/api/src/db/migrations/012-phase27-account-linking.sql`
-- Phase 27: FULLY RESOLVED — All UAT gaps closed: name-prompt stores correct participant name (Gap 2), router.push restores back navigation (Gap 3), user email passed to /redeem enables account detection for QR invites (Gap 1)
-- Phase 28: Dev databases need migration 013: `psql -d gatherly -f apps/api/src/db/migrations/013-remove-role-from-users.sql` — also rotate JWT_SECRET + REFRESH_SECRET to invalidate tokens containing old role field
+- join.tsx: add `await refreshEvents()` after `invitesApi.accept()` before `setJoinState("success")` (GAP-01 from v2.1 audit)
+- assetlinks.json SHA-256 fingerprint is a placeholder — replace before Android App Links work in production
+- associatedDomains uses YOUR_DOMAIN placeholder — replace before iOS Universal Links work in production
+- modules-config, polls, rsvp routes not registered in _layout.tsx Stack.Protected (cosmetic header config only)
+
+### Pending DB Migrations for New Environments
+
+- Migration 012: `psql -d gatherly -f apps/api/src/db/migrations/012-phase27-account-linking.sql`
+- Migration 013: `psql -d gatherly -f apps/api/src/db/migrations/013-remove-role-from-users.sql` — also rotate JWT_SECRET + REFRESH_SECRET
 
 ## Session Continuity
 
 Last session: 2026-03-16 UTC
-Stopped at: Phase 28 Plan 01 complete — role removal across full stack
+Stopped at: v2.1 milestone archived and tagged
 Resume file: None
 
-Next step: Phase 26 planning (Public Wishlist + Push Notifications + Groups) or next queued phase.
+Next step: `/gsd:new-milestone` to define v2.2 goals, requirements, and roadmap.

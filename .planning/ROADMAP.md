@@ -2,13 +2,14 @@
 
 ## Milestones
 
-- ✅ **v2.0 Gift Exchange Platform** - Phases 1–10 (shipped 2026-02-22)
-- 🚧 **v2.1 Gatherly Mobile** - Phases 11–19 (in progress)
+- ✅ **v2.0 Gift Exchange Platform** — Phases 1–10 (shipped 2026-02-22)
+- ✅ **v2.1 Gatherly Mobile** — Phases 11–21 + 22–24, 27–29 (shipped 2026-03-16)
+- 📋 **v2.2** — TBD (plan with /gsd:new-milestone)
 
 ## Phases
 
 <details>
-<summary>✅ v2.0 Gift Exchange Platform (Phases 1–10) - SHIPPED 2026-02-22</summary>
+<summary>✅ v2.0 Gift Exchange Platform (Phases 1–10) — SHIPPED 2026-02-22</summary>
 
 See `.planning/milestones/v2.0-ROADMAP.md` for full phase details.
 
@@ -16,269 +17,29 @@ See `.planning/milestones/v2.0-ROADMAP.md` for full phase details.
 
 </details>
 
----
+<details>
+<summary>✅ v2.1 Gatherly Mobile (Phases 11–21 + 22–24, 27–29) — SHIPPED 2026-03-16</summary>
 
-### 🚧 v2.1 Gatherly Mobile (In Progress)
+See `.planning/milestones/v2.1-ROADMAP.md` for full phase details.
 
-**Milestone Goal:** Port Gatherly to React Native (Expo 54 + GlueStack UI v3 + Expo Router 6) as the primary mobile client with full v2.0 feature parity plus organizer invite management. Every screen matches its PNG template in `screen-templates/`.
+**Summary:** Full React Native mobile app (Expo 54 + GlueStack UI + Expo Router), offline SQLite caching, smart magic-link account linking, role simplification, organizer invite management, and Next.js marketing website — shipped across 14 phases and 34 plans.
 
----
-
-### ✅ Phase 11: Navigation Foundation — COMPLETE 2026-02-23
-
-**Goal**: The app has a working navigation shell — authenticated users land on Events, unauthenticated users are redirected to Login, deep links open Join Event, and all main sections are reachable from persistent navigation
-**Depends on**: Nothing (first phase of v2.1 — existing scaffolding in place)
-**Requirements**: NAV-01, NAV-02, NAV-03, NAV-04
-**Note**: TMPL-01, TMPL-02, TMPL-03 apply to all screens implemented in this and every subsequent phase.
-**Success Criteria** (what must be TRUE):
-  1. Launching the app on an unauthenticated device goes directly to the Login screen (no landing page)
-  2. After logging in, the user lands on the Events screen with no manual navigation required
-  3. Tapping any item in the bottom navigation bar reaches its destination screen
-  4. Pasting a gatherly invite URL into the device opens the app and shows the Join Event screen
-**Plans**: 2 plans
-
-Plans:
-- [x] 11-01-PLAN.md — File structure restructure: delete broken tabs/, create app/(tabs)/, stub AuthContext, sign-in, join, update app.json scheme
-- [x] 11-02-PLAN.md — Root layout auth guard (Stack.Protected), full bottom tab navigator with lucide icons, human verification checkpoint
+</details>
 
 ---
 
-### ✅ Phase 12: Authentication Screens — COMPLETE 2026-02-26
+### 📋 v2.2 (Not Started)
 
-**Goal**: Users can create accounts, log in, and log out — with sessions that survive app restarts via JWT auto-refresh
-**Depends on**: Phase 11
-**Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-04
-**Note**: TMPL-01, TMPL-02, TMPL-03 apply. Login and Register screen templates are NOW PROVIDED (Login.png and Register.png exist — note filenames are swapped: Register.png = Login UI, Login.png = Register UI).
-**Success Criteria** (what must be TRUE):
-  1. User enters email and password on the Login screen and reaches the Events screen on success
-  2. User fills name, email, and password on the Register screen and is logged in immediately after
-  3. Closing and reopening the app keeps the user logged in (session restored via token refresh)
-  4. Tapping "Log out" from any screen returns the user to the Login screen with session cleared
-**Plans**: 2 plans
+Next milestone TBD. Candidates from backlog:
+- Phase 26: Public Wishlist (share_token) — share personal event wishlist via public URL
+- Push Notifications
+- Groups / Recurring Events
 
-Plans:
-- [x] 12-01-PLAN.md — Login screen (matching Register.png) + AuthContext upgrade with expo-secure-store + client.ts interceptor fix
-- [x] 12-02-PLAN.md — Register screen (matching Login.png) + backend refresh endpoint body fallback
-
----
-
-### ✅ Phase 13: Events List + Details Screens — COMPLETE 2026-02-24
-
-**Goal**: Users can see all their events at a glance and view event details including their secret assignment — both screens matching their PNG templates
-**Depends on**: Phase 12
-**Requirements**: EVNT-01, EVNT-02, EVNT-03, EVNT-04
-**Note**: TMPL-01, TMPL-02, TMPL-03 apply. Events.png and Details.png templates exist. Partially-done Events list screen (index.tsx) must be completed to match Events.png.
-**Success Criteria** (what must be TRUE):
-  1. Events screen shows a list of all events with name, participant count, and gift count per event
-  2. User can create a new event from the Events screen and see it appear in the list immediately
-  3. User can delete an event from the Events screen
-  4. Tapping an event opens the Details screen showing participants and the user's secret assignment (inline reveal, no codes)
-**Plans**: 2 plans
-
-Plans:
-- [ ] 13-01-PLAN.md — Mount EventsProvider, fix bugs (delete/navigation/search), rework Events list to match Events.png, fix CreateEvent API call
-- [ ] 13-02-PLAN.md — Event Details screen matching Details.png (participant list, inline assignment reveal, stubbed gift buttons)
-
----
-
-### ✅ Phase 14: Edit Event Screen — COMPLETE 2026-02-25
-
-**Goal**: Organizers can fully configure an event — adding/removing participants, defining couples, setting gift counts, generating assignments, and viewing secret codes — all from the Edit screen matching Edit.png
-**Depends on**: Phase 13
-**Requirements**: EVNT-05, EVNT-06, EVNT-07, EVNT-08, EVNT-09
-**Note**: TMPL-01, TMPL-02, TMPL-03 apply. Edit.png template exists. Partially-done edit-event.tsx must be completed to match Edit.png.
-**Success Criteria** (what must be TRUE):
-  1. Organizer can tap "+ Add Participant", generate an invite link/QR code, and share it with the new participant
-  2. Organizer can remove a participant and they are gone from the list
-  3. Organizer can mark two participants as a couple and the constraint is saved
-  4. Organizer sets gifts-per-person, taps Generate, and assignments appear without page reload
-  5. Organizer can view the secret code for each participant after assignments are generated
-**Plans**: 2 plans
-
-Plans:
-- [x] 14-01-PLAN.md — Install react-qr-code, create invites API module, Manage Exclusions screen + route registration
-- [x] 14-02-PLAN.md — Complete edit-event.tsx overhaul: participant chips, invite modal, settings, generate, secret codes
-
----
-
-### Phase 15: My Wishlist Screen
-
-**Goal**: Users can manage their own wishlist for an event — adding, editing, and deleting items with name, description, image, and priority
-**Depends on**: Phase 13
-**Requirements**: WISH-01, WISH-02, WISH-03
-**Note**: TMPL-01, TMPL-02, TMPL-03 apply. My Wishlist screen template has been provided via discuss-phase (CONTEXT.md), which contains detailed UI decisions.
-**Success Criteria** (what must be TRUE):
-  1. User opens My Wishlist for an event and sees all their existing wishlist items
-  2. User adds a new item with name, description, optional image, and priority — it appears in the list
-  3. User edits an existing item and sees the updated details reflected immediately
-  4. User deletes an item and it is removed from the list
-**Plans**: 2 plans
-
-Plans:
-- [ ] 15-01-PLAN.md — Install expo-image-picker, register routes, create my-wishlist screen (list + FAB + add bottom sheet + ActionSheet delete)
-- [ ] 15-02-PLAN.md — Full-screen edit-wishlist-item screen (pre-filled form, save with UPDATE_WISHLIST_ITEM)
-
----
-
-### ✅ Phase 16: Event Wishlists + Claiming — COMPLETE 2026-03-16
-
-**Goal**: Users can browse all participants' wishlists in an event and claim or unclaim gifts — with claimed status hidden from the wishlist owner
-**Depends on**: Phase 15
-**Requirements**: WISH-04, WISH-05, WISH-06, WISH-07
-**Note**: TMPL-01, TMPL-02, TMPL-03 apply. Event Wishlists screen template is MISSING — request template from user before implementing.
-**Success Criteria** (what must be TRUE):
-  1. User opens Event Wishlists and sees all participants' names with their wishlist items
-  2. User taps "Claim" on someone else's item and the item shows as claimed to other viewers
-  3. User taps "Unclaim" on an item they previously claimed — it returns to available status
-  4. A user viewing their own wishlist does not see any claimed/unclaimed indicators (privacy preserved)
-**Plans**: 2 plans
-
-Plans:
-- [x] 16-01-PLAN.md — Request Wishlists screen template + build claim/unclaim data layer (type, API, reducer)
-- [x] 16-02-PLAN.md — Create view-wishlists.tsx screen (SectionList + claim/unclaim + privacy) + wire navigation
-
----
-
-### ✅ Phase 17: Join Event Screen — COMPLETE 2026-02-27
-
-**Goal**: Users can join an event via an invite deep link — the Join Event screen handles all states of the flow gracefully
-**Depends on**: Phase 12
-**Requirements**: INVT-01, INVT-02
-**Note**: TMPL-01, TMPL-02, TMPL-03 apply. UI decisions provided via discuss-phase (CONTEXT.md) — full-screen hero layout, skeleton loading, 7 flow states.
-**Success Criteria** (what must be TRUE):
-  1. Tapping an invite link opens the app and shows an event preview with the event name and organizer
-  2. User taps Join and is added to the event as a participant
-  3. A user who is already a member of the event sees an "already joined" state (not a duplicate join)
-  4. Invalid or expired invite codes show a clear error state — the user is not left on a blank screen
-**Plans**: 2 plans
-
-Plans:
-- [x] 17-01-PLAN.md — Add validate/accept to invitesApi, create pendingInvite utility, update _layout.tsx gesture
-- [x] 17-02-PLAN.md — Full join.tsx screen (7 states: loading, preview, joining, success, already-joined, invalid, error) + auth screen auto-join wiring
-
----
-
-### Phase 18: Organizer Invite Management
-
-**Goal**: Organizers can view all sent invites for an event, resend magic links to specific participants, and revoke pending invites
-**Depends on**: Phase 17
-**Requirements**: INVT-03, INVT-04, INVT-05
-**Note**: TMPL-01, TMPL-02, TMPL-03 apply. Organizer Invite Management screen template is MISSING — request template from user before implementing. Backend endpoint may need to be added if missing.
-**Success Criteria** (what must be TRUE):
-  1. Organizer opens Invite Management for an event and sees a list of all invites with participant name and status (pending/accepted)
-  2. Organizer taps "Resend" for a participant and a new magic link email is sent
-  3. Organizer taps "Revoke" on a pending invite — the invite is removed from the list and the link no longer works
-**Plans**: TBD
-
-Plans:
-- [ ] 18-01: Request Organizer Invite Management screen template from user, then implement invite list view
-- [ ] 18-02: Resend and revoke actions (add backend endpoint if missing, wire frontend)
-
----
-
-### ✅ Phase 19: Offline Storage Strategy — AsyncStorage → SQLite + SecureStore — COMPLETE 2026-02-28
-
-**Goal**: All local persistence uses the right tool for the job — expo-sqlite for non-sensitive structured data (cached events, wishlists), expo-secure-store for auth tokens, and AsyncStorage removed entirely. Offline mutation scope is explicitly defined: read-only caching only (no create/edit/delete without a live API connection), reflecting the planned paid-feature model.
-**Depends on**: Phase 18
-**Plans:** 4 plans
-
-Plans:
-- [x] 19-01-PLAN.md — SQLite database layer + SecureStore abstraction + cache utilities + DatabaseProvider
-- [x] 19-02-PLAN.md — Migrate EventsContext from AsyncStorage to SQLite + remove AsyncStorage package
-- [x] 19-03-PLAN.md — Native network detection (NetInfo) + offline banner + fix useSyncStatus for RN
-- [x] 19-04-PLAN.md — Gap closure: scope EventsProvider inside authenticated guard so sign-out resets in-memory event state
-- [x] 19-05-PLAN.md — Gap closure fix: revert to EventsProvider outside Stack.Protected with key={session} for correct remount
-
----
-
-### Phase 20: Magic Link Redirect Website
-
-**Goal:** A hosted redirect page handles magic link email URLs and routes users to the correct destination — mobile app via deep link if installed, or web redemption as fallback
-**Depends on:** Phase 17
-**Plans:** 2 plans
-
-Plans:
-- [ ] 20-01-PLAN.md — .well-known/ AASA + assetlinks.json files in web SPA public dir + simplify magic-link.tsx (remove gatherly:// custom scheme)
-- [ ] 20-02-PLAN.md — app.json Universal Links config: associatedDomains (iOS) + intentFilters (Android) + bundleIdentifier
-
----
-
-### ✅ Phase 21: Gatherly Next.js Website — COMPLETE 2026-03-07
-
-**Goal:** A Next.js marketing website in `apps/web` showcasing Gatherly's features with a home page, download page, and a magic link redirect page that opens the mobile app directly at the magic link redemption screen via Universal Links / App Links deep link
-**Depends on:** Phase 20
-**Plans:** 5 plans
-
-Plans:
-- [x] 21-01-PLAN.md — Monorepo scaffold: package.json, next.config.ts, tsconfig, postcss, globals.css, Nav, Footer, root layout, .well-known files
-- [x] 21-02-PLAN.md — Home page matching Home.png (hero, feature grid, mobile CTA) + VideoModal component
-- [x] 21-03-PLAN.md — Features page matching Features.png + How it Works page matching HowItWorks.png
-- [x] 21-04-PLAN.md — Download page matching Download.png + Pricing coming-soon stub
-- [x] 21-05-PLAN.md — Magic link redirect page (/magic-link/[token]) with deep link logic, intent:// fallback, not-installed state
-
----
-
----
-
-### Phase 26: Public Wishlist (share_token)
-
-**Goal:** Allow participants to share their personal event wishlist via a public URL so people outside Gatherly can see what they want — without needing an account
-**Depends on:** Phase 15 (My Wishlist)
-**Plans:** TBD
-
----
-
-### ✅ Phase 27: Smart Invite Join + Account Linking — COMPLETE 2026-03-13
-
-**Goal:** Existing account holders who receive a magic link are automatically joined to the event under their real account (not a participant-only session). Magic-link-only participants who later register get their participant records linked to their new account, so the event appears in their events list.
-**Depends on:** Phase 17 (Join Event), Phase 12 (Authentication)
-**Success Criteria** (what must be TRUE):
-  1. An existing Gatherly user who opens a magic link invite is joined to the event under their user account — not issued a participant-only session
-  2. A participant (no account) who registers a full account has their existing participant records automatically linked — their events appear in the list after registration
-  3. The events list correctly shows events where the user is a participant (not just organizer)
-**Plans:** 4 plans
-
-Plans:
-- [x] 27-01-PLAN.md — Schema migration (participants.user_id) + magicLink.ts smart redemption (user-scoped tokens for existing users)
-- [x] 27-02-PLAN.md — Mobile client dual-shape response handling for magic link redemption
-- [x] 27-03-PLAN.md — Gap closure: /redeem accepts participantName + email fallback for NULL invite_email
-- [x] 27-04-PLAN.md — Gap closure: [token].tsx name-prompt state + navigation fixes + refreshEvents after sign-in
-
-Key changes:
-- Schema: `ALTER TABLE participants ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE SET NULL`
-- `magicLink.ts /redeem`: email→user lookup; if match, generate user-scoped token + set participant.user_id
-- `auth.ts /register`: post-registration, link accepted invites by email to new user_id
-- `events.ts GET /`: include events where user has a participant record (not just organizer)
-
----
-
-### ✅ Phase 28: Remove Account Roles — COMPLETE 2026-03-16
-
-**Goal:** The `role` field is removed from the `users` table and JWT payload. The one remaining `role`-based gate in `events.ts` (`user.role === "participant"`) is replaced with `user.participantId !== undefined`, which is already the correct discriminant for magic-link-only sessions (introduced in Phase 27). New registrations can create events immediately.
-**Depends on:** Phase 27 (Smart Invite Join + Account Linking)
-**Plans:** 1 plan
-
-Plans:
-- [x] 28-01-PLAN.md — Remove role from DB (migration 013), JWT payload, TypeScript types, all API routes, mobile client, and legacy web client
-
----
-
-### ✅ Phase 29: Phase 27 still is not working — COMPLETE 2026-03-13
-
-**Goal:** Fix the Smart Invite Join flow so that opening a magic link actually runs the full join flow (event preview, user choice, participant creation), creates a participant record, and leaves the user in the correct state. Add a `/lookup` endpoint for read-only magic token validation, rewrite the magic-link screen with proper join UX (two-option split for logged-out users), and add a login/register banner to event-details for participant-only sessions.
-**Depends on:** Phase 27
-**Plans:** 3 plans
-
-Plans:
-- [x] 29-01-PLAN.md — Backend /lookup endpoint + authApi client method + fix join.tsx navigation (router.push, remove refreshEvents)
-- [x] 29-02-PLAN.md — Rewrite magic-link/[token].tsx with full join flow (preview, two-option split, name-prompt, success) + pendingMagicToken utility
-- [x] 29-03-PLAN.md — Add login/register banner to event-details for participant-only sessions
+Run `/gsd:new-milestone` to define goals, requirements, and roadmap for v2.2.
 
 ---
 
 ## Progress
-
-**Execution Order:** 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18 → 19 → 20 → 21
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -291,10 +52,10 @@ Plans:
 | 16. Event Wishlists + Claiming | v2.1 | 2/2 | Complete | 2026-03-16 |
 | 17. Join Event Screen | v2.1 | 2/2 | Complete | 2026-02-27 |
 | 18. Organizer Invite Management | v2.1 | 2/2 | Complete | 2026-03-09 |
-| 19. Offline Storage Strategy | v2.1 | 4/4 | Complete | 2026-03-03 |
+| 19. Offline Storage Strategy | v2.1 | 5/5 | Complete | 2026-03-03 |
 | 20. Magic Link Redirect Website | v2.1 | 2/2 | Complete | 2026-03-06 |
 | 21. Gatherly Next.js Website | v2.1 | 5/5 | Complete | 2026-03-07 |
-| 26. Public Wishlist | v2.2 | 0/TBD | Not started | - |
-| 27. Smart Invite Join + Account Linking | v2.2 | 4/4 | Complete | 2026-03-13 |
-| 28. Remove Account Roles | v2.2 | 1/1 | Complete | 2026-03-16 |
-| 29. Phase 27 still is not working | v2.2 | 3/3 | Complete | 2026-03-13 |
+| 22–24. Profile + Invites + Pricing | v2.1 | 1/1 | Complete | 2026-03-09 |
+| 27. Smart Invite Join + Account Linking | v2.1 | 4/4 | Complete | 2026-03-13 |
+| 28. Remove Account Roles | v2.1 | 1/1 | Complete | 2026-03-16 |
+| 29. Phase 27 Fix — Smart Join Flow | v2.1 | 3/3 | Complete | 2026-03-13 |
