@@ -4,7 +4,6 @@ export interface User {
   id: number;
   email: string;
   name: string;
-  role: "organizer" | "participant";
   participantId?: number;
   eventId?: number;
   eventName?: string;
@@ -20,7 +19,6 @@ interface MagicLinkUser {
   eventId: number;
   participantName: string;
   eventName: string;
-  role: "participant";
 }
 
 interface MagicLinkResponse {
@@ -71,7 +69,6 @@ export const authApi = {
         id: user.participantId,
         name: user.participantName,
         email: "",
-        role: "participant",
         participantId: user.participantId,
         eventId: user.eventId,
         eventName: user.eventName,

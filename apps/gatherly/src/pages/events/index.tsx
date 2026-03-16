@@ -30,7 +30,7 @@ export const EventsPage = () => {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (user?.role === "participant" && user?.eventId) {
+    if (user?.participantId !== undefined && user?.eventId) {
       navigate(`/events/${user.eventId}`);
     }
   }, [user, navigate]);

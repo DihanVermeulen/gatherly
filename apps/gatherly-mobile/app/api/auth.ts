@@ -4,7 +4,6 @@ export interface User {
   id: number;
   email: string;
   name: string;
-  role: "organizer" | "participant";
   // Participant-only fields (present when signed in via magic link)
   participantId?: number;
   eventId?: number;
@@ -65,12 +64,16 @@ export const authApi = {
   async lookupMagicLink(token: string): Promise<MagicLinkPreview> {
     const response = await apiClient.post<MagicLinkPreview>(
       "/api/auth/magic-link/lookup",
-      { token }
+      { token },
     );
     return response.data;
   },
 
-  async redeemMagicLink(token: string, email?: string, participantName?: string): Promise<AuthResponse> {
+  async redeemMagicLink(
+    token: string,
+    email?: string,
+    participantName?: string,
+  ): Promise<AuthResponse> {
     const response = await apiClient.post<{
       accessToken: string;
       user:
@@ -79,7 +82,6 @@ export const authApi = {
             id: number;
             email: string;
             name: string;
-            role: "organizer" | "participant";
             eventId: number;
             eventName: string;
           }
@@ -89,7 +91,6 @@ export const authApi = {
             eventId: number;
             participantName: string;
             eventName: string;
-            role: "participant";
           };
     }>("/api/auth/magic-link/redeem", {
       token,
@@ -108,7 +109,6 @@ export const authApi = {
           id: userData.id,
           email: userData.email,
           name: userData.name,
-          role: userData.role,
           eventId: userData.eventId,
           eventName: userData.eventName,
         },
@@ -121,13 +121,11 @@ export const authApi = {
       participantName: storedParticipantName,
       eventId,
       eventName,
-      role,
     } = userData as {
       participantId: number;
       eventId: number;
       participantName: string;
       eventName: string;
-      role: "participant";
     };
     return {
       accessToken,
@@ -135,7 +133,6 @@ export const authApi = {
         id: participantId,
         email: "",
         name: participantName ?? storedParticipantName,
-        role,
         participantId,
         eventId,
         eventName,

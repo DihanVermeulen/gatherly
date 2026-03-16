@@ -366,7 +366,7 @@ export default function EventDetailsScreen() {
                   {event.people.map((name, idx) => {
                     const isCurrentUser = name === user?.name;
                     const isOrganizer =
-                      isCurrentUser && user?.role === "organizer";
+                      isCurrentUser && user?.participantId === undefined;
 
                     return (
                       <View

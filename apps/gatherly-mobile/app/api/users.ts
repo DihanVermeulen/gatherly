@@ -4,7 +4,6 @@ export interface UserProfile {
   id: number;
   email: string;
   name: string;
-  role: string;
   createdAt: string;
   eventsOrganized: number;
 }
@@ -15,7 +14,7 @@ export const usersApi = {
     return response.data;
   },
 
-  updateMe: async (name: string): Promise<{ id: number; email: string; name: string; role: string }> => {
+  updateMe: async (name: string): Promise<{ id: number; email: string; name: string }> => {
     const response = await apiClient.put("/api/users/me", { name });
     return response.data;
   },

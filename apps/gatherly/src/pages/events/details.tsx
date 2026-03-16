@@ -31,7 +31,7 @@ export const EventDetailsPage = () => {
   const [revealState, setRevealState] = useState<RevealState>("idle");
   const [myReceivers, setMyReceivers] = useState<string[]>([]);
 
-  const isParticipant = user?.role === "participant" && !!user?.participantId;
+  const isParticipant = user?.participantId !== undefined && !!user?.participantId;
 
   const handleReveal = async () => {
     if (!id) return;
@@ -51,7 +51,7 @@ export const EventDetailsPage = () => {
 
   useEffect(() => {
     if (
-      user?.role === "participant" &&
+      user?.participantId !== undefined &&
       user?.eventId &&
       id !== String(user.eventId)
     ) {
@@ -68,7 +68,7 @@ export const EventDetailsPage = () => {
         <button
           onClick={() =>
             navigate(
-              user?.role === "participant" && user?.eventId
+              user?.participantId !== undefined && user?.eventId
                 ? `/events/${user.eventId}`
                 : "/events",
             )

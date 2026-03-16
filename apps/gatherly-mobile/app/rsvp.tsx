@@ -23,7 +23,7 @@ export default function RsvpScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useSession();
-  const isOrganizer = user?.role === "organizer";
+  const isOrganizer = user?.participantId === undefined;
 
   // Organizer state
   const [summary, setSummary] = useState<TRsvpSummary | null>(null);

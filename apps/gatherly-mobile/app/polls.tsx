@@ -24,7 +24,7 @@ export default function PollsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useSession();
-  const isOrganizer = user?.role === "organizer";
+  const isOrganizer = user?.participantId === undefined;
 
   const [polls, setPolls] = useState<TPoll[]>([]);
   const [loading, setLoading] = useState(true);
