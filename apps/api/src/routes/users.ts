@@ -16,7 +16,7 @@ router.get(
     }
 
     const userResult = await query(
-      "SELECT id, email, name, role, created_at FROM users WHERE id = $1",
+      "SELECT id, email, name, created_at FROM users WHERE id = $1",
       [user.userId],
     );
 
@@ -34,7 +34,6 @@ router.get(
       id: u.id,
       email: u.email,
       name: u.name,
-      role: u.role,
       createdAt: u.created_at,
       eventsOrganized: parseInt(eventsResult.rows[0].count, 10) || 0,
     });
@@ -57,7 +56,7 @@ router.put(
     }
 
     const result = await query(
-      "UPDATE users SET name = $1 WHERE id = $2 RETURNING id, email, name, role",
+      "UPDATE users SET name = $1 WHERE id = $2 RETURNING id, email, name",
       [name.trim(), user.userId],
     );
 
@@ -70,7 +69,6 @@ router.put(
       id: u.id,
       email: u.email,
       name: u.name,
-      role: u.role,
     });
   }),
 );

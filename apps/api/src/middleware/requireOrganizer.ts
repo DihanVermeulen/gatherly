@@ -1,22 +1,17 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from "express";
 
 /**
- * Middleware that requires the authenticated user to have the 'organizer' role.
+ * Middleware that requires the authenticated session to be a full user account (not a magic-link participant).
  * Must be used AFTER authenticateJWT middleware (req.user must be set).
- * Returns 403 if user is not an organizer.
+ * Returns 403 if the session is participant-scoped (participantId is present).
  */
 export function requireOrganizer(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void {
   if (!req.user) {
-    res.status(401).json({ error: 'Authentication required' });
-    return;
-  }
-
-  if (req.user.role !== 'organizer') {
-    res.status(403).json({ error: 'Organizer access required' });
+    res.status(401).json({ error: "Authentication required" });
     return;
   }
 

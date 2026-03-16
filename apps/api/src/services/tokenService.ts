@@ -5,7 +5,6 @@ import { query } from "../db/connection";
 export interface TokenPayload {
   userId: number;
   email: string;
-  role: "organizer" | "participant";
   participantId?: number; // Set for magic-link participants
   eventId?: number; // Set for magic-link participants
 }
@@ -62,7 +61,7 @@ export async function generateTokens(payload: TokenPayload): Promise<{
 
 /**
  * Generate access and refresh token pair for a magic-link participant
- * Participant tokens use userId: 0, role: 'participant', and include participantId + eventId claims
+ * Participant tokens use userId: 0 and include participantId + eventId claims
  * Refresh token is stored with participant_id (not user_id) for participant-scoped sessions
  */
 export async function generateParticipantTokens(params: {
@@ -79,7 +78,6 @@ export async function generateParticipantTokens(params: {
   const payload: TokenPayload = {
     userId: 0, // No real user account
     email: "", // No email for participants
-    role: "participant",
     participantId,
     eventId,
   };

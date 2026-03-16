@@ -53,7 +53,7 @@ router.get(
     LEFT JOIN participants giver ON a.giver_id = giver.id`;
 
     let result;
-    if (user.role === "participant") {
+    if (user.participantId !== undefined) {
       // Magic-link participant — can only see their one event
       result = await query(
         `${baseSelect} WHERE e.id = $1 GROUP BY e.id ORDER BY e.created_at DESC`,

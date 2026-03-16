@@ -65,10 +65,10 @@ router.post(
     // Hash password
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
-    // Insert new user with default 'participant' role
+    // Insert new user
     const result = await query(
-      "INSERT INTO users (email, name, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, email, name, role",
-      [email.toLowerCase(), name, passwordHash, "participant"],
+      "INSERT INTO users (email, name, password_hash) VALUES ($1, $2, $3) RETURNING id, email, name",
+      [email.toLowerCase(), name, passwordHash],
     );
 
     const user = result.rows[0];
@@ -96,7 +96,6 @@ router.post(
     const tokens = await generateTokens({
       userId: user.id,
       email: user.email,
-      role: user.role,
     });
 
     // Set refresh token in HttpOnly cookie
@@ -109,7 +108,6 @@ router.post(
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role,
       },
     });
   }),
@@ -131,7 +129,7 @@ router.post(
 
     // Query user by email
     const result = await query(
-      "SELECT id, email, name, role, password_hash FROM users WHERE email = $1",
+      "SELECT id, email, name, password_hash FROM users WHERE email = $1",
       [email.toLowerCase()],
     );
 
@@ -155,7 +153,6 @@ router.post(
     const tokens = await generateTokens({
       userId: user.id,
       email: user.email,
-      role: user.role,
     });
 
     // Set refresh token in HttpOnly cookie
@@ -168,7 +165,6 @@ router.post(
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role,
       },
     });
   }),
@@ -238,7 +234,6 @@ router.post(
           id: participant.id,
           email: "",
           name: participant.name,
-          role: "participant",
           participantId: participant.id,
           eventId: participant.event_id,
           eventName: participant.event_name,
@@ -248,7 +243,7 @@ router.post(
 
     // Regular user token: query current user info from DB
     const userResult = await query(
-      "SELECT id, email, name, role FROM users WHERE id = $1",
+      "SELECT id, email, name FROM users WHERE id = $1",
       [decoded.userId],
     );
 
@@ -262,7 +257,6 @@ router.post(
     const tokens = await generateTokens({
       userId: user.id,
       email: user.email,
-      role: user.role,
     });
 
     // Set new refresh token in HttpOnly cookie
@@ -275,7 +269,6 @@ router.post(
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role,
       },
     });
   }),

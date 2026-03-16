@@ -9,7 +9,6 @@ declare global {
       user?: {
         userId: number;
         email: string;
-        role: 'organizer' | 'participant';
         participantId?: number; // Set for magic-link participant sessions
         eventId?: number;       // Set for magic-link participant sessions
       };
@@ -47,7 +46,6 @@ export function authenticateJWT(
     req.user = {
       userId: payload.userId,
       email: payload.email,
-      role: payload.role,
       ...(payload.participantId !== undefined && { participantId: payload.participantId }),
       ...(payload.eventId !== undefined && { eventId: payload.eventId }),
     };
@@ -100,7 +98,6 @@ export function optionalAuth(
     req.user = {
       userId: payload.userId,
       email: payload.email,
-      role: payload.role,
       ...(payload.participantId !== undefined && { participantId: payload.participantId }),
       ...(payload.eventId !== undefined && { eventId: payload.eventId }),
     };

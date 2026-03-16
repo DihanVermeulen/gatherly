@@ -15,7 +15,7 @@ const router: Router = Router();
 // Prevents brute-force attacks on token redemption
 const redeemRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10,
+  max: 20,
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
@@ -111,8 +111,12 @@ router.post(
   "/redeem",
   redeemRateLimiter,
   asyncHandler(async (req: Request, res: Response) => {
-    const { token, participantName: clientParticipantName, email: clientEmail } = req.body;
-    console.log('[redeem] received token:', token);
+    const {
+      token,
+      participantName: clientParticipantName,
+      email: clientEmail,
+    } = req.body;
+    console.log("[redeem] received token:", token);
 
     // Validate token exists and is a non-empty string
     if (!token || typeof token !== "string" || token.trim().length === 0) {
@@ -121,7 +125,7 @@ router.post(
 
     // Hash the raw token to look up the stored hash
     const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
-    console.log('[redeem] computed hash:', tokenHash);
+    console.log("[redeem] computed hash:", tokenHash);
 
     // Look up the token non-destructively — token persists for reuse within 7-day window
     const lookupResult = await query(
@@ -177,10 +181,10 @@ router.post(
         const resolvedName = clientParticipantName?.trim()
           ? clientParticipantName.trim()
           : invite.invite_email
-          ? invite.invite_email.includes("@")
-            ? invite.invite_email.split("@")[0]
-            : invite.invite_email
-          : "Participant";
+            ? invite.invite_email.includes("@")
+              ? invite.invite_email.split("@")[0]
+              : invite.invite_email
+            : "Participant";
 
         // Create participant record, or return the existing one if the name is
         // already taken in this event (e.g. organizer added them manually, or
@@ -214,13 +218,16 @@ router.post(
     // check if a registered user account exists. If so, link the participant to that user
     // and return a user-scoped JWT instead.
     // Use stored invite email; fall back to client-supplied email for QR/link invites
-    const effectiveEmail = (invite.invite_email?.trim().length > 0)
-      ? invite.invite_email
-      : (clientEmail?.trim().length > 0 ? clientEmail.trim() : null);
+    const effectiveEmail =
+      invite.invite_email?.trim().length > 0
+        ? invite.invite_email
+        : clientEmail?.trim().length > 0
+          ? clientEmail.trim()
+          : null;
 
     if (effectiveEmail) {
       const userLookup = await query(
-        "SELECT id, email, name, role FROM users WHERE LOWER(email) = LOWER($1)",
+        "SELECT id, email, name FROM users WHERE LOWER(email) = LOWER($1)",
         [effectiveEmail],
       );
 
@@ -229,19 +236,21 @@ router.post(
 
         // Link participant record to the matched user account (fire-and-forget safe — non-fatal)
         try {
-          await query(
-            "UPDATE participants SET user_id = $1 WHERE id = $2",
-            [matchedUser.id, participantId],
-          );
+          await query("UPDATE participants SET user_id = $1 WHERE id = $2", [
+            matchedUser.id,
+            participantId,
+          ]);
         } catch (linkErr) {
-          console.error("Participant user_id link failed (non-fatal):", linkErr);
+          console.error(
+            "Participant user_id link failed (non-fatal):",
+            linkErr,
+          );
         }
 
         // Issue a full user-scoped JWT (not participant-scoped)
         const { accessToken, refreshToken } = await generateTokens({
           userId: matchedUser.id,
           email: matchedUser.email,
-          role: matchedUser.role,
         });
 
         res.cookie("refreshToken", refreshToken, {
@@ -258,7 +267,6 @@ router.post(
             id: matchedUser.id,
             email: matchedUser.email,
             name: matchedUser.name,
-            role: matchedUser.role,
             eventId: invite.event_id,
             eventName: invite.event_name,
           },
@@ -289,7 +297,6 @@ router.post(
         eventId: invite.event_id,
         participantName,
         eventName: invite.event_name,
-        role: "participant",
       },
     });
   }),
