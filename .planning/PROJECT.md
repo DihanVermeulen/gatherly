@@ -47,9 +47,27 @@ Participants can easily discover what gifts people actually want and claim them 
 
 ### Active
 
-<!-- Current scope for next milestone — TBD -->
+<!-- Current scope: v2.2 UI Rehaul -->
 
-(No active requirements — define in /gsd:new-milestone)
+**Screen redesigns (existing screens updated to new templates):**
+- [ ] Event Details screen → Event Hub layout (module cards: Gift Exchange, Potluck, Memories)
+- [ ] Manage Event screen → new layout with cover photo, location, guest list, active modules, global settings
+- [ ] Module Config screen → "Customize Your Event" redesign
+
+**Welcoming onboarding flow (new users, post-registration):**
+- [ ] Getting Started splash screen
+- [ ] Preferences screen — interest/category selection, saved to user profile
+- [ ] Profile Setup screen — name, bio, gift preferences (multi-step)
+
+**Potluck module (new feature):**
+- [ ] Potluck List screen — items by category, claimed/unclaimed status
+- [ ] Potluck Setup screen — configure categories + quantities (organizer)
+- [ ] Potluck Signup screen — claim an item with optional note (participant)
+
+**Backend additions:**
+- [ ] Potluck data model — categories, items, signups
+- [ ] Event: location, cover photo, allow_guest_invites, is_public fields
+- [ ] User: interests/preferences array
 
 ### Out of Scope
 
@@ -130,6 +148,15 @@ Participants can easily discover what gifts people actually want and claim them 
 | EventsProvider key={session} outside Stack.Protected | Expo Router expects only Stack.Screen inside Stack.Protected; key triggers clean remount | ✓ Good — correct Expo Router contract |
 | /lookup read-only endpoint before /redeem         | Allows event preview without consuming invite or creating participant | ✓ Good — enables back-navigation from preview |
 
+## Current Milestone: v2.2 UI Rehaul
+
+**Goal:** Implement new screen designs from screen-templates, add Welcoming onboarding flow for new users, and ship the Potluck collaboration module — backed by new API fields for location, cover photo, guest settings, user interests, and the full potluck data model.
+
+**Target features:**
+- Redesigned Event Details (Event Hub), Manage Event, and Module Config screens matching new templates
+- Welcoming onboarding: Getting Started splash + Preferences (interests) + Profile Setup, shown once after registration
+- Potluck module: Setup (organizer), List (everyone), Signup (participant)
+
 ---
 
-_Last updated: 2026-03-16 after v2.1 milestone complete_
+_Last updated: 2026-03-17 after v2.2 milestone started_

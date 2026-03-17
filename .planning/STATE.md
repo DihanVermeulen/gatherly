@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-03-16)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** v2.2 — Planning next milestone
+**Current focus:** v2.2 UI Rehaul — Defining requirements
 
 ## Current Position
 
-Phase: Not started
-Plan: Not started
-Status: Ready to plan next milestone
-Last activity: 2026-03-16 — v2.1 Gatherly Mobile milestone complete (archived)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements for v2.2
+Last activity: 2026-03-17 — Milestone v2.2 UI Rehaul started
 
 Progress: [████████████████████] v2.1 complete
 
@@ -79,4 +79,4 @@ Last session: 2026-03-16 UTC
 Stopped at: v2.1 milestone archived and tagged
 Resume file: None
 
-Next step: `/gsd:new-milestone` to define v2.2 goals, requirements, and roadmap.
+Next step: Define requirements and create roadmap for v2.2 UI Rehaul.
