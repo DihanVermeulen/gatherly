@@ -2,40 +2,35 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-16)
+See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** v2.2 UI Rehaul — Defining requirements
+**Current focus:** v2.2 UI Rehaul — Phase 30: Infrastructure — Migration and API
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 30 of 33 (Infrastructure — Migration and API)
 Plan: —
-Status: Defining requirements for v2.2
-Last activity: 2026-03-17 — Milestone v2.2 UI Rehaul started
+Status: Ready to plan
+Last activity: 2026-03-18 — v2.2 roadmap created (4 phases, 22 requirements mapped)
 
-Progress: [████████████████████] v2.1 complete
+Progress: [████████████████████░░░░] v2.1 complete, v2.2 starting
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 71 (27 v2.0 + 10 v2.1-core + 24 v2.1-extended)
-- Average duration: —
+- Total plans completed: 71 (27 v2.0 + 44 v2.1)
+- Average duration: ~5m
 - Total execution time: —
 
-**By Phase (v2.1):**
+**By Phase (v2.2 — pending):**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| v2.0 (1–10) | 27 | — | — |
-| v2.1 Phase 11 | 2/2 | ~8m | ~4m |
-| v2.1 Phase 12 | 2/2 | ~12m | ~6m |
-| v2.1 Phase 13 | 2/2 | ~9m | ~4.5m |
-| v2.1 Phase 14 | 2/2 | ~7m | ~3.5m |
-| v2.1 Phase 15 | 2/2 | ~7m | ~3.5m |
-| v2.1 Phase 16 | 2/2 | — | — |
-| v2.1 Phase 17 | 2/2 | ~10m | ~5m |
-| v2.1 Phase 19 | 5/5 | ~18m | ~4.5m |
+| 30. Infrastructure | TBD | — | — |
+| 31. Onboarding Screens | TBD | — | — |
+| 32. Screen Redesigns | TBD | — | — |
+| 33. Potluck Screens | TBD | — | — |
 
 *Updated after each plan completion*
 
@@ -47,36 +42,32 @@ Progress: [████████████████████] v2.1 co
 - Screen templates required before implementing any screen — if missing, ask user to create it
 - SecureStore for token persistence — accessToken + user JSON; refreshToken lives in HttpOnly cookie only
 - Use `npm install --ignore-scripts` in gatherly-mobile — pnpm virtual store dir length mismatch
-- EventsProvider key={session ?? 'unauthenticated'} OUTSIDE Stack.Protected — React destroys/remounts on session change
-- participantId-as-session-discriminant: user.participantId !== undefined = magic-link participant; absence = full account user — role field dropped from JWT, DB, and all clients
-- /lookup endpoint read-only pattern: POST /api/auth/magic-link/lookup — no participant creation, no token consumption
-- pendingToken pattern for name-prompt: re-calls /redeem with user-supplied participantName
-- JoinState machine pattern: explicit union type + switch in renderContent()
-- SQLite singleton pattern: module-level let db = null in database.ts
-- isConnected !== false pattern for offline detection — null (NetInfo initializing) treated as online
-- app.json YOUR_DOMAIN placeholder pattern — replace with production domain before EAS Build
+- participantId-as-discriminant: user.participantId !== undefined = magic-link participant; absence = full account user
 - fire-and-forget emails: sendX() called without await after route commits
+- cover_photo must store URL string (not base64) in events table — list endpoint returns hasCoverPhoto flag only
+- onboarding_complete is server-side source of truth — SecureStore is cache only, not authoritative
+- Onboarding guard: check user.participantId === undefined before redirect — magic-link sessions must never hit onboarding flow
 
 ### Pending Todos
 
-- `.planning/todos/pending/2026-03-10-phase-26-planning.md` — Plan Phase 26 (Public Wishlist + Push Notifications + Groups)
+- `.planning/todos/pending/2026-03-10-phase-26-planning.md` — Plan Phase 26 (Public Wishlist + Push Notifications + Groups) — deferred to v2.3+
 
 ### Tech Debt
 
-- join.tsx: add `await refreshEvents()` after `invitesApi.accept()` before `setJoinState("success")` (GAP-01 from v2.1 audit)
+- join.tsx: add `await refreshEvents()` after `invitesApi.accept()` before `setJoinState("success")` (GAP-01)
 - assetlinks.json SHA-256 fingerprint is a placeholder — replace before Android App Links work in production
 - associatedDomains uses YOUR_DOMAIN placeholder — replace before iOS Universal Links work in production
-- modules-config, polls, rsvp routes not registered in _layout.tsx Stack.Protected (cosmetic header config only)
 
 ### Pending DB Migrations for New Environments
 
-- Migration 012: `psql -d gatherly -f apps/api/src/db/migrations/012-phase27-account-linking.sql`
-- Migration 013: `psql -d gatherly -f apps/api/src/db/migrations/013-remove-role-from-users.sql` — also rotate JWT_SECRET + REFRESH_SECRET
+- Migration 012 (v2.1): `psql -d gatherly -f apps/api/src/db/migrations/012-phase27-account-linking.sql`
+- Migration 013 (v2.1): `psql -d gatherly -f apps/api/src/db/migrations/013-remove-role-from-users.sql` — also rotate JWT_SECRET + REFRESH_SECRET
+- Migration 014 (v2.2): will be created in Phase 30 — potluck tables + events/users new columns
 
 ## Session Continuity
 
-Last session: 2026-03-16 UTC
-Stopped at: v2.1 milestone archived and tagged
+Last session: 2026-03-18 UTC
+Stopped at: v2.2 roadmap created — Phases 30–33 defined
 Resume file: None
 
-Next step: Define requirements and create roadmap for v2.2 UI Rehaul.
+Next step: Run `/gsd:plan-phase 30` to plan Phase 30 (Infrastructure).
