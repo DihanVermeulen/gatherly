@@ -25,6 +25,10 @@ router.get(
       e.wishlist_deadline,
       e.feature_flags,
       e.plan_tier,
+      e.location,
+      e.allow_guest_invites,
+      e.is_public,
+      e.cover_photo IS NOT NULL AS has_cover_photo,
       COALESCE(json_agg(DISTINCT p.name) FILTER (WHERE p.name IS NOT NULL), '[]') as people,
       COALESCE(
         json_agg(
@@ -87,6 +91,10 @@ router.get(
       wishlistDeadline: row.wishlist_deadline || null,
       featureFlags: row.feature_flags || {},
       planTier: row.plan_tier || 'free',
+      hasCoverPhoto: row.has_cover_photo || false,
+      location: row.location || null,
+      allowGuestInvites: row.allow_guest_invites || false,
+      isPublic: row.is_public || false,
     }));
 
     res.json(events);
@@ -201,6 +209,10 @@ router.get(
       wishlistDeadline: event.wishlist_deadline || null,
       featureFlags: event.feature_flags || {},
       planTier: event.plan_tier || 'free',
+      coverPhotoUrl: event.cover_photo || null,
+      location: event.location || null,
+      allowGuestInvites: event.allow_guest_invites || false,
+      isPublic: event.is_public || false,
       totalWishlistCount: wishlistStats.total_wishlist_count,
       claimedCount: wishlistStats.claimed_count,
     });
@@ -856,6 +868,11 @@ async function fetchEventById(id: string) {
     eventDate: event.event_date || null,
     wishlistDeadline: event.wishlist_deadline || null,
     featureFlags: event.feature_flags || {},
+    planTier: event.plan_tier || 'free',
+    coverPhotoUrl: event.cover_photo || null,
+    location: event.location || null,
+    allowGuestInvites: event.allow_guest_invites || false,
+    isPublic: event.is_public || false,
     totalWishlistCount: wishlistStats.total_wishlist_count,
     claimedCount: wishlistStats.claimed_count,
   };
