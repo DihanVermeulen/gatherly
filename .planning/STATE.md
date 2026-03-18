@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 30 of 33 (Infrastructure — Migration and API)
-Plan: 03 of 04
-Status: In progress
-Last activity: 2026-03-18 — Completed 30-03-PLAN.md (events API — cover photo and new fields)
+Plan: 04 of 04
+Status: Phase complete
+Last activity: 2026-03-18 — Completed 30-04-PLAN.md (potluck API routes)
 
-Progress: [████████████████████░░░░] v2.1 complete, v2.2 Plan 03/04 done
+Progress: [████████████████████████] v2.1 complete, v2.2 Phase 30 done (4/4 plans)
 
 ## Performance Metrics
 
@@ -52,6 +52,7 @@ Progress: [████████████████████░░░
 - Users API (30-02): GET /api/users/me returns all new profile fields; PUT /api/users/me is a dynamic patch — null clears bio/avatarUrl, onboardingComplete=false silently ignored (one-way), empty body returns 400
 - Patch pattern: 'field in body' check + parallel params[]/clauses[] arrays + JSON.stringify for JSONB — use this pattern for future dynamic UPDATE routes
 - Events API (30-03): list returns hasCoverPhoto boolean (no URL), detail/fetchEventById return coverPhotoUrl + location + allowGuestInvites + isPublic; PUT uses $1-$9 SET + $10 WHERE id with String(bool) coercion for optional boolean updates
+- Potluck API (30-04): participantName sourced from request body for both token types; slot_taken (409) covers both full-slot and duplicate-participant cases; SELECT FOR UPDATE race guard pattern for slot booking
 
 ### Pending Todos
 
@@ -71,8 +72,8 @@ Progress: [████████████████████░░░
 
 ## Session Continuity
 
-Last session: 2026-03-18T11:39:12Z
-Stopped at: Completed 30-03-PLAN.md — events API cover photo and new columns
+Last session: 2026-03-18T11:46:00Z
+Stopped at: Completed 30-04-PLAN.md — potluck API routes (Phase 30 complete)
 Resume file: None
 
-Next step: Execute 30-04-PLAN.md (mobile API client updates).
+Next step: Execute Phase 31 (Onboarding Screens).
