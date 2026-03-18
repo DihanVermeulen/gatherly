@@ -37,16 +37,18 @@ See `.planning/milestones/v2.1-ROADMAP.md` for full phase details.
 **Depends on**: Phase 29 (v2.1 complete)
 **Requirements**: INFRA-01, INFRA-02, INFRA-03, INFRA-04, INFRA-05, INFRA-06, INFRA-07
 **Success Criteria** (what must be TRUE):
-  1. DB migration `012-phase-v22.sql` runs cleanly and adds `module_potluck_categories`, `module_potluck_signups`, four new `events` columns, and five new `users` columns including `onboarding_complete`
+  1. DB migration `014-phase30-v22.sql` runs cleanly and adds `module_potluck_categories`, `module_potluck_signups`, four new `events` columns, and five new `users` columns including `onboarding_complete`
   2. `GET /api/users/me` returns `onboardingComplete`, `interests`, `bio`, and `avatarUrl` fields
   3. `PUT /api/users/me` accepts a partial patch object (not positional `name` string) and updates any combination of `name`, `bio`, `interests`, `avatarUrl`, `onboardingComplete`
   4. Events list endpoint returns `hasCoverPhoto: boolean` without embedding base64 image data
   5. Potluck API routes exist for category CRUD and signup CRUD, returning 409 with "slot just taken" when a race conflict is detected
-**Plans**: TBD
+**Plans:** 4 plans
 
 Plans:
-- [ ] 30-01: DB migration — potluck tables, events columns, users columns
-- [ ] 30-02: API — users route patch refactor, events route new fields, potluck routes
+- [ ] 30-01-PLAN.md — DB migration (potluck tables, events columns, users columns)
+- [ ] 30-02-PLAN.md — Users endpoint refactor (GET + PUT /api/users/me patch-style)
+- [ ] 30-03-PLAN.md — Events endpoint updates (hasCoverPhoto, coverPhotoUrl, new columns)
+- [ ] 30-04-PLAN.md — Potluck routes (category CRUD + signup CRUD with race guard)
 
 #### Phase 31: Onboarding Screens
 **Goal**: New users are welcomed into the app through a guided first-run experience that captures preferences and profile data, shown once per account and never triggered for magic-link participant sessions.
@@ -117,7 +119,7 @@ Plans:
 | 27. Smart Invite Join + Account Linking | v2.1 | 4/4 | Complete | 2026-03-13 |
 | 28. Remove Account Roles | v2.1 | 1/1 | Complete | 2026-03-16 |
 | 29. Phase 27 Fix — Smart Join Flow | v2.1 | 3/3 | Complete | 2026-03-13 |
-| 30. Infrastructure — Migration and API | v2.2 | 0/2 | Not started | - |
+| 30. Infrastructure — Migration and API | v2.2 | 0/4 | Not started | - |
 | 31. Onboarding Screens | v2.2 | 0/2 | Not started | - |
 | 32. Screen Redesigns | v2.2 | 0/2 | Not started | - |
 | 33. Potluck Screens | v2.2 | 0/2 | Not started | - |
