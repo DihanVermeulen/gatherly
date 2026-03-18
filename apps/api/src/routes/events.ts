@@ -225,15 +225,15 @@ router.post(
   authenticateJWT,
   requireOrganizer,
   asyncHandler(async (req: Request, res: Response) => {
-    const { name, coupleCrossing = false, eventDate, wishlistDeadline, featureFlags = {} } = req.body;
+    const { name, coupleCrossing = false, eventDate, wishlistDeadline, featureFlags = {}, location, coverPhoto, allowGuestInvites, isPublic } = req.body;
 
     if (!name || !name.trim()) {
       return res.status(400).json({ error: "Event name is required" });
     }
 
     const result = await query(
-      "INSERT INTO events (name, couple_crossing, organizer_id, event_date, wishlist_deadline, feature_flags) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-      [name.trim(), coupleCrossing, (req as any).user.userId, eventDate || null, wishlistDeadline || null, JSON.stringify(featureFlags)],
+      "INSERT INTO events (name, couple_crossing, organizer_id, event_date, wishlist_deadline, feature_flags, location, cover_photo, allow_guest_invites, is_public) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *",
+      [name.trim(), coupleCrossing, (req as any).user.userId, eventDate || null, wishlistDeadline || null, JSON.stringify(featureFlags), location || null, coverPhoto || null, allowGuestInvites || false, isPublic || false],
     );
 
     const event = result.rows[0];
@@ -258,6 +258,11 @@ router.post(
       wishlistDeadline: event.wishlist_deadline || null,
       featureFlags: event.feature_flags || {},
       planTier: event.plan_tier || 'free',
+      hasCoverPhoto: event.cover_photo != null,
+      coverPhotoUrl: event.cover_photo || null,
+      location: event.location || null,
+      allowGuestInvites: event.allow_guest_invites || false,
+      isPublic: event.is_public || false,
     });
   }),
 );
@@ -273,7 +278,7 @@ router.put(
       await client.query("BEGIN");
 
       const { id } = req.params;
-      const { name, coupleCrossing, people, couples, assignments, eventDate, wishlistDeadline, featureFlags } = req.body;
+      const { name, coupleCrossing, people, couples, assignments, eventDate, wishlistDeadline, featureFlags, location, coverPhoto, allowGuestInvites, isPublic } = req.body;
 
       // Update event basic info
       await client.query(
@@ -282,9 +287,13 @@ router.put(
           couple_crossing = COALESCE($2, couple_crossing),
           event_date = CASE WHEN $3::text IS NOT NULL THEN $3::timestamp ELSE event_date END,
           wishlist_deadline = CASE WHEN $4::text IS NOT NULL THEN $4::timestamp ELSE wishlist_deadline END,
-          feature_flags = CASE WHEN $5::text IS NOT NULL THEN $5::jsonb ELSE feature_flags END
-        WHERE id = $6`,
-        [name, coupleCrossing, eventDate || null, wishlistDeadline || null, featureFlags ? JSON.stringify(featureFlags) : null, id],
+          feature_flags = CASE WHEN $5::text IS NOT NULL THEN $5::jsonb ELSE feature_flags END,
+          location = CASE WHEN $6::text IS NOT NULL THEN $6::text ELSE location END,
+          cover_photo = CASE WHEN $7::text IS NOT NULL THEN $7::text ELSE cover_photo END,
+          allow_guest_invites = CASE WHEN $8::text IS NOT NULL THEN $8::boolean ELSE allow_guest_invites END,
+          is_public = CASE WHEN $9::text IS NOT NULL THEN $9::boolean ELSE is_public END
+        WHERE id = $10`,
+        [name, coupleCrossing, eventDate || null, wishlistDeadline || null, featureFlags ? JSON.stringify(featureFlags) : null, location || null, coverPhoto || null, allowGuestInvites != null ? String(allowGuestInvites) : null, isPublic != null ? String(isPublic) : null, id],
       );
 
       // If people array is provided, sync participants
