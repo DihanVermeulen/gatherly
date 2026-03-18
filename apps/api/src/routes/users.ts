@@ -16,7 +16,7 @@ router.get(
     }
 
     const userResult = await query(
-      "SELECT id, email, name, created_at FROM users WHERE id = $1",
+      "SELECT id, email, name, bio, interests, avatar_url, onboarding_complete, created_at FROM users WHERE id = $1",
       [user.userId],
     );
 
@@ -34,6 +34,10 @@ router.get(
       id: u.id,
       email: u.email,
       name: u.name,
+      bio: u.bio ?? null,
+      interests: u.interests ?? [],
+      avatarUrl: u.avatar_url ?? null,
+      onboardingComplete: u.onboarding_complete,
       createdAt: u.created_at,
       eventsOrganized: parseInt(eventsResult.rows[0].count, 10) || 0,
     });
