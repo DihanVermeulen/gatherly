@@ -31,13 +31,13 @@
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: DB migration adds `module_potluck_categories` and `module_potluck_signups` tables with UNIQUE constraint for race-safe claiming
-- [ ] **INFRA-02**: Potluck API routes in `modules.ts`: category CRUD, signup CRUD with ON CONFLICT 409 race guard, plan-tier check
-- [ ] **INFRA-03**: Events table gains `location`, `cover_photo_url`, `allow_guest_invites`, `is_public` columns
-- [ ] **INFRA-04**: Events list endpoint returns `hasCoverPhoto: boolean` flag only (not base64) to prevent payload bloat
-- [ ] **INFRA-05**: Users table gains `bio`, `interests TEXT[]`, `avatar_url`, `onboarding_complete` columns
-- [ ] **INFRA-06**: `PUT /api/users/me` refactored from positional `name: string` to patch-style `Partial<UserUpdate>` to support all new fields
-- [ ] **INFRA-07**: `GET /api/users/me` returns all new fields (`onboardingComplete`, `interests`, `bio`, `avatarUrl`)
+- [x] **INFRA-01**: DB migration adds `module_potluck_categories` and `module_potluck_signups` tables with UNIQUE constraint for race-safe claiming
+- [x] **INFRA-02**: Potluck API routes in `modules.ts`: category CRUD, signup CRUD with ON CONFLICT 409 race guard, plan-tier check
+- [x] **INFRA-03**: Events table gains `location`, `cover_photo_url`, `allow_guest_invites`, `is_public` columns
+- [x] **INFRA-04**: Events list endpoint returns `hasCoverPhoto: boolean` flag only (not base64) to prevent payload bloat
+- [x] **INFRA-05**: Users table gains `bio`, `interests TEXT[]`, `avatar_url`, `onboarding_complete` columns
+- [x] **INFRA-06**: `PUT /api/users/me` refactored from positional `name: string` to patch-style `Partial<UserUpdate>` to support all new fields
+- [x] **INFRA-07**: `GET /api/users/me` returns all new fields (`onboardingComplete`, `interests`, `bio`, `avatarUrl`)
 
 ## Future Requirements
 
@@ -67,13 +67,13 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | Phase 30 | Pending |
-| INFRA-02 | Phase 30 | Pending |
-| INFRA-03 | Phase 30 | Pending |
-| INFRA-04 | Phase 30 | Pending |
-| INFRA-05 | Phase 30 | Pending |
-| INFRA-06 | Phase 30 | Pending |
-| INFRA-07 | Phase 30 | Pending |
+| INFRA-01 | Phase 30 | Complete |
+| INFRA-02 | Phase 30 | Complete |
+| INFRA-03 | Phase 30 | Complete |
+| INFRA-04 | Phase 30 | Complete |
+| INFRA-05 | Phase 30 | Complete |
+| INFRA-06 | Phase 30 | Complete |
+| INFRA-07 | Phase 30 | Complete |
 | ONBOARD-01 | Phase 31 | Pending |
 | ONBOARD-02 | Phase 31 | Pending |
 | ONBOARD-03 | Phase 31 | Pending |

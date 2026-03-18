@@ -45,10 +45,10 @@ See `.planning/milestones/v2.1-ROADMAP.md` for full phase details.
 **Plans:** 4 plans
 
 Plans:
-- [ ] 30-01-PLAN.md — DB migration (potluck tables, events columns, users columns)
-- [ ] 30-02-PLAN.md — Users endpoint refactor (GET + PUT /api/users/me patch-style)
-- [ ] 30-03-PLAN.md — Events endpoint updates (hasCoverPhoto, coverPhotoUrl, new columns)
-- [ ] 30-04-PLAN.md — Potluck routes (category CRUD + signup CRUD with race guard)
+- [x] 30-01-PLAN.md — DB migration (potluck tables, events columns, users columns)
+- [x] 30-02-PLAN.md — Users endpoint refactor (GET + PUT /api/users/me patch-style)
+- [x] 30-03-PLAN.md — Events endpoint updates (hasCoverPhoto, coverPhotoUrl, new columns)
+- [x] 30-04-PLAN.md — Potluck routes (category CRUD + signup CRUD with race guard)
 
 #### Phase 31: Onboarding Screens
 **Goal**: New users are welcomed into the app through a guided first-run experience that captures preferences and profile data, shown once per account and never triggered for magic-link participant sessions.
@@ -119,7 +119,7 @@ Plans:
 | 27. Smart Invite Join + Account Linking | v2.1 | 4/4 | Complete | 2026-03-13 |
 | 28. Remove Account Roles | v2.1 | 1/1 | Complete | 2026-03-16 |
 | 29. Phase 27 Fix — Smart Join Flow | v2.1 | 3/3 | Complete | 2026-03-13 |
-| 30. Infrastructure — Migration and API | v2.2 | 0/4 | Not started | - |
+| 30. Infrastructure — Migration and API | v2.2 | 4/4 | Complete | 2026-03-18 |
 | 31. Onboarding Screens | v2.2 | 0/2 | Not started | - |
 | 32. Screen Redesigns | v2.2 | 0/2 | Not started | - |
 | 33. Potluck Screens | v2.2 | 0/2 | Not started | - |
