@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 30 of 33 (Infrastructure — Migration and API)
-Plan: 01 of 04
+Plan: 02 of 04
 Status: In progress
-Last activity: 2026-03-18 — Completed 30-01-PLAN.md (database migration)
+Last activity: 2026-03-18 — Completed 30-02-PLAN.md (users API refactor)
 
-Progress: [████████████████████░░░░] v2.1 complete, v2.2 Plan 01/04 done
+Progress: [████████████████████░░░░] v2.1 complete, v2.2 Plan 02/04 done
 
 ## Performance Metrics
 
@@ -49,6 +49,8 @@ Progress: [████████████████████░░░
 - Onboarding guard: check user.participantId === undefined before redirect — magic-link sessions must never hit onboarding flow
 - Trigger function name is update_updated_at_column() — not set_updated_at(); always use update_updated_at_column() in new migrations
 - Phase 30 DB migration (014-phase30-v22.sql) applied — potluck tables, events columns (location/cover_photo/allow_guest_invites/is_public), users columns (bio/interests/avatar_url/onboarding_complete) all exist
+- Users API (30-02): GET /api/users/me returns all new profile fields; PUT /api/users/me is a dynamic patch — null clears bio/avatarUrl, onboardingComplete=false silently ignored (one-way), empty body returns 400
+- Patch pattern: 'field in body' check + parallel params[]/clauses[] arrays + JSON.stringify for JSONB — use this pattern for future dynamic UPDATE routes
 
 ### Pending Todos
 
@@ -68,8 +70,8 @@ Progress: [████████████████████░░░
 
 ## Session Continuity
 
-Last session: 2026-03-18T11:34:06Z
-Stopped at: Completed 30-01-PLAN.md — database migration 014-phase30-v22.sql
+Last session: 2026-03-18T11:38:05Z
+Stopped at: Completed 30-02-PLAN.md — users API expanded GET + patch-style PUT
 Resume file: None
 
-Next step: Execute 30-02-PLAN.md (Events API endpoints).
+Next step: Execute 30-03-PLAN.md (Events API endpoints).
