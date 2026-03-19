@@ -60,11 +60,11 @@ Plans:
   3. A user who completes or skips the onboarding flow is never shown it again — on any device or after reinstall
   4. A participant who joins via magic link is sent directly into the app with no onboarding screens shown
   5. The preferences screen allows selecting from 13 interest categories (minimum 3 or Skip) with a search bar and haptic feedback on toggles
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 31-01: AuthContext + navigation guard + welcome splash screen
-- [ ] 31-02: Preferences screen + Profile Setup screen + onboarding completion flow
+- [ ] 31-01-PLAN.md — Backend auth + types + AuthContext + welcome carousel + navigation guards
+- [ ] 31-02-PLAN.md — Profile Setup screen + Preferences screen + onboarding completion flow
 
 #### Phase 32: Screen Redesigns
 **Goal**: The three primary event screens match their new design templates, giving the app a consistent updated layout with cover photo, location, module cards, and global settings.
