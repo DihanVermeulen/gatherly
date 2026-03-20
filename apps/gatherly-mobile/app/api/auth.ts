@@ -8,6 +8,8 @@ export interface User {
   participantId?: number;
   eventId?: number;
   eventName?: string;
+  // Full-account-only field (absent for magic-link participants)
+  onboardingComplete?: boolean;
 }
 
 export interface AuthResponse {
@@ -84,6 +86,7 @@ export const authApi = {
             name: string;
             eventId: number;
             eventName: string;
+            onboardingComplete?: boolean;
           }
         | {
             // Participant-scoped response (no account, magic-link only)
@@ -111,6 +114,9 @@ export const authApi = {
           name: userData.name,
           eventId: userData.eventId,
           eventName: userData.eventName,
+          ...(userData.onboardingComplete !== undefined
+            ? { onboardingComplete: userData.onboardingComplete }
+            : {}),
         },
       };
     }

@@ -43,7 +43,7 @@ export default function ProfileScreen() {
     setSaving(true);
     setSaveError(null);
     try {
-      const updated = await usersApi.updateMe(nameInput.trim());
+      const updated = await usersApi.updateMe({ name: nameInput.trim() });
       setProfile((prev) => (prev ? { ...prev, name: updated.name } : prev));
       setEditing(false);
     } catch (err: any) {

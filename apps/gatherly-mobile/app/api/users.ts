@@ -6,6 +6,10 @@ export interface UserProfile {
   name: string;
   createdAt: string;
   eventsOrganized: number;
+  bio: string | null;
+  interests: string[];
+  avatarUrl: string | null;
+  onboardingComplete: boolean;
 }
 
 export const usersApi = {
@@ -14,8 +18,14 @@ export const usersApi = {
     return response.data;
   },
 
-  updateMe: async (name: string): Promise<{ id: number; email: string; name: string }> => {
-    const response = await apiClient.put("/api/users/me", { name });
+  updateMe: async (patch: {
+    name?: string;
+    bio?: string | null;
+    interests?: string[];
+    avatarUrl?: string | null;
+    onboardingComplete?: true;
+  }): Promise<UserProfile> => {
+    const response = await apiClient.put("/api/users/me", patch);
     return response.data;
   },
 };

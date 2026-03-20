@@ -108,6 +108,7 @@ router.post(
         id: user.id,
         email: user.email,
         name: user.name,
+        onboardingComplete: false,
       },
     });
   }),
@@ -129,7 +130,7 @@ router.post(
 
     // Query user by email
     const result = await query(
-      "SELECT id, email, name, password_hash FROM users WHERE email = $1",
+      "SELECT id, email, name, password_hash, onboarding_complete FROM users WHERE email = $1",
       [email.toLowerCase()],
     );
 
@@ -165,6 +166,7 @@ router.post(
         id: user.id,
         email: user.email,
         name: user.name,
+        onboardingComplete: user.onboarding_complete,
       },
     });
   }),
@@ -243,7 +245,7 @@ router.post(
 
     // Regular user token: query current user info from DB
     const userResult = await query(
-      "SELECT id, email, name FROM users WHERE id = $1",
+      "SELECT id, email, name, onboarding_complete FROM users WHERE id = $1",
       [decoded.userId],
     );
 
@@ -269,6 +271,7 @@ router.post(
         id: user.id,
         email: user.email,
         name: user.name,
+        onboardingComplete: user.onboarding_complete,
       },
     });
   }),

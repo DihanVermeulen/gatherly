@@ -17,6 +17,7 @@ type AuthContextValue = {
   isLoading: boolean;
   signIn: (accessToken: string, user: User) => Promise<void>;
   signOut: () => Promise<void>;
+  updateUser: (patch: Partial<User>) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -70,6 +71,14 @@ export function SessionProvider({ children }: PropsWithChildren) {
     setUser(newUser);
   };
 
+  const updateUser = async (patch: Partial<User>): Promise<void> => {
+    const updated = user ? { ...user, ...patch } : null;
+    if (updated) {
+      await SecureStore.setItemAsync(USER_KEY, JSON.stringify(updated));
+      setUser(updated);
+    }
+  };
+
   const signOut = async (): Promise<void> => {
     try {
       console.log("Signing out...");
@@ -106,6 +115,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
         isLoading,
         signIn,
         signOut,
+        updateUser,
       }}
     >
       {children}
