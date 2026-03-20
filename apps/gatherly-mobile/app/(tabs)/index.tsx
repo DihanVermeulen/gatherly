@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useCallback } from "react";
+import React, { useState, useRef, useMemo, useCallback, useEffect } from "react";
 import { useColorScheme } from "@/components/useColorScheme";
 import BottomSheet, {
   BottomSheetView,
@@ -32,6 +32,7 @@ import { Fab, FabIcon } from "@/components/ui/fab";
 import { useRouter } from "expo-router";
 import { eventsApi } from "@/app/api/events";
 import { TEvent } from "@/app/api/events";
+import { useSession } from "@/app/contexts/AuthContext";
 
 // Filter pill types
 type FilterType = "All" | "Planning" | "Active";
@@ -55,6 +56,15 @@ export default function EventsScreen() {
   } = useEvents();
 
   const router = useRouter();
+  const { user } = useSession();
+
+  // Redirect to onboarding if user hasn't completed it.
+  // Skip for magic-link participants (they have participantId, not onboardingComplete).
+  useEffect(() => {
+    if (user && !user.participantId && user.onboardingComplete === false) {
+      router.replace("/onboarding/profile-setup" as never);
+    }
+  }, [user?.onboardingComplete]);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");

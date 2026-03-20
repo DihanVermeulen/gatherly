@@ -135,10 +135,22 @@ function RootLayoutNav() {
                         name="modal"
                         options={{ presentation: "modal" }}
                       />
+                      <Stack.Screen
+                        name="onboarding/profile-setup"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="onboarding/preferences"
+                        options={{ headerShown: false }}
+                      />
                     </Stack.Protected>
 
                     {/* Unauthenticated routes — only accessible when no session */}
                     <Stack.Protected guard={!session}>
+                      <Stack.Screen
+                        name="welcome"
+                        options={{ headerShown: false }}
+                      />
                       <Stack.Screen
                         name="sign-in"
                         options={{ headerShown: false }}
