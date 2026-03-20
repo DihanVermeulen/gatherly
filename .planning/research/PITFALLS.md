@@ -1,815 +1,395 @@
-# Domain Pitfalls: Adding Wishlists, Claiming, and Invites to gatherly
+# Domain Pitfalls: Gatherly v2.2 UI Rehaul
 
-**Domain:** gatherly Gift Exchange Enhancement
-**Researched:** 2026-02-06
-**Context:** Adding wishlist, claiming, and invite features to existing gatherly application with complex assignment algorithm
+**Domain:** Adding potluck, onboarding, event schema extensions, and image picker to an existing React Native / Expo Router app
+**Researched:** 2026-03-17
+**Context:** Subsequent milestone. Existing app has: JWT auth (organizer vs participant discriminant), magic-link join flow, gift wishlists with anonymous claiming, SQLite cache, `_layout.tsx` Stack.Protected auth gating, `EventsContext` reducer, and web + mobile clients sharing one API.
+
+---
 
 ## Critical Pitfalls
 
 Mistakes that cause rewrites or major issues.
 
-### Pitfall 1: Privacy Leaks Through Claiming Patterns
+---
 
-**What goes wrong:** Claiming mechanism reveals who is buying for whom, breaking the core gatherly anonymity promise.
+### Pitfall 1: Potluck Signup Race Condition — The Claim System Already Got This Right, But Potluck Is Different
 
-**Why it happens:** The current system shows "Claimed by: You" immediately when someone claims a gift (line 289 in gifts.tsx). When wishlists become person-specific instead of event-wide, participants can deduce their gatherly by monitoring which gifts get claimed on their wishlist. If Alice sees her wishlist items being claimed, and she knows Bob claimed them, she knows Bob is her gatherly - defeating the entire purpose.
+**Feature area:** Potluck module
 
-**Consequences:**
+**What goes wrong:** Two participants tap "Sign up" for the same potluck slot simultaneously. Unlike wishlists (which use `ON CONFLICT DO NOTHING` in `wishlist_claims`), the potluck table is new — and the pattern for anonymous claiming does not carry over automatically.
 
-- Users lose trust in the application's anonymity guarantee
-- Core gatherly experience is ruined
-- Negative reviews mentioning "broken" or "reveals who your santa is"
-- Potential need to redesign the entire claiming/wishlist flow
+**Why it happens:** The wishlist claim route (`wishlists.ts:337-350`) already handles this correctly with an atomic `INSERT ... ON CONFLICT DO NOTHING` and a `rowCount === 0` check that returns 409. When the potluck module is built as a new table, the developer models it after the wishlist data model but misses the critical `UNIQUE` constraint on `(slot_id)` or `(slot_id, participant_id)` that makes the ON CONFLICT work. Without that constraint, ON CONFLICT never fires.
+
+**Specific risk in this codebase:** The `event_modules` table already exists; potluck slots will be a new table. The `module_polls` and `module_rsvp_responses` tables both use UNIQUE constraints for their conflict guards. Potluck slots must do the same — but potluck also allows a participant to sign up for *multiple* slots (bring a dish AND drinks), so the constraint shape is `UNIQUE(slot_id, participant_id)` not `UNIQUE(slot_id)`.
+
+**Consequences:** Two people both see "slot available" → both sign up → organizer sees duplicate names → confusion and over-provisioning.
 
 **Prevention:**
+- Add `UNIQUE(slot_id, participant_id)` to the potluck signups table (not `UNIQUE(slot_id)` which would allow only one person per item).
+- If a slot has a quantity cap (e.g., "need 3 bottles of wine"), enforce the cap inside a transaction using `SELECT COUNT(*) ... FOR UPDATE` before inserting.
+- API must return `409` when the slot is full. Mobile must handle 409 with a "someone just took this slot" message and a refresh.
+- Do NOT do the cap check in application code outside a transaction — it is a TOCTOU race.
 
-- NEVER show who claimed a gift until the reveal event date
-- Store claim data server-side only, not in client state visible to wishlist owner
-- Use assignment verification: Only show claim status to the person who IS assigned to buy for that recipient
-- Add timing controls: Wishlists visible only after assignments are generated, claims visible only to the giver
-- Consider anonymous claiming: "Someone is buying this" instead of showing names
-
-**Detection Warning Signs:**
-
-- User stories like "view my wishlist and see what's claimed" without role checking
-- Database schema where `gift_claims.claimed_by` is exposed in gift GET endpoints
-- No assignment-based authorization on gift detail queries
-- Frontend state that includes claimer identity for all users
-
-**Phase to address:** Phase 1 (Data Model & Privacy) - must be foundational architecture decision
+**Warning signs:**
+- Potluck signup route does a `SELECT` then `INSERT` without a transaction or FOR UPDATE lock.
+- Missing UNIQUE constraint on the new signups table.
+- Frontend disables the button on tap but does not handle 409 gracefully.
+- No integration test that fires two concurrent signup requests.
 
 ---
 
-### Pitfall 2: Race Conditions in Gift Claiming
+### Pitfall 2: Potluck Visibility Breaks the Anonymity Model — By Design, But Must Be Explicit
 
-**What goes wrong:** Two participants simultaneously claim the same gift, resulting in double-claiming, which causes one person to buy a duplicate gift unnecessarily.
+**Feature area:** Potluck module
 
-**Why it happens:** The current claim endpoint (apps/api/src/routes/gifts.ts:133-162) checks if a gift is claimed, then inserts a claim record. This is a classic time-of-check-to-time-of-use (TOCTOU) race condition. During the race window between the SELECT and INSERT, multiple requests can see "no existing claim" and all proceed to claim.
+**What goes wrong:** The potluck module is non-anonymous by design (participants see who signed up for what). But the existing wishlists feature is anonymous (the `wishlists.ts` GET endpoint strips `claimed_by` from the response for the item's own owner). If potluck reuses any wishlist endpoint patterns without understanding this distinction, it accidentally becomes anonymous — or worse, the wishlists endpoint accidentally becomes non-anonymous.
 
-**Real-world evidence:** Per [Race Condition Exploit research](https://www.schneier.com/blog/archives/2015/05/race_condition_.html), race conditions commonly affect applications that apply mathematical functions, and can be exploited when "users can tamper with the sequence of events by applying the same discount code twice at nearly the same moment."
+**Why it happens:** The developer sees `wishlists.ts:41-61` returns `isClaimed` and `claimedByMe` but strips `claimedBy` (participant name). They copy this pattern to potluck, not realising potluck must expose `signedUpBy` to everyone. The pattern feels right because it mirrors what they already built.
 
-**Consequences:**
-
-- Multiple people claim same gift, causing coordination failures
-- Disappointed participants who bought duplicate gifts
-- Confusion about who "really" claimed the gift first
-- Data inconsistency between gift_claims table and application state
-- Trust erosion in the application's reliability
+**Consequences:** Potluck list shows "Someone signed up" instead of "Alice is bringing wine" — the whole point of potluck coordination is lost.
 
 **Prevention:**
+- Document the anonymity contract at the route level. Add a comment above each route: `// ANONYMOUS: claimed_by is hidden` (wishlists) vs `// PUBLIC: signed_up_by is visible to all event members`.
+- Potluck endpoint must JOIN to participants and return the name directly — no `claimedByMe` pattern needed.
+- The `participantId` discriminant on `req.user` must NOT be used to hide potluck data — all event members, including organizers without a `participantId`, should see names.
+- Separate API route file (`potluck.ts`) so the different privacy model is obvious from file structure.
 
-```sql
--- Use UNIQUE constraint (already exists: UNIQUE(gift_id) on gift_claims)
--- Combined with INSERT ... ON CONFLICT for atomic claim:
-
-INSERT INTO gift_claims (gift_id, claimed_by)
-VALUES ($1, $2)
-ON CONFLICT (gift_id) DO NOTHING
-RETURNING id, claimed_by;
-
--- Check rowCount: if 0, claim failed (already taken)
-```
-
-Additional strategies:
-
-- Use database transactions with SERIALIZABLE isolation level for claim operations
-- Implement optimistic locking with version numbers on gifts
-- Return proper HTTP 409 Conflict status when claim fails due to race
-- Add retry logic on frontend with exponential backoff
-- Show real-time claim updates via WebSocket/polling to reduce race window
-
-**Detection Warning Signs:**
-
-- No transaction wrapper around claim check + insert
-- Using READ COMMITTED isolation instead of SERIALIZABLE for claims
-- No ON CONFLICT handling in INSERT statements
-- Missing integration tests that simulate concurrent claims
-- No monitoring/logging for duplicate claim attempts
-
-**Phase to address:** Phase 1 (Data Model & Privacy) - atomic operations must be foundational
+**Warning signs:**
+- Potluck GET endpoint derived from wishlists GET without removing the `claimedByMe` masking logic.
+- A `participantId` check gates potluck name visibility.
+- Product spec says "participants see who signed up" but code returns `isClaimed: boolean`.
 
 ---
 
-### Pitfall 3: Data Consistency Between localStorage and API with New Features
+### Pitfall 3: Onboarding Flag Stored in the Wrong Place — Shows Again After Re-login or Token Refresh
 
-**What goes wrong:** The hybrid storage pattern (EventsContext.tsx lines 66-122) breaks down when adding wishlists, claims, and invites because the new features have complex relational data that doesn't serialize/deserialize cleanly between localStorage and PostgreSQL.
+**Feature area:** Welcoming onboarding (3 screens, show once after first registration)
 
-**Why it happens:** Current system stores simple event data (name, participants, couples, assignments) which maps 1:1 between localStorage JSON and database tables. But wishlists introduce:
+**What goes wrong:** Onboarding is gated by a flag stored in `SecureStore` or AsyncStorage on the device. The user installs the app, registers, completes onboarding. They uninstall and reinstall (or sign in on a new phone). The flag is gone — onboarding shows again on every fresh install.
 
-- Per-participant gift lists (one-to-many)
-- Claims with timestamps and status (relational integrity)
-- Invite tracking with email status, accepted/pending state
-- Possible anonymity flags that differ between giver/receiver views
+Alternatively: the flag is stored in-memory in the `SessionProvider`. The app is backgrounded and the OS kills it. On next open, `restoreSession()` succeeds (HttpOnly cookie still valid), session is restored — but the in-memory flag reset to `false`. Onboarding shows again.
 
-Per [React localStorage sync research](https://www.joshwcomeau.com/react/persisting-react-state-in-localstorage/), major pitfalls include:
+**Why it happens in this codebase:** `AuthContext.tsx` already stores the access token and user in `SecureStore`. The temptation is to add `onboardingCompleted` to `SecureStore` as well. This works on the same device, but fails after reinstall. The right home is the server: a `users` table column.
 
-- "Schema validation issues: When stored items don't follow the same schema as React state, users with outdated localStorage will experience runtime errors"
-- "Synchronization issues between tabs: If users increment in one tab, the other tab will not reflect the localStorage change"
-- "Performance problems with rapid updates: localStorage is synchronous and can cause performance issues if state changes too rapidly"
-
-**Consequences:**
-
-- Users switching between online/offline modes see inconsistent data
-- Gifts claimed in localStorage mode don't sync to database
-- Invites sent while API is down never actually send
-- Multi-tab users see stale claim status, leading to double-claims
-- Migration from old events without wishlists breaks when loading
+**Consequences:** Returning users who reinstall or change phones are forced through onboarding again. Interest selections from the first run are overwritten with defaults.
 
 **Prevention:**
+- Store `onboarding_completed` (boolean) on the `users` table, not in SecureStore or AsyncStorage.
+- `GET /api/users/me` (already exists as `usersApi.getMe()`) should return this field.
+- `_layout.tsx` reads the flag from the user profile after `restoreSession` resolves and redirects to `/onboarding` only when `onboardingCompleted === false`.
+- Registration endpoint (`POST /api/auth/register`) sets `onboarding_completed = false` on user creation.
+- A dedicated `POST /api/users/me/complete-onboarding` endpoint (or a flag on the existing `PUT /api/users/me`) sets it to `true`.
+- SecureStore may be used as a *cache* to avoid a round-trip, but the source of truth must be the server.
 
-- **Decision point:** Abandon localStorage fallback for new features OR implement proper sync
-  - Option A: Require API for wishlists/claiming/invites (simpler, recommended)
-  - Option B: Implement full sync protocol with conflict resolution (complex)
-- If keeping localStorage:
-  - Use versioned schemas: `{ version: 2, events: [...] }` with migration functions
-  - Implement `useSyncExternalStore` for proper React 18+ syncing (not useEffect)
-  - Add conflict resolution: last-write-wins with timestamps OR operational transforms
-  - Queue write-only operations (like invites) to retry when API available
-- Add feature flags to disable features when in localStorage mode
-- Show clear UI indicator: "Offline mode - claims and invites disabled"
-
-**Detection Warning Signs:**
-
-- Adding wishlist/claim state directly to localStorage-backed Event type
-- No version field in localStorage schema
-- useEffect-based sync instead of useSyncExternalStore
-- No migration path for existing localStorage events
-- No conflict resolution strategy documented
-- Tests don't cover localStorage → API → localStorage roundtrip
-
-**Phase to address:** Phase 1 (Data Model & Privacy) - architectural decision affects all subsequent work
+**Warning signs:**
+- `onboardingCompleted` read from AsyncStorage or SecureStore and never synced to server.
+- Onboarding check lives in a `useEffect` that runs before `usersApi.getMe()` has resolved.
+- `restoreSession` completes without fetching the user profile — flag is unknown during auth restore.
+- No migration adding `onboarding_completed` column to the `users` table.
 
 ---
 
-### Pitfall 4: Assignment Algorithm Broken by Wishlist Requirements
+### Pitfall 4: Onboarding Route Interacts Badly with Stack.Protected — Navigation Race
 
-**What goes wrong:** The existing complex assignment algorithm (edit.tsx lines 71-167) fails when participants must receive gifts from their wishlist, because the algorithm doesn't consider gift availability constraints.
+**Feature area:** Welcoming onboarding, `_layout.tsx`
 
-**Why it happens:** Current algorithm ensures:
+**What goes wrong:** The existing `_layout.tsx` uses `Stack.Protected` with `guard={!!session}` to redirect unauthenticated users. Onboarding must be shown to *authenticated* users who haven't completed it — a third state that `Stack.Protected` doesn't model.
 
-- Each person buys for exactly `giftCount` people
-- Each person receives exactly `giftCount` gifts
-- Couple constraints are respected
-- Balanced distribution via greedy algorithm with backtracking
+The naive fix is: after `session` is set, redirect to `/onboarding` if the flag is false. But `_layout.tsx` already has a `useEffect` that redirects to `/magic-link/[token]` or `/join` after session resolves (lines 68-87). Adding a third redirect in the same effect creates a race — the magic-link redirect and the onboarding redirect may both fire.
 
-But adding wishlists creates new constraint: "Each person must receive gifts FROM their wishlist." This transforms the problem from assignment to bipartite matching with capacity constraints - a much harder problem. If Alice's wishlist has only 2 items and she's supposed to receive 3 gifts, the algorithm becomes unsatisfiable.
+**Why it happens:** `_layout.tsx` has grown to handle several "redirect after auth" scenarios. Each scenario was added incrementally. The 100ms `setTimeout` on lines 73 and 80 was added precisely because Stack.Protected navigation needs to settle first. A third redirect would need the same treatment, and the order of priority is unclear.
 
 **Consequences:**
-
-- Assignment generation fails (current behavior: alert after 2000 attempts)
-- Users confused why assignments won't generate
-- Workaround: users add fake wishlist items just to satisfy algorithm
-- Complex debugging: "Why can't it find an assignment?"
-- Potential need to rewrite assignment algorithm entirely
+- User accepts a magic-link invite → onboarding screen intercepts → they never reach the event.
+- User registers normally → no onboarding → they land on the main tab with no context.
+- Worst case: infinite redirect loop if the onboarding route guard is inconsistent.
 
 **Prevention:**
+- Establish a clear redirect priority chain in `_layout.tsx`:
+  1. Pending magic token (highest priority — came from an external link)
+  2. Pending invite code
+  3. Onboarding not completed (lowest priority)
+- Only check for onboarding after confirming no pending magic token and no pending invite.
+- Make onboarding a `Stack.Protected`-guarded route (auth required, but inside the authenticated stack) — not a separate public route.
+- Add `onboarding` to `Stack.Protected guard={!!session}` so unauthenticated users cannot navigate to it directly.
+- Onboarding screens should NOT be dismissible by swipe (set `gestureEnabled: false` on the stack screen).
 
-- **Don't add wishlist constraints to assignment algorithm** (recommended)
-  - Keep assignment algorithm unchanged
-  - Wishlists are suggestions, not requirements
-  - Givers can buy off-wishlist gifts if needed
-- If wishlists must be enforced:
-  - Validate wishlist coverage BEFORE assignment generation
-  - Require minimum wishlist size: `wishlist.length >= giftCount`
-  - Add wishlist expansion feature: suggest similar items
-  - Change to multi-phase assignment:
-    1. Generate giver→receiver assignments (current algorithm)
-    2. Separately match gifts to assignments (bipartite matching)
-    3. Allow partial matching with clear user communication
-- Add algorithm diagnostics: "Alice needs 3 gifts but only has 2 wishlist items"
-- Provide admin override: "Generate anyway" with off-wishlist purchases allowed
-
-**Detection Warning Signs:**
-
-- User story: "Users must only receive gifts from their wishlist"
-- No validation of wishlist size vs giftCount
-- Assignment algorithm modified to consider gift availability
-- No failure mode design for unsatisfiable wishlists
-- Tests that assume every wishlist is perfectly sized
-
-**Phase to address:** Phase 2 (Wishlist Foundation) - decision needed before implementation
+**Warning signs:**
+- Multiple `useEffect` blocks in `RootLayoutNav` each attempting `router.replace()`.
+- Onboarding route accessible without a session.
+- No comment in `_layout.tsx` documenting the redirect priority order.
+- No test covering the "registered user receives magic link before completing onboarding" scenario.
 
 ---
 
-### Pitfall 5: Database Migration Breaking Existing Events
+### Pitfall 5: Optional Schema Fields Cause Type Drift Between API Response and Mobile TEvent Type
 
-**What goes wrong:** Adding new wishlist, claim, and invite tables breaks existing events stored in localStorage or database due to missing foreign key data and schema incompatibility.
+**Feature area:** New event fields: `location`, `cover_photo`, `allow_guest_invites`, `is_public`
 
-**Why it happens:** Current events have:
+**What goes wrong:** New columns are added to the `events` table as nullable (correct). The `GET /api/events` query is updated to SELECT them. But `TEvent` in `apps/gatherly-mobile/app/api/events.ts` is not updated, or is updated with non-optional types (`location: string` instead of `location: string | null`). TypeScript compiles fine because `Partial<TEvent>` is used in the update call, but runtime the field is `null` and code that does `event.location.trim()` crashes.
 
-- `participants` table with just (id, event_id, name)
-- `gifts` table at event level, not participant level
-- No invite or wishlist tables
+The inverse also happens: the API adds the field but the mobile type still does not include it, so the field is silently dropped by TypeScript's structural typing when the response is used.
 
-New schema needs:
-
-- `wishlists` table linking participants to gifts
-- `invites` table with email, status, tokens
-- `gifts` potentially moved to per-participant or restructured
-- Existing events must continue working without wishlists
-
-Per [database migration best practices](https://planetscale.com/blog/backward-compatible-databases-changes), "You should never couple your database schema and application code changes together. You can perform code deployment first, making sure new code is backward-compatible with existing schema, or perform database migration first, ensuring new schema is backward-compatible with existing code."
+**Why it happens in this codebase:** `TEvent` has grown incrementally — compare the `// Phase 22 additions` and `// Phase 24 additions` comments in `apps/gatherly-mobile/app/api/events.ts:36-45`. Each phase adds fields. The pattern is established and safe when done carefully, but `cover_photo` as a potentially large base64 string and `is_public` as a boolean with significant security implications need explicit handling.
 
 **Consequences:**
-
-- Existing events won't load after migration
-- Participants can't access their old gatherly events
-- Data loss if migration isn't properly rolled back
-- Application downtime during migration
-- Users angry about losing historical data
+- `event.location.trim()` crashes at runtime for events that have no location.
+- `event.coverPhoto` is undefined in the mobile type but the API sends it — UI never shows cover photos until someone notices the type is missing.
+- `event.isPublic` treated as falsy-by-default when it's actually `null` — events accidentally shown as private when the server sets `is_public = true`.
 
 **Prevention:**
-Use **Expand-Migrate-Contract pattern**:
+- All new event fields must be typed as nullable in `TEvent`: `location?: string | null`, `coverPhoto?: string | null`, `allowGuestInvites?: boolean | null`, `isPublic?: boolean | null`.
+- The API response mapper in `events.ts` route must explicitly map `null` values — never rely on `undefined` falling through.
+- Add a `// Phase 30 additions` comment block in `TEvent` (matching the existing pattern) so reviewers know which fields were added together.
+- The SQLite cache (`lib/cache.ts`) may need schema updates if it columns the events table — check what columns are stored.
+- The web app (`apps/web`) also consumes the API; its types need the same update.
 
-**Phase 1 - Expand:**
-
-```sql
--- Add new tables with optional relationships
-CREATE TABLE wishlists (
-  id SERIAL PRIMARY KEY,
-  participant_id INTEGER REFERENCES participants(id),
-  -- nullable for backward compatibility
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Add optional columns to existing tables
-ALTER TABLE events ADD COLUMN has_wishlists BOOLEAN DEFAULT FALSE;
-ALTER TABLE participants ADD COLUMN invite_token VARCHAR(255) NULL;
-```
-
-**Phase 2 - Migrate:**
-
-- New events: Set `has_wishlists = true`, create wishlist entries
-- Old events: Leave `has_wishlists = false`, skip wishlist features
-- UI: Show "Upgrade this event to use wishlists" button for old events
-- Gradual data backfill: Migrate old events on-demand when users request
-
-**Phase 3 - Contract:**
-
-- After 6+ months, consider making wishlists mandatory
-- Only if analytics show <5% users still using old events
-
-Additional strategies:
-
-- Add `schema_version` column to events table
-- Version-based feature flags: `if (event.schema_version >= 2) { showWishlists() }`
-- Database triggers to maintain backward compatibility
-- Comprehensive migration tests with real production data samples
-- Rollback plan documented and tested
-
-**Detection Warning Signs:**
-
-- No `schema_version` or feature flag on events
-- Foreign keys created with NOT NULL on new columns
-- No migration testing with existing events
-- Missing rollback scripts
-- No consideration for localStorage events (they need migration too!)
-- Tests only use freshly created events, not old schema
-
-**Phase to address:** Phase 1 (Data Model & Privacy) - must plan migrations from the start
+**Warning signs:**
+- New event columns added to SELECT but `TEvent` not updated.
+- Any new field typed as non-nullable when the database column is nullable.
+- `event.newField` accessed without null-check anywhere in the codebase.
+- No TypeScript error because the field is used only in `?.` chains — masks the type being wrong.
 
 ---
 
 ## Moderate Pitfalls
 
-Mistakes that cause delays or technical debt.
-
-### Pitfall 6: Mobile Performance Degradation with Image-Heavy Wishlists
-
-**What goes wrong:** Mobile users experience slow load times, memory crashes, and poor scrolling performance when wishlists contain many high-resolution images.
-
-**Why it happens:** Current gift implementation stores images as base64-encoded data URLs (gifts.tsx lines 38-41, schema.sql line 48). Base64 encoding increases file size by ~33%. A 2MB image becomes 2.6MB of base64 text, stored in:
-
-- localStorage (5-10MB limit across entire domain)
-- PostgreSQL TEXT column (loaded entirely into memory)
-- React state (re-rendered on every state change)
-- JSON API responses (no streaming, entire payload buffered)
-
-Per [image optimization research](https://requestmetrics.com/web-performance/high-performance-images/), "Images typically comprise 50 to 90 percent of page weight" and "loading a large 2000-pixel-wide desktop image on a mobile screen that only displays 400 pixels is inefficient and unnecessary."
-
-**Consequences:**
-
-- Mobile Safari crashes on wishlists with >10 images
-- API responses timeout (body parser limit is 50mb but network is slow)
-- localStorage quota exceeded, causing data loss
-- Poor Largest Contentful Paint (LCP) scores, affecting SEO
-- Users abandon app due to slowness
-
-**Prevention:**
-
-- **Immediate fixes:**
-  - Add image compression before upload (max 800px width, 80% quality)
-  - Implement lazy loading: `<img loading="lazy" />` (already available in modern browsers)
-  - Use responsive images: Generate thumbnails (150x150) for list view, full size for detail view
-
-  ```typescript
-  // Store both thumbnail and full image
-  const compressImage = async (
-    file: File,
-  ): Promise<{ thumb: string; full: string }> => {
-    const canvas = document.createElement("canvas");
-    const img = await loadImage(file);
-
-    // Thumbnail: 150x150
-    canvas.width = 150;
-    canvas.height = 150;
-    ctx.drawImage(img, 0, 0, 150, 150);
-    const thumb = canvas.toDataURL("image/jpeg", 0.7);
-
-    // Full: max 800px width
-    const scale = Math.min(1, 800 / img.width);
-    canvas.width = img.width * scale;
-    canvas.height = img.height * scale;
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    const full = canvas.toDataURL("image/jpeg", 0.8);
-
-    return { thumb, full };
-  };
-  ```
-
-- **Better long-term solution:**
-  - Move to proper file storage (S3, Cloudinary, or local filesystem)
-  - Store URLs instead of base64 in database
-  - Use CDN for image delivery
-  - Implement WebP/AVIF formats with JPEG fallback
-  - Add image upload validation: max 5MB per image, max 10 images per wishlist
-
-- **Performance monitoring:**
-  - Track LCP metric in production
-  - Monitor API response times for gift endpoints
-  - Alert when localStorage usage >80% of quota
-  - Add performance budgets: "Wishlist page must load in <3s on 3G"
-
-**Detection Warning Signs:**
-
-- No image size limits in upload handler
-- No compression before storage
-- base64 images stored in state without lazy loading
-- Grid view loads all images immediately (not virtualized)
-- No thumbnail generation, always loading full images
-- Tests don't include wishlists with >5 images
-- No performance testing on mobile devices/slow networks
-
-**Phase to address:** Phase 2 (Wishlist Foundation) or Phase 4 (Mobile Optimization) depending on priority
+Mistakes that cause delays or meaningful rework.
 
 ---
 
-### Pitfall 7: Invite System Email Deliverability and Privacy
+### Pitfall 6: Cover Photo Base64 in the Events List Endpoint Destroys Performance
 
-**What goes wrong:** Invitation emails go to spam, reveal participant lists to all recipients, or expose the gatherly organizer's email when they want to stay anonymous.
+**Feature area:** `cover_photo` event field
 
-**Why it happens:**
+**What goes wrong:** `cover_photo` is stored as base64 in the database (matching the existing pattern for wishlist `image_url`). The `GET /api/events` list endpoint already does a complex aggregation query (see `events.ts:11-53`). Adding `e.cover_photo` to the SELECT means every list response carries the full base64 blob for every event, even when the mobile events list only needs to show a small thumbnail.
 
-- Sending from app's SMTP server without proper SPF/DKIM/DMARC records
-- Using BCC for all participants (some email clients show BCC lists)
-- Including full participant list in email body for transparency
-- Reply-to pointing to organizer's personal email
-
-Per [gatherly invite research](https://secretsanta.email/), privacy-focused services "do not sell your data or send any marketing emails" and "store information for up to 7 days to allow the draw to take place, then permanently delete."
+**Why it happens:** The pattern of storing base64 directly is established in this codebase (wishlists, gift images). It works for single-item fetches. The events list is different — it returns multiple events simultaneously, and the aggregation query is already heavy (json_agg for people, couples, assignments).
 
 **Consequences:**
-
-- Invites land in spam, participants never join
-- Participants see who else is invited before assignments (ruins surprise)
-- Organizer gets reply-all emails asking questions
-- Email provider flags account for spam (Yahoo, Gmail)
-- GDPR compliance issues if storing email addresses indefinitely
+- Events list API call goes from ~5KB to 500KB+ if events have photos.
+- SQLite cache (`lib/cache.ts`) grows unbounded — base64 images take significant space in SQLite.
+- `refreshEvents()` (called on every mount of EventsContext) becomes slow.
+- Network timeout on poor connections.
 
 **Prevention:**
+- In `GET /api/events`, return a `hasCoverPhoto: boolean` or a `coverPhotoThumbnail` (resized to 100px wide), not the full image.
+- Full cover photo only returned by `GET /api/events/:id`.
+- On the mobile side, compress before upload (expo-image-picker already returns a `uri`; use `ImageManipulator` from `expo-image-manipulator` to resize before converting to base64 or uploading).
+- Consider storing URLs instead of base64 if any CDN/object storage is available (future-proofing).
+- The existing `body size limit` of 50mb in `server.ts` is there for image uploads — that is acceptable for PUT, not for GET responses.
 
-**Email Deliverability:**
-
-- Use transactional email service (SendGrid, Postmark, AWS SES)
-- Configure SPF/DKIM/DMARC for your domain
-- Provide unsubscribe link (required by CAN-SPAM)
-- Monitor bounce rates and spam complaints
-- Warm up sending domain gradually (don't send 100 invites on day 1)
-
-**Privacy:**
-
-- Send individual emails (never BCC all participants)
-- Don't include participant list in email body
-- Use tokens for invite acceptance: `/invite/{random_token}` not `/invite?email=alice@example.com`
-- Allow organizer to choose display name: "Your gatherly Organizer" vs their real name
-- Auto-delete email addresses after event date + 30 days
-- Add "View as participant" preview for organizers to check email content
-
-**Email Template Best Practices:**
-
-```html
-Subject: You're invited to {Event Name}! Hi {ParticipantName}, You've been
-invited to join a gatherly gift exchange: {Event Name} [Accept Invitation Button
-→ /invite/{secure_token}] What happens next: 1. Click the button to accept 2.
-Create your wishlist (optional) 3. We'll assign Secret Santas on
-{AssignmentDate} 4. You'll get a notification with your recipient Questions?
-Reply to this email. --- This is an automated message from {AppName}. If you
-didn't expect this, you can safely ignore it.
-```
-
-**Detection Warning Signs:**
-
-- Using nodemailer with Gmail SMTP (will hit rate limits)
-- No email verification before sending invites
-- Storing plain-text email addresses without expiration
-- No opt-out mechanism
-- Invite URLs contain PII (emails, real names)
-- No email preview/test function for organizers
-- Missing email tracking (sent, bounced, opened, clicked)
-
-**Phase to address:** Phase 3 (Invite System)
+**Warning signs:**
+- `cover_photo` column selected in the list endpoint alongside the `json_agg` aggregations.
+- No compression step before upload in the mobile image picker handler.
+- `GET /api/events` response size increases by 10x after cover photos are added.
+- SQLite cache migration does not limit the `cover_photo` column size.
 
 ---
 
-### Pitfall 8: UX Confusion Around Wishlist Visibility and Timing
+### Pitfall 7: Image Picker Permissions — iOS vs Android Divergence
 
-**What goes wrong:** Participants see wishlists before assignments are made, or can't access wishlists after assignments, creating confusion about when they can view/edit.
+**Feature area:** Image picker for cover photos
 
-**Why it happens:** No clear timing states defined:
+**What goes wrong:** `expo-image-picker` is already used in this codebase for wishlist items. The permission model on iOS 14+ requires `requestMediaLibraryPermissionsAsync()` before `launchImageLibraryAsync()`. The wishlist image picker may have this correct. The cover photo picker, built by a different developer or at a different time, skips the permission check or catches the error silently, causing it to silently return `undefined` on iOS without explaining why.
 
-- When can I create my wishlist? (Before or after joining?)
-- When can I see others' wishlists? (Immediately? After assignments? Never?)
-- When can I see who's buying my gifts? (After reveal date only?)
-- Can I edit my wishlist after assignments? (Yes but does giver see updates?)
+Android handles permissions differently — `READ_EXTERNAL_STORAGE` is needed on Android < 13, and `READ_MEDIA_IMAGES` on Android 13+. Expo handles this abstraction, but only if `expo-image-picker` plugin is correctly configured in `app.json`/`app.config.js`.
 
-Per [mobile UX research](https://www.nngroup.com/reports/ecommerce-ux-wishlists-and-gifts/), "gift-related features like wishlists were confusing and inadequate, sometimes leading to embarrassing mishaps like ruining the gift-giver's surprise."
+**Why it happens:** Developers test primarily on one platform. The wishlist image picker working on Android does not prove the cover photo picker works on iOS.
 
 **Consequences:**
-
-- Participants frustrated: "I can't see anyone's wishlist!"
-- Privacy leaks: Alice sees Bob's wishlist and guesses he's her Santa
-- Edit conflicts: Participant changes wishlist after giver already bought gift
-- Support burden: "How does this work?" questions flood organizer
-- Abandonment: Users give up due to confusing flow
+- Cover photo picker silently does nothing on iOS.
+- App rejected from App Store if permissions usage description is missing from `Info.plist` (Expo plugin handles this, but only if configured).
+- User taps "Add Photo" → nothing happens → assumes the feature is broken.
 
 **Prevention:**
+- Always call `requestMediaLibraryPermissionsAsync()` and check `.status === 'granted'` before calling `launchImageLibraryAsync()`.
+- Show a user-facing error if permission is denied with a link to Settings.
+- Verify `expo-image-picker` plugin is in `app.json` plugins array (required for Expo managed workflow to inject the permissions strings).
+- Test on both iOS simulator and Android emulator. The permission prompt only shows once on a real device — use Expo Go or a development build.
+- Reuse the permission-request pattern from the existing wishlist image picker (do not write a second, different implementation).
 
-**Define clear states:**
-
-```typescript
-enum EventPhase {
-  SETUP = "setup", // Organizer adding participants
-  INVITE_PENDING = "pending", // Invites sent, waiting for accepts
-  WISHLIST_CREATION = "wishlist", // Participants building wishlists
-  ASSIGNED = "assigned", // Santas assigned, shopping in progress
-  REVEALED = "revealed", // Gift exchange happened, all revealed
-}
-```
-
-**Visibility matrix:**
-| Phase | Can Edit My Wishlist | Can See Others' Wishlists | Can See Assignments | Can See Claims |
-|-------|---------------------|--------------------------|---------------------|---------------|
-| Setup | No (not invited) | No | No | No |
-| Invite Pending | Yes | No | No | No |
-| Wishlist Creation | Yes | No | No | No |
-| Assigned | Yes\* (with warning) | Only my recipient's | Only mine | Only what I claimed |
-| Revealed | No | Yes (all) | Yes (all) | Yes (all) |
-
-\*Warning: "Your gatherly may have already shopped. Changes might not be seen."
-
-**UI indicators:**
-
-```tsx
-// Phase banner at top of every page
-<PhaseBanner phase={event.phase}>
-  {phase === 'wishlist' && "📝 Build your wishlist before {deadline}!"}
-  {phase === 'assigned' && "🎅 Time to shop for your recipient!"}
-  {phase === 'revealed' && "🎉 Gift exchange complete!"}
-</PhaseBanner>
-
-// Disable features based on phase
-<WishlistView
-  editable={phase !== 'revealed'}
-  showWarning={phase === 'assigned' && hasEdits}
-/>
-```
-
-**Detection Warning Signs:**
-
-- No event phase/state field in database
-- Wishlist visibility not tied to assignment status
-- No deadline dates for wishlist creation
-- Missing state diagram in design docs
-- No user testing of the flow
-- Support FAQ empty (usually fills up with "when can I..." questions)
-
-**Phase to address:** Phase 2 (Wishlist Foundation) - UX design critical before implementation
+**Warning signs:**
+- Image picker handler has no `await requestMediaLibraryPermissionsAsync()` call.
+- `expo-image-picker` not in the plugins array in `app.json`.
+- No `NSPhotoLibraryUsageDescription` in the iOS config (Expo plugin adds this automatically, but only when the plugin is listed).
+- Image picker tested only in Expo Go, not in a production/dev build (Expo Go has pre-granted permissions).
 
 ---
 
-### Pitfall 9: React Context Performance with Growing Wishlist Data
+### Pitfall 8: User Interests Stored as Array — Type Mismatch Between PostgreSQL Array and JSON
 
-**What goes wrong:** As events grow to 20+ participants with 10+ gifts each, the EventsContext re-renders slow down the entire app, especially on mobile devices.
+**Feature area:** User interests on the users table
 
-**Why it happens:** Current EventsContext stores all events, participants, couples, assignments, and now gifts/wishlists in a single context (EventsContext.tsx). Every state update triggers re-render of ALL consumers, even if they only need one event's data.
+**What goes wrong:** PostgreSQL has a native array type (`TEXT[]`). It can also store arrays as JSONB. These behave differently in queries. If the migration uses `TEXT[]` but the application code uses `JSON.parse()`, or vice versa, the API returns the interests in a shape the mobile client doesn't expect.
 
-Per [React Context performance research](https://www.developerway.com/posts/how-to-write-performant-react-apps-with-context), "Used carelessly, React context becomes invisible global state with costly re-renders" and "many teams use Zustand + React Query together for better performance."
+Example: PostgreSQL `TEXT[]` column returns as a JavaScript array when using node-postgres (`pg`). But if the column is JSONB, the `pg` driver returns it as a parsed JavaScript array too. They look the same. The problem emerges when filtering: `WHERE $1 = ANY(interests)` works for `TEXT[]` but fails for JSONB. Building the migration with the wrong type leads to broken queries later.
 
 **Consequences:**
-
-- Input lag when typing in wishlist forms
-- Slow scrolling in gift grid
-- Mobile devices become unresponsive
-- Battery drain from excessive re-renders
-- Poor user experience, negative reviews
+- Interest filtering queries fail silently or throw.
+- `usersApi.updateMe()` currently only accepts `name: string` — the interests field will need to be added, and if the type is wrong in the API layer, updates silently drop interests.
+- Mobile receives interests as a string `"[\"music\",\"cooking\"]"` instead of an array when JSONB is serialized differently.
 
 **Prevention:**
+- Use `TEXT[]` for interests (not JSONB) — it's more ergonomic for a simple list and array operators (`= ANY`, `@>`) are straightforward.
+- The migration: `ALTER TABLE users ADD COLUMN IF NOT EXISTS interests TEXT[] DEFAULT '{}'`.
+- The `usersApi.updateMe()` type signature must be updated to accept `interests?: string[]` alongside `name?: string`.
+- `UserProfile` type in `apps/gatherly-mobile/app/api/users.ts` must include `interests: string[]`.
+- In the PUT handler, pass the array directly — pg will serialize `string[]` to `TEXT[]` correctly. Do not `JSON.stringify()` a TEXT[] column.
 
-**Immediate optimization - Split contexts:**
+**Warning signs:**
+- Migration uses `JSONB` for interests instead of `TEXT[]`.
+- API handler does `JSON.stringify(interests)` before inserting into a `TEXT[]` column.
+- Mobile type has `interests?: any` as a placeholder.
+- `usersApi.updateMe()` signature unchanged after interests are added.
 
-```typescript
-// Instead of one massive EventsContext
-// Split into domain-specific contexts
+---
 
-<EventsProvider>          {/* Just event metadata */}
-  <WishlistsProvider>      {/* Wishlists for current event only */}
-    <InvitesProvider>      {/* Invite state */}
-      <App />
-    </InvitesProvider>
-  </WishlistsProvider>
-</EventsProvider>
-```
+### Pitfall 9: `_layout.tsx` Onboarding Redirect Fires for Magic-Link (Participant) Sessions
 
-**Use selectors to prevent unnecessary re-renders:**
+**Feature area:** Onboarding gating, participantId discriminant
 
-```typescript
-// Bad: Re-renders when ANY event changes
-const {
-  state: { events },
-} = useEvents();
-const myEvent = events.find((e) => e.id === id);
+**What goes wrong:** The onboarding check reads `user.onboardingCompleted === false` and redirects to `/onboarding`. But magic-link sessions (where `user.participantId !== undefined`) represent guests who joined without registering. They have no account in the users table, so `onboarding_completed` doesn't apply to them. If the check doesn't exclude magic-link sessions, guest participants are bounced to an onboarding flow that wasn't designed for them.
 
-// Good: Only re-renders when THIS event changes
-const myEvent = useEvent(id); // Custom hook with selector
-```
+**Why it happens:** The `participantId` discriminant is already used in the API (`events.ts:56`) and in `requireOrganizer` middleware, but it is not always checked in client-side guards. The mobile `_layout.tsx` currently checks `!!session` (truthy access token) without distinguishing organizer vs participant. This pattern has been safe so far, but onboarding gating introduces a case where the distinction matters client-side.
 
-**Consider migration to modern state management:**
+**Consequences:**
+- A participant who joined via magic link is sent through an onboarding flow designed for registered users.
+- The onboarding tries to call `PUT /api/users/me` to save interests — this call fails with 403 because participant-scoped JWTs don't have a `userId` that maps to the users table.
+- The participant is stuck: onboarding can't complete, back navigation is blocked by `gestureEnabled: false`.
 
-- Zustand for client state (lightweight, built-in selectors)
-- TanStack Query for server state (caching, optimistic updates, automatic refetching)
+**Prevention:**
+- In the onboarding redirect logic, check `user.participantId === undefined` (i.e., only redirect organizer/registered user sessions).
+- The `User` type from `AuthContext` should expose whether the session is participant-scoped. Currently `authApi` returns a `user` object — ensure it includes enough info to make this check without an extra API call.
+- Onboarding completion endpoint (`PUT /api/users/me`) must use `requireOrganizer` or an equivalent check to reject participant-scoped tokens.
+- If a magic-link user later registers (the account-linking flow from Phase 27), they get a full user session — that new session's `onboarding_completed` field will correctly be `false`, and onboarding will show at that point (correct behavior).
 
-```typescript
-// Zustand example
-const useWishlistStore = create((set) => ({
-  wishlists: {},
-  addGift: (eventId, gift) =>
-    set((state) => ({
-      wishlists: {
-        ...state.wishlists,
-        [eventId]: [...(state.wishlists[eventId] || []), gift],
-      },
-    })),
-}));
+**Warning signs:**
+- Onboarding redirect does not check `user.participantId`.
+- `PUT /api/users/me` does not reject requests with a `participantId`-scoped token.
+- `onboarding_completed` stored on a field that magic-link sessions could theoretically set.
 
-// TanStack Query example
-const { data: wishlists, mutate } = useQuery({
-  queryKey: ["wishlists", eventId],
-  queryFn: () => fetchWishlists(eventId),
-});
-```
+---
 
-**Performance monitoring:**
+### Pitfall 10: Onboarding Interest Selection — Deselect-All State Is Unhandled
 
-- Use React DevTools Profiler to identify slow renders
-- Add performance markers: `performance.mark('wishlist-render-start')`
-- Set performance budgets: Max 100ms interaction-to-next-paint (INP)
-- Monitor on low-end Android devices (not just developer MacBooks)
+**Feature area:** Welcoming onboarding — Preferences screen
 
-**Detection Warning Signs:**
+**What goes wrong:** The interest/preference selection UI allows multi-select from a list of tags. The developer handles the "select all" and "deselect some" paths. They do not handle the "deselect all" path: the user deselects every interest and taps Continue. The API receives an empty array, which is valid. But the frontend might guard against `interests.length === 0` and prevent submission, or the API might have a `NOT NULL` constraint on the column that converts `'{}'` to something unexpected.
 
-- Single context holds >5 different data domains
-- No memoization of expensive computations
-- Context updates on every keystroke
-- Missing React.memo on list items
-- No virtualization for long lists (>50 items)
-- Tests don't measure render counts
-- No performance testing with realistic data sizes (20+ events, 200+ gifts)
+**Also:** The onboarding preferences screen typically shows a large grid of chip-style buttons. On smaller phones (SE 3rd gen, ~375pt wide), the grid overflows or chips are too small to tap reliably. This is a pure React Native layout issue, not caught on standard simulators.
 
-**Phase to address:** Phase 4 (Mobile Optimization) - after core features work, optimize
+**Consequences:**
+- User deselects all interests → Continue button disabled → user is stuck.
+- User on a small screen cannot tap the interest chips → forced to skip or abandon.
+- Empty interests array triggers a 500 if the DB column has a NOT NULL but the app sends `[]` (which is valid for `TEXT[]`, but `DEFAULT '{}'` already handles it).
+
+**Prevention:**
+- Allow zero interests — it's a valid state. Do not block Continue when `interests.length === 0`.
+- Store `[]` (empty array) as the value — it means "user skipped interest selection."
+- Test the Preferences screen on a 375pt-wide viewport. Use `flexWrap: 'wrap'` with `gap` spacing rather than a fixed grid. Minimum chip tap target: 44pt tall.
+- "Skip" button should be visible and clearly labeled — do not force users to select interests.
+- POST-onboarding: if interests are empty, the app should work normally, just without personalization.
+
+**Warning signs:**
+- Continue button disabled when `selectedInterests.length === 0`.
+- Interest selection screen not tested on iPhone SE viewport (375pt).
+- `interests` column has a NOT NULL constraint without DEFAULT.
+- No "Skip" affordance on the Preferences screen.
 
 ---
 
 ## Minor Pitfalls
 
-Mistakes that cause annoyance but are fixable.
-
-### Pitfall 10: Wishlist Item Link Rot and Affiliate Confusion
-
-**What goes wrong:** Users add product links to their wishlist items, but links break over time (404s) or contain affiliate tracking codes that reveal identity.
-
-**Why it happens:**
-
-- E-commerce sites change URLs frequently (seasonal products, sold out items)
-- Users copy-paste Amazon links containing their personal affiliate tag: `?tag=alices-tag-20`
-- Link shorteners expire (bit.ly, tinyurl)
-
-Per [gatherly wishlist research](https://www.wishlists-app.com/blog/best-gatherly-apps-2025), "affiliate links are created from gift ideas entered, which can be confusing to users, and this function should be transparent."
-
-**Consequences:**
-
-- Giver clicks link → 404 error → frustration
-- Affiliate tags reveal identity: "This is Alice's Amazon wishlist!"
-- Confusion about whether app is making money from affiliate links
-- GDPR issues if storing tracking codes without disclosure
-
-**Prevention:**
-
-- Strip URL parameters known to contain tracking/identity:
-
-```typescript
-const sanitizeUrl = (url: string): string => {
-  const u = new URL(url);
-  // Remove common affiliate/tracking params
-  const trackingParams = [
-    "tag",
-    "ref",
-    "utm_source",
-    "utm_medium",
-    "utm_campaign",
-  ];
-  trackingParams.forEach((param) => u.searchParams.delete(param));
-  return u.toString();
-};
-```
-
-- Validate URLs and show warning if 404:
-
-```typescript
-const validateUrl = async (url: string): Promise<boolean> => {
-  try {
-    const response = await fetch(url, { method: "HEAD" });
-    return response.ok;
-  } catch {
-    return false;
-  }
-};
-// Show: "⚠️ This link may be broken. Please check it."
-```
-
-- Encourage product names over links: "Nike Air Max 90, size 10" better than Amazon URL
-- Add URL archiving: Store snapshot of product page for reference
-- Disclose in privacy policy if app adds affiliate links (don't do this without disclosure!)
-
-**Detection Warning Signs:**
-
-- No URL parsing/sanitization
-- Storing raw URLs from user input
-- No link validation
-- Missing privacy policy about affiliate links (if using them)
-- No user education about good wishlist practices
-
-**Phase to address:** Phase 2 (Wishlist Foundation) - nice-to-have, not blocking
+Mistakes that are fixable quickly but waste time.
 
 ---
 
-### Pitfall 11: No Reminder System for Deadlines
+### Pitfall 11: Potluck Module Not Gated Behind Plan Tier Check on the Mobile Side
 
-**What goes wrong:** Participants forget to create wishlists or buy gifts because there are no reminders, resulting in last-minute chaos.
+**Feature area:** Potluck module, plan tier
 
-**Consequences:**
-
-- Low wishlist completion rate
-- Organizer manually chasing people: "Please add your wishlist!"
-- Last-minute shopping, poor gift quality
-- Some participants never buy gifts (awkward)
+**What goes wrong:** The API correctly returns `403 upgrade_required` when a free-tier event tries to enable the potluck module (see `modules.ts:62-67`). The mobile module config screen shows a paywall stub. But if the potluck list screen (`Potluck-List` template) is navigable directly via deep link or by manually constructing the route, it reaches the screen without going through the paywall — and then the API calls fail with 403.
 
 **Prevention:**
+- The mobile screen itself should check `event.planTier === 'free'` and render a paywall/upgrade state rather than a loading spinner when the API returns 403.
+- Navigation to potluck-related screens from the event details screen should be gated by `planTier` before even trying the route.
+- The 403 from the API is the ultimate source of truth, but the UI should degrade gracefully rather than show an error.
 
-- Automated email reminders:
-  - "3 days left to create your wishlist!"
-  - "Assignments just made - time to shop!"
-  - "Gift exchange is tomorrow - have you bought your gift?"
-- In-app notifications with deadlines
-- Organizer dashboard showing completion:
-
-```
-Wishlists: 8/12 complete
-Gifts claimed: 15/24 items
-```
-
-- Configurable reminder schedule in event settings
-
-**Detection Warning Signs:**
-
-- No deadline fields in event model
-- No background job system for scheduled tasks
-- No notification system planned
-
-**Phase to address:** Phase 5 (Polish) - quality of life feature
+**Warning signs:**
+- Potluck screen handles API errors generically (`catch → show "Something went wrong"`).
+- Navigation to potluck routes not gated by `planTier` in the event details screen.
 
 ---
 
-### Pitfall 12: Accessibility Issues on Mobile
+### Pitfall 12: SQLite Cache Schema Does Not Include New Event Columns
 
-**What goes wrong:** Wishlist images have no alt text, forms aren't keyboard navigable, color-only indicators (red/green for claimed) exclude colorblind users.
+**Feature area:** SQLite cache, new event fields
 
-**Why it happens:** Rushed mobile development without accessibility review.
+**What goes wrong:** The SQLite cache (`lib/cache.ts`, loaded by `DatabaseContext`) stores events locally for offline use. When new columns are added to `TEvent` (location, cover_photo, etc.), the SQLite table that backs the cache may not have corresponding columns. The cache write silently drops new fields. On the next offline load, the event lacks location/cover-photo data even though it was fetched from the API.
 
 **Prevention:**
+- Review `lib/cache.ts` and `lib/database.ts` — check what columns the local events table has.
+- Add a database migration for SQLite (using `db.execAsync` with IF NOT EXISTS) for each new event column.
+- SQLite migrations must run in `initDatabase()` before the cache is used.
+- For `cover_photo`, consider explicitly NOT caching the base64 blob in SQLite (it's large) — cache a flag `has_cover_photo: boolean` and fetch on demand.
 
-- Required alt text for wishlist images
-- Semantic HTML: `<button>` not `<div onClick>`
-- ARIA labels: `aria-label="Claim this gift"`
-- Text + color for status: "✓ Claimed" not just green background
-- Touch targets ≥44x44px for mobile
-- Test with screen reader (iOS VoiceOver, Android TalkBack)
+**Warning signs:**
+- New fields appear in `TEvent` but `lib/database.ts` schema not updated.
+- No SQLite migration step in `initDatabase()` for new columns.
+- Events loaded from cache missing fields that were returned by the API.
 
-**Detection Warning Signs:**
+---
 
-- No alt attributes on images
-- Using divs with onClick instead of buttons
-- Color-only status indicators
-- Small touch targets (<40px)
-- No accessibility testing in QA process
+### Pitfall 13: `usersApi.updateMe()` Signature Only Accepts `name` — Will Break When Interests and Onboarding Flag Are Added
 
-**Phase to address:** Phase 4 (Mobile Optimization) - include in mobile work
+**Feature area:** User profile, onboarding completion
+
+**What goes wrong:** `apps/gatherly-mobile/app/api/users.ts` currently has `updateMe: async (name: string)` — a positional `name` parameter, not a partial object. When interests and `onboardingCompleted` need to be sent in the same PUT request, the signature must change. Any existing call to `usersApi.updateMe(nameInput.trim())` in `profile.tsx` will break if the function signature changes to accept an object.
+
+**Prevention:**
+- Refactor `updateMe` to accept a partial object: `updateMe(patch: { name?: string; interests?: string[]; onboardingCompleted?: boolean })`.
+- Update the existing call in `profile.tsx` to: `usersApi.updateMe({ name: nameInput.trim() })`.
+- Update the API handler to accept and persist each field independently (not required to send all fields).
+- `UserProfile` type needs `interests: string[]` and `onboardingCompleted: boolean` added.
+
+**Warning signs:**
+- `updateMe` has a positional `name: string` parameter rather than a partial object parameter.
+- Profile screen breaks with a TypeScript error after `updateMe` signature changes.
 
 ---
 
 ## Phase-Specific Warnings
 
-| Phase Topic         | Likely Pitfall                             | Mitigation                                                    |
-| ------------------- | ------------------------------------------ | ------------------------------------------------------------- |
-| Phase 1: Data Model | Privacy leak via exposed claim data        | Design authorization rules first, implement query filters     |
-| Phase 1: Data Model | Breaking existing events with new schema   | Use expand-migrate-contract pattern, add schema_version field |
-| Phase 1: Data Model | Race conditions in claiming                | Use ON CONFLICT, SERIALIZABLE isolation, integration tests    |
-| Phase 2: Wishlist   | Algorithm breaks with wishlist constraints | Keep wishlists as suggestions, not hard requirements          |
-| Phase 2: Wishlist   | Mobile performance with images             | Implement compression + lazy loading from day 1               |
-| Phase 2: Wishlist   | Timing confusion (when can I edit?)        | Design phase state machine before coding                      |
-| Phase 3: Invite     | Email deliverability issues                | Use transactional email service, not direct SMTP              |
-| Phase 3: Invite     | Privacy leaks in invite emails             | Individual emails, use tokens, no participant lists           |
-| Phase 4: Mobile     | Context performance degradation            | Split contexts, consider Zustand + TanStack Query             |
-| Phase 4: Mobile     | Image loading slowness                     | Implement thumbnails, responsive images, virtualization       |
-
----
-
-## Integration-Specific Warnings
-
-### Existing Assignment Algorithm
-
-**Risk:** Wishlist requirements make assignments unsatisfiable
-**Warning sign:** Algorithm fails more frequently after wishlist integration
-**Test:** Generate assignments for events with varied wishlist sizes (0-20 items)
-
-### Hybrid Storage (localStorage + API)
-
-**Risk:** New features don't sync properly between storage modes
-**Warning sign:** Claims made in localStorage mode disappear when API comes online
-**Test:** Simulate offline→online transition, verify all data migrates
-
-### Event Phase Transitions
-
-**Risk:** State machine has invalid transitions (e.g., assigned → invite_pending)
-**Warning sign:** Users can edit wishlists after reveal, breaking privacy
-**Test:** State transition tests for all valid/invalid paths
+| Feature Area | Likely Pitfall | Mitigation |
+|---|---|---|
+| Potluck signup | Race condition — two users claim same slot | UNIQUE constraint + ON CONFLICT + 409 response |
+| Potluck visibility | Privacy model inverted from wishlists | Separate route file, explicit "PUBLIC" comment, no claimedByMe pattern |
+| Onboarding flag | Stored client-side, lost on reinstall | `onboarding_completed` column on `users` table, returned by `GET /api/users/me` |
+| Onboarding routing | Race with magic-link redirect in `_layout.tsx` | Priority chain: magic-link > invite > onboarding |
+| Onboarding routing | Fires for participant (magic-link) sessions | Check `user.participantId === undefined` before redirecting |
+| New event fields | Null vs undefined type drift in `TEvent` | All new fields typed as `field?: Type | null`, nullable in DB |
+| cover_photo in list | Base64 blob bloats list endpoint and SQLite cache | Return `hasCoverPhoto` in list, full blob only in single-event GET |
+| Image picker | Silent failure on iOS without permission | `requestMediaLibraryPermissionsAsync` + Expo plugin in `app.json` |
+| User interests | PostgreSQL TEXT[] vs JSONB confusion | Use TEXT[], pass JS arrays directly to pg, no JSON.stringify |
+| Interest selection | Deselect-all state blocks continuation | Allow empty interests, no minimum selection required |
+| SQLite cache | New event columns missing from local schema | Add `execAsync` migrations in `initDatabase()` |
+| `usersApi.updateMe` | Positional `name` param incompatible with new fields | Refactor to accept partial object before adding new fields |
+| Potluck + plan tier | 403 from API shows generic error on free events | Mobile screens check `planTier` and render paywall state, not error |
 
 ---
 
 ## Sources
 
-**Research Sources:**
+**Codebase analysis (primary source):**
+- `apps/gatherly-mobile/app/_layout.tsx` — Stack.Protected auth gating, magic-link redirect chain
+- `apps/gatherly-mobile/app/contexts/AuthContext.tsx` — session restore flow, SecureStore usage
+- `apps/gatherly-mobile/app/api/events.ts` — `TEvent` type with phase-annotated additions
+- `apps/gatherly-mobile/app/api/users.ts` — `updateMe` positional signature
+- `apps/api/src/routes/wishlists.ts` — atomic claim pattern with ON CONFLICT DO NOTHING
+- `apps/api/src/routes/modules.ts` — plan tier enforcement, PREMIUM_MODULES gating
+- `apps/api/src/routes/events.ts` — `participantId` discriminant in list query
+- `apps/api/src/db/migrations/011-phase25-modules-polls-rsvp.sql` — module table structure
+- `apps/api/src/db/migrations/012-phase27-account-linking.sql` — nullable FK pattern
 
-Privacy & Anonymity:
-
-- [gatherly Organizer FAQ](https://www.secretsantaorganizer.com/en/faq) - Privacy practices
-- [gatherly by Email Privacy](https://secretsanta.email/) - Privacy-first design patterns
-- [AppSorteos Security](https://app-sorteos.com/en/gatherly-generator) - Anti-spy mechanisms
-
-Race Conditions & Transactions:
-
-- [Race Condition Exploit - Schneier on Security](https://www.schneier.com/blog/archives/2015/05/race_condition_.html) - Real-world race condition examples
-- [PostgreSQL Transaction Isolation](https://www.postgresql.org/docs/current/transaction-iso.html) - Official documentation
-- [Race Conditions - PortSwigger](https://portswigger.net/web-security/race-conditions) - Attack patterns and prevention
-
-State Management & Performance:
-
-- [Persisting React State in localStorage - Josh Comeau](https://www.joshwcomeau.com/react/persisting-react-state-in-localstorage/) - Common pitfalls
-- [Syncing localStorage with React State](https://www.arvinpoddar.com/blog/syncing-local-storage-with-react-state) - Sync patterns
-- [How to Write Performant React Apps with Context](https://www.developerway.com/posts/how-to-write-performant-react-apps-with-context) - Context performance
-- [React State Management 2025: Context vs Zustand](https://dev.to/cristiansifuentes/react-state-management-in-2025-context-api-vs-zustand-385m) - Modern alternatives
-
-Database Migrations:
-
-- [Backward Compatible Database Changes - PlanetScale](https://planetscale.com/blog/backward-compatible-databases-changes) - Expand-migrate-contract pattern
-- [Evolutionary Database Design - Martin Fowler](https://martinfowler.com/articles/evodb.html) - Migration strategies
-
-Mobile & Performance:
-
-- [How to Optimize Website Images 2026 - Request Metrics](https://requestmetrics.com/web-performance/high-performance-images/) - Image optimization guide
-- [Impact of Image Optimization](https://www.androidheadlines.com/2026/01/the-impact-of-image-optimization-on-website-performance.html) - Performance metrics
-- [Responsive Images Best Practices 2025](https://dev.to/razbakov/responsive-images-best-practices-in-2025-4dlb) - Modern image techniques
-
-UX & Design:
-
-- [Wishlists, Gift Cards, and Gift Giving - Nielsen Norman Group](https://www.nngroup.com/reports/ecommerce-ux-wishlists-and-gifts/) - UX research
-- [Wishlists Design for E-Commerce](https://thestory.is/en/journal/designing-wishlists-in-e-commerce/) - Design patterns
-- [Common UI/UX Design Mistakes 2026](https://www.ideapeel.com/blogs/ui-ux-design-mistakes-how-to-fix-them) - What to avoid
-
-**Codebase Analysis:**
-
-- `apps/gatherly/src/contexts/EventsContext.tsx` - Hybrid storage implementation
-- `apps/api/src/routes/gifts.ts` - Current claiming logic (race condition vulnerability)
-- `apps/gatherly/src/pages/events/edit.tsx` - Assignment algorithm
-- `apps/gatherly/src/pages/events/gifts.tsx` - Gift management and claiming UI
-- `apps/api/src/db/schema.sql` - Database schema with UNIQUE constraint on gift_claims
-
-**Confidence Level:** HIGH for critical pitfalls (verified with codebase analysis + official documentation), MEDIUM for moderate pitfalls (based on community research + common patterns), MEDIUM-LOW for minor pitfalls (general best practices)
+**Confidence:** HIGH — all critical pitfalls are grounded in specific lines or patterns observed in the codebase, not general advice.

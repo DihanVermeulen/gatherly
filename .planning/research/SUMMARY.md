@@ -1,389 +1,254 @@
 # Project Research Summary
 
-**Project:** Gatherly - Secret Santa Gift Exchange App v2.0
-**Domain:** Gift Exchange Event Management with Wishlists and Anonymous Claiming
-**Researched:** 2026-02-06
+**Project:** Gatherly Mobile v2.2 — Potluck Module, Welcoming Onboarding, Event Cover Photo, UI Rehaul
+**Domain:** Group event coordination mobile app — feature expansion on an existing React Native / Expo Router codebase
+**Researched:** 2026-03-17
 **Confidence:** HIGH
+
+---
 
 ## Executive Summary
 
-Gatherly v2.0 adds three major feature sets to the existing Secret Santa app: personal wishlists, anonymous gift claiming, and an invite system with QR codes. Research shows this is a competitive necessity—all modern gift exchange platforms (Elfster, Giftster, Drawnames) offer wishlists and claiming as table stakes. The key architectural challenge is maintaining the existing assignment algorithm and privacy model while integrating new features that could inadvertently reveal Secret Santa assignments.
+Gatherly v2.2 is an additive milestone on a mature mobile codebase, not a greenfield build. This means the architecture research is unusually precise: nearly every decision is constrained by what already exists (JWT shape, module toggle scaffolding, image storage patterns, navigation guard structure). The recommended approach is a strict dependency-ordered 4-phase build — Infrastructure (migration + API) first, then Onboarding screens, then Event Edit UI, then Potluck screens. Deviating from this order forces stub data and rework.
 
-The recommended approach extends the existing React 19 + Express + PostgreSQL stack with lightweight additions: Konsta UI for iOS-style mobile components, qrcode.react for invite QR codes, nodemailer for email invitations, and @hello-pangea/dnd for wishlist priority drag-and-drop. The hybrid localStorage/API storage pattern remains, but wishlists and claiming should be API-only features to avoid complex synchronization logic. The existing EventsContext should be extended rather than creating separate contexts, keeping state management simple for the v2.0 scope.
+The two headline features — Potluck Module and Welcoming Onboarding — are both partially scaffolded. Potluck has a recognized `module_type = 'potluck'` in `event_modules` and a paywall stub in the UI, but no tables, routes, or screens. Onboarding has screen templates and an `expo-secure-store` auth layer to build on, but no onboarding flow exists. Both features are well-understood through competitor analysis and screen templates; the templates in `screen-templates/Potluck/` and `screen-templates/Welcoming/` are authoritative design specs that tightly bound the scope.
 
-The critical risk is privacy leaks—if claiming patterns reveal who is buying for whom, the entire Secret Santa anonymity promise breaks. Prevention requires careful authorization: only show claim status to the assigned giver, never expose claimer identity to the wishlist owner until reveal date. Secondary risks include race conditions in concurrent claiming (mitigated with PostgreSQL UNIQUE constraints and ON CONFLICT handling), database migration complexity (use expand-migrate-contract pattern), and mobile performance with image-heavy wishlists (implement compression and lazy loading from day one).
+The dominant risks are not architectural unknowns — they are specific, preventable implementation mistakes grounded in the existing codebase: a race condition on potluck slot claiming, the onboarding flag being stored in the wrong place (device-only vs server), base64 cover photos bloating the events list endpoint, and the `usersApi.updateMe()` positional name-only signature breaking when new fields are added. Each has a clear prevention strategy. The roadmap should sequence to encounter these risks in Phase 1 where schema and type decisions are locked before mobile work begins.
+
+---
 
 ## Key Findings
 
 ### Recommended Stack
 
-**v2.0 stack additions focus on mobile UI, QR codes, email, and drag-and-drop while keeping the validated React 19 + Express + PostgreSQL foundation intact.**
+The existing stack (Expo 54, GlueStack UI, NativeWind, Expo Router, TanStack Query v5, `react-native-reanimated` 4.1.6) requires only three new packages for v2.2. All three are in Expo SDK 54's `bundledNativeModules.json` and are confirmed compatible with `newArchEnabled: true` in `app.json`. No backend npm dependencies change — API additions are schema and route work only.
 
-**Core technologies:**
-- **Konsta UI v5.0.0**: iOS-style mobile components with Tailwind CSS integration — pixel-perfect iOS 26 design, bottom navigation, 200+ components, React 19 compatible
-- **qrcode.react v4.2.0**: QR code generation for invite sharing — most popular React QR library (1,175 dependents), SVG rendering, customizable
-- **nodemailer v8.0.0**: Email sending for invitations — industry standard with zero dependencies, improved error handling and connection fallback in latest version
-- **@hello-pangea/dnd v17.0.0**: Drag-and-drop for wishlist priority — community fork of react-beautiful-dnd (discontinued), accessibility-first, smooth animations
-- **react-material-symbols v3.7.2**: Material Symbols icons — replaces lucide-react for consistency with iOS design system
-- **@fontsource-variable/plus-jakarta-sans v5.3.0**: Variable font for modern geometric sans serif — single file for all weights 200-800, self-hosted
-- **validator v13.12.0**: Email validation (client + server) — RFC 5322 compliant, works in Node.js and browser
+**New packages (mobile only):**
+- `react-native-pager-view` v6.9.1 — native swipeable pager for the Getting-Started splash; `ScrollView pagingEnabled` has Android jank and fragile dot-sync
+- `expo-image` ~3.0.11 — disk-cached display for potluck food photo URLs; `react-native-fast-image` is explicitly excluded — it does not support the new React Native architecture
+- `expo-haptics` ~15.0.8 — tactile feedback on interest tag toggles and potluck signup confirmation
 
-**Critical upgrade required:** Tailwind CSS from postcss7-compat@2.2.17 to v3.4.19+ (Konsta UI requires v3, current version is 4+ years old and missing JIT compiler).
+**No new packages needed for:**
+- Cover photo: `expo-image-picker` already installed, same pattern as wishlist image picker
+- Onboarding gate: `expo-secure-store` already installed, already the auth persistence layer
+- Interest chips: GlueStack `Pressable` + NativeWind classes compose to toggle chips
+- Progress bar: GlueStack `Progress` + `ProgressFilledTrack` already in `components/ui/progress/`
 
-**Supporting libraries already installed:** axios (HTTP client), react-query (caching), pg (PostgreSQL client) — all sufficient for v2.0 needs.
+See `STACK.md` for version matrix and install commands.
 
 ### Expected Features
 
-**Competitors (Elfster, Giftster, Giftwhale, Drawnames) all offer wishlists and claiming, but separate Secret Santa generators from wishlist apps. Gatherly's differentiator is unified assignment + wishlist in one flow.**
+Screen templates are authoritative design specs. Competitor analysis (SignUpGenius, PerfectPotluck, withlome) and onboarding research (NNGroup, Appcues) validate the patterns.
 
-**Must have (table stakes):**
-- Personal wishlists per participant with images, descriptions, links, prices, and 3-tier priority levels
-- Retailer-agnostic wishlist items (any URL + manual entry, not locked to specific stores)
-- Anonymous gift claiming ("Someone is buying this" without revealing who to the wishlist owner)
-- Event invite links with shareable URLs and QR codes
-- Participant status tracking (pending/joined) visible to organizers
-- Mobile-first UI with iOS 2026 patterns (bottom navigation, thumb-friendly, Dynamic Type support)
-- Direct retailer links for one-click purchasing
-- Real-time claim updates to prevent race conditions on popular items
+**Must have — Potluck (P1 table stakes):**
+- Category management: name, quantity stepper, food image, suggestion chips (organizer)
+- Save and Publish control — sets `event_modules.status` from `'draft'` to `'active'`
+- Grouped list by category with claimed (avatar) vs unclaimed (Signup button) states
+- Signup confirmation sheet: food image, item name, optional note, Confirm/Cancel
+- Un-signup (withdraw claim)
+- Event readiness progress bar (SUM signups / SUM quantity needed)
 
-**Should have (competitive):**
-- Integrated wishlist + assignment system (see assigned person's wishlist after code decipher)
-- Offline-first wishlist editing (extends existing localStorage pattern)
-- Email invite option (complement link sharing)
-- Organizer dashboard showing event status and completion metrics
-- QR codes for physical gathering invitations (2026 trend for weddings, parties)
+**Must have — Welcoming Onboarding (P1 table stakes):**
+- 3-slide paginated splash (dot indicators, "Get Started" CTA, "Already have an account? Log In")
+- Interest chip selection: 13 categories, Select 3+ guidance, Skip option, search bar
+- Profile Setup: name, bio, gift preferences, avatar picker, "Skip for now" option
+- Step progress indicator ("Step 1 of 3")
+- Onboarding shown once — `onboarding_complete` flag on `users` table (server source of truth), cached in SecureStore
 
-**Defer (v2+):**
-- Wishlist import from retailers (complex parsing logic, unclear ROI)
-- Group chat integration (users already have WhatsApp/Messenger)
-- AI gift suggestions (user distrust of AI in 2026, feels impersonal)
-- Price tracking/alerts (scope creep, maintenance burden)
-- Multi-event wishlists (data sync complexity outweighs benefit)
-- Public wishlist profiles (shifts from private events to social network)
+**Should have (P2 differentiators for v2.2):**
+- Organizer preview mode on Potluck Setup screen
+- Real-time potluck claim updates via polling (same pattern as wishlist claiming)
+- Per-category coverage indicators on the potluck list
+
+**Defer to v2.3+:**
+- Interest data feeding event discovery / feed personalization — data captured in v2.2 but has no consumer yet
+- Push notification permission requests — request contextually post-onboarding, not during splash
+- Potluck template/recurring setup — power-user feature, scope for v3
+- Dietary restriction profiles — optional note field on signup is sufficient; dietary database has liability implications
+
+See `FEATURES.md` for anti-features rationale and full dependency maps.
 
 ### Architecture Approach
 
-**Extend existing architecture rather than rebuilding. Add new tables (wishlists, invites) while keeping current tables (events, participants, couples, assignments, gifts, gift_claims) unchanged.**
+The build follows a 7-step dependency chain. DB migration 012 unblocks API work; API work unblocks the mobile type layer; the type layer unblocks all mobile screens. Steps 5 (onboarding) and 6 (event fields UI) can run in parallel after step 4 (AuthContext state). Step 7 (potluck screens) is gated on steps 2 and 3.
 
-**Major components:**
-1. **Database Layer** — Add `wishlists` table (event_id, participant_id, name, description, image_url, url, priority, claimed_by) and `invites` table (event_id, participant_id, status, invite_code, sent_at, responded_at) with ON DELETE CASCADE foreign keys for automatic cleanup
-2. **API Layer** — New routes `/api/events/:id/wishlists` and `/api/events/:id/invites` following existing pattern; extend `/api/events/:id` responses to include wishlist_count and invite_status
-3. **Frontend State** — Extend EventsContext with wishlists and invites in Event type (Option A: single context recommended over separate contexts for v2.0 scope); add actions WISHLIST_ADD, WISHLIST_UPDATE, WISHLIST_DELETE, WISHLIST_REORDER, GIFT_CLAIM, GIFT_UNCLAIM, INVITE_SEND, INVITE_STATUS_UPDATE
-4. **Hybrid Storage** — Keep localStorage fallback for events and wishlists (user-facing data), make invites API-only (email sending requires backend); implement versioned schemas for migration
-5. **Assignment Integration** — Do NOT modify existing assignment algorithm to enforce wishlist constraints; wishlists are suggestions, not requirements; keep algorithm's 2000-permutation greedy backtracking unchanged
+**New components introduced by v2.2:**
+1. `apps/api/src/db/migrations/012-phase-v22.sql` — potluck tables (`module_potluck_categories`, `module_potluck_signups`), four new `events` columns, five new `users` columns
+2. Potluck API routes (added to `modules.ts`) — category CRUD with slot pre-population + signup CRUD with race-safe conflict guard
+3. Extended `users.ts` route — patch-style PUT accepting `bio`, `interests`, `avatarUrl`, `onboardingComplete`; GET returns all new fields
+4. `AuthContext` onboarding state — `onboardingComplete: boolean` + `markOnboardingComplete()`, seeded from `GET /api/users/me` during `restoreSession`
+5. `app/welcome.tsx` — pre-auth getting-started splash (unauthenticated stack)
+6. `app/onboarding.tsx` — post-register 3-step flow (authenticated stack, `gestureEnabled: false`)
+7. `app/potluck.tsx` + `app/potluck-setup.tsx` — participant list and organizer category builder
 
-**Key patterns:**
-- **Optimistic updates with rollback** for claiming (useOptimistic in React 19) — instant feedback, rollback on server rejection
-- **Atomic claiming with ON CONFLICT** to prevent race conditions — `INSERT INTO gift_claims ... ON CONFLICT (gift_id) DO NOTHING RETURNING id`
-- **Event phase state machine** (setup → invite_pending → wishlist_creation → assigned → revealed) — controls visibility and editing permissions
-- **Expand-migrate-contract database migrations** — add tables/columns with defaults, migrate gradually, contract only after validation
+**Hard architectural constraints from existing system:**
+- JWT shape: organizer tokens carry `userId`, participant tokens carry `participantId`. Onboarding must check `user.participantId === undefined` before redirecting — magic-link guests must never hit the onboarding flow.
+- `_layout.tsx` redirect priority chain must be preserved: magic-link token > invite code > onboarding incomplete. Onboarding is lowest priority.
+- Potluck privacy model is the inverse of wishlists: wishlists hide `claimedBy`; potluck must expose `signedUpBy` to all event members. A separate route file enforces this distinction explicitly.
+- `cover_photo_url` must store a URL string (not base64) in the `events` table. The list endpoint aggregates multiple events and cannot carry base64 blobs.
+
+See `ARCHITECTURE.md` for full component boundaries, API endpoint definitions, and data flow diagrams.
 
 ### Critical Pitfalls
 
-Research identified 12 pitfalls ranging from critical (require rewrites) to minor (fixable). Top 5 critical/moderate pitfalls:
+1. **Potluck signup race condition** — two participants claim the same slot simultaneously. Prevention: `UNIQUE(category_id, slot_index, participant_id)` on `module_potluck_signups`, atomic `UPDATE ... WHERE participant_id IS NULL` inside a transaction, 409 response with "slot just taken" + auto-refresh on mobile. Do NOT do a SELECT then INSERT outside a transaction.
 
-1. **Privacy leaks through claiming patterns** — If wishlist owners see WHO claimed their items, they can deduce their Secret Santa. PREVENTION: Never expose claimer identity until reveal date; use assignment-based authorization (only show claim status to the assigned giver); store claim data server-side only, not in client state visible to wishlist owner.
+2. **Onboarding flag in SecureStore only** — flag is lost on reinstall or new device; user sees onboarding again and overwrites first-run interest selections. Prevention: `onboarding_complete BOOLEAN DEFAULT FALSE` column on `users` table; returned by `GET /api/users/me`; SecureStore is a cache only, not the source of truth.
 
-2. **Race conditions in gift claiming** — Two participants simultaneously claim same gift (TOCTOU vulnerability in check-then-insert pattern). PREVENTION: Use PostgreSQL UNIQUE constraint on gift_claims.gift_id + `ON CONFLICT DO NOTHING` for atomic claims; return HTTP 409 on conflict; implement retry logic on frontend with exponential backoff.
+3. **Onboarding fires for participant (magic-link) sessions** — guest participants have no `users` row; `PUT /api/users/me` returns 403 with their token; navigation is stuck because `gestureEnabled: false`. Prevention: check `user.participantId === undefined` in onboarding redirect guard; `PUT /api/users/me` must use `requireOrganizer` middleware.
 
-3. **Data consistency between localStorage and API with new features** — Hybrid storage breaks down with complex relational data (wishlists with claims, invites with status). PREVENTION: Make wishlists/claiming/invites API-only features (recommended) OR implement proper sync with useSyncExternalStore + versioned schemas + conflict resolution; add feature flags to disable features in localStorage mode.
+4. **`cover_photo` base64 in events list endpoint** — payload grows from ~5KB to 500KB+ per event with photos; SQLite cache bloats. Prevention: list endpoint returns `hasCoverPhoto: boolean` flag only; full image only in `GET /api/events/:id`.
 
-4. **Assignment algorithm broken by wishlist requirements** — If wishlists become hard constraints ("must receive gifts FROM wishlist"), algorithm becomes unsatisfiable when wishlist size < giftCount. PREVENTION: Keep wishlists as suggestions, not requirements; do NOT modify assignment algorithm; allow givers to buy off-wishlist gifts; add diagnostics for unsatisfiable wishlists if needed.
+5. **`usersApi.updateMe()` positional signature** — current signature is `updateMe(name: string)`. Adding interests, bio, and onboarding flag requires refactoring to `updateMe(patch: Partial<UserUpdate>)` before any screen can call it with new fields. Must happen in Phase 1 (API layer) before onboarding screens are built.
 
-5. **Database migration breaking existing events** — Adding new tables with foreign keys could break existing events in localStorage or database. PREVENTION: Use expand-migrate-contract pattern (add tables with optional relationships, migrate gradually, contract only after validation); add schema_version field to events table; make wishlists opt-in via has_wishlists boolean flag; test with real production data samples.
+See `PITFALLS.md` for the full list of 13 pitfalls with warning signs.
 
-**Other notable pitfalls:** Mobile performance with base64 images (implement compression + lazy loading + thumbnails from day 1), email deliverability and privacy (use transactional service like SendGrid, send individual emails not BCC, strip affiliate tracking codes from URLs), UX confusion around timing (implement phase state machine before coding), React Context performance degradation (split contexts or consider Zustand + TanStack Query if EventsContext grows too large).
+---
 
 ## Implications for Roadmap
 
-Based on research, suggested phase structure prioritizes foundational data model and privacy safeguards before feature implementation:
+Research points to a 4-phase build order derived from the dependency chain.
 
-### Phase 1: Foundation & Privacy (Data Model + Tailwind Upgrade)
-**Rationale:** Database schema and privacy architecture must be correct from day one. Race condition fixes and authorization logic are architectural decisions that can't be retrofitted. Tailwind upgrade is prerequisite for Konsta UI.
+### Phase 1: Infrastructure — Migration and API
 
-**Delivers:**
-- Database migrations (wishlists, invites tables with indexes)
-- Schema versioning system (expand-migrate-contract pattern)
-- Authorization rules (assignment-based visibility, claim anonymity)
-- Atomic claiming with race condition protection (ON CONFLICT)
-- Tailwind CSS v3.4.19+ upgrade (from postcss7-compat@2.2.17)
-- Migration script for existing events (backward compatibility verified)
-
-**Addresses:**
-- Pitfall 1 (privacy leaks), Pitfall 2 (race conditions), Pitfall 3 (localStorage sync), Pitfall 5 (migration breaking events)
-- Feature requirement: anonymous claiming foundation
-- Stack requirement: Tailwind v3+ for Konsta UI
-
-**Avoids:**
-- Breaking existing events through careful migration
-- Privacy violations by designing authorization first
-
-### Phase 2: Wishlist Core (CRUD + Display)
-**Rationale:** Wishlists are the main value proposition. Build CRUD operations and basic display before adding claiming complexity. Keep algorithm unchanged (wishlists as suggestions, not constraints).
+**Rationale:** Every other phase is blocked on this. The DB migration defines the schema contract; the API and type changes define the interface contract. No mobile phase can be integrated until routes exist to call and TypeScript types exist to consume. The race condition prevention and cover photo strategy must also be locked here before mobile work begins.
 
 **Delivers:**
-- API endpoints (`POST/PUT/DELETE /api/events/:id/wishlists`)
-- EventsContext extensions (WISHLIST_ADD, WISHLIST_UPDATE, WISHLIST_DELETE actions)
-- Wishlist CRUD UI (add/edit/delete items with image upload, description, link, price, priority)
-- Wishlist display page (view participant's wishlist, list view with thumbnails)
-- Image compression (max 800px width, 80% quality, generate 150x150 thumbnails)
-- Lazy loading for images (`<img loading="lazy" />`)
-- URL sanitization (strip affiliate tracking codes)
+- `012-phase-v22.sql`: `module_potluck_categories`, `module_potluck_signups` tables with UNIQUE constraint; four new `events` columns; five new `users` columns (including `onboarding_complete`)
+- Extended `events.ts` routes: new columns in SELECT; list endpoint returns `hasCoverPhoto` (not base64); PUT accepts new fields
+- Extended `users.ts` routes: patch-style PUT accepting all new fields; GET returns `onboardingComplete`, `interests`, `bio`, `avatarUrl`
+- New potluck routes in `modules.ts`: categories CRUD with slot pre-population; signups CRUD with ON CONFLICT race guard; module-active check pattern from polls
+- Updated `TEvent` type: all new fields typed as `field?: Type | null`
+- `usersApi.updateMe()` refactored from positional `name: string` to `patch: Partial<UserUpdate>` object
 
-**Uses:**
-- validator for link validation
-- Existing base64 image pattern (with compression)
+**Avoids:** Race condition (UNIQUE in migration), cover photo list bloat (hasCoverPhoto flag), updateMe signature breakage (refactored before screens are built).
 
-**Implements:**
-- Database: wishlists table
-- Frontend: wishlist components, API client functions
+**Research flag:** Standard patterns — follows Phase 25 migration and `modules.ts` route structure exactly. No additional research needed.
 
-**Addresses:**
-- Features: personal wishlists, images, descriptions, links, prices, priority levels
-- Pitfall 4 (algorithm constraints) — decision to keep wishlists as suggestions
-- Pitfall 6 (mobile performance) — compression and lazy loading from day 1
-- Pitfall 10 (link rot and affiliate tracking) — URL sanitization
+---
 
-**Avoids:**
-- Modifying assignment algorithm
-- Storing uncompressed images
+### Phase 2: Onboarding Screens
 
-### Phase 3: Claiming System (Anonymous + Optimistic Updates)
-**Rationale:** Claiming depends on wishlists existing. Implement optimistic updates for snappy UX, leveraging React 19's useOptimistic hook.
+**Rationale:** Depends on Phase 1 (users API additions, `UserProfile` type). Does not depend on potluck. Should be built before potluck because it touches `_layout.tsx` and `AuthContext` — changes that could affect potluck navigation if done out of order. Validating the navigation guard changes in isolation reduces integration risk.
 
 **Delivers:**
-- Claim/unclaim API endpoints (`POST/DELETE /api/events/:id/wishlists/:itemId/claim`)
-- Optimistic update pattern with rollback (useOptimistic hook)
-- Claim status UI (show "Available" or "Claimed" to wishlist owner, show claimer identity only to self)
-- Real-time claim prevention (optimistic locking, HTTP 409 on conflict)
-- Authorization checks (only assigned giver can see full claim details)
+- `AuthContext` updated: `onboardingComplete` state + `markOnboardingComplete()`, seeded from `GET /api/users/me` during `restoreSession`
+- `app/welcome.tsx` — unauthenticated 3-slide splash carousel (`react-native-pager-view`, dot indicators, CTA)
+- `app/onboarding.tsx` — authenticated 3-step flow (Profile Setup: avatar, name, bio, gift preferences; Preferences: interest chips with haptics)
+- `_layout.tsx`: redirect priority chain (magic-link > invite > onboarding), new Stack.Screen entries for `welcome` and `onboarding`
+- `register.tsx` + `sign-in.tsx`: redirect to `/onboarding` when `onboardingComplete === false` and `participantId` is absent
+- Install `react-native-pager-view` + `expo-haptics`
 
-**Uses:**
-- React 19 useOptimistic for instant feedback
-- PostgreSQL UNIQUE constraint for atomicity
+**Implements:** All Welcoming Flow P1 features from FEATURES.md.
 
-**Implements:**
-- Claiming logic with race condition protection (built on Phase 1 foundation)
+**Avoids:** Onboarding firing for magic-link sessions (participantId check), onboarding flag lost on reinstall (server-side source of truth), navigation race with magic-link redirect (documented priority chain).
 
-**Addresses:**
-- Features: anonymous claiming, prevent duplicates, real-time updates
-- Pitfall 1 (privacy) — claim anonymity enforced
-- Pitfall 2 (race conditions) — atomic operations
+**Research flag:** Standard patterns. Stack.Protected guard and SecureStore usage are established in this codebase. No additional research needed.
 
-**Avoids:**
-- Revealing claimer identity to wishlist owner
-- Race conditions through database-level constraints
+---
 
-### Phase 4: Invite System (Links + QR + Email)
-**Rationale:** Invites are independent of wishlists/claiming. Can be developed in parallel or after core features. Email integration adds external dependencies (SMTP configuration).
+### Phase 3: Event Edit UI — Cover Photo and New Fields
+
+**Rationale:** Depends only on Phase 1 (API + TEvent type). Smallest phase. Placing it after Phase 2 keeps `_layout.tsx` changes isolated to one phase at a time. No downstream dependencies — potluck does not depend on event cover photo.
 
 **Delivers:**
-- Invite token generation (crypto.randomBytes for secure tokens)
-- API endpoints (`POST /api/events/:id/invites`, `GET/PUT /api/invites/:code`)
-- Invite status tracking (pending/accepted/declined)
-- Shareable invite links (`/invite/{token}`)
-- QR code generation (qrcode.react for printable invites)
-- Email sending (nodemailer with SendGrid/SMTP)
-- Email template (HTML with QR code embedded as base64)
-- Organizer dashboard (invite status per participant)
+- `edit-event.tsx`: location text field, cover photo picker (expo-image-picker, 16:9 crop, permission guard), allow_guest_invites toggle, is_public toggle
+- `event-details.tsx`: location display and cover photo hero using `expo-image` (remote URL, disk cache)
+- SQLite cache migration for new event columns (`hasCoverPhoto: boolean` flag only — no base64 in cache)
+- Install `expo-image`
 
-**Uses:**
-- qrcode.react for QR generation
-- nodemailer for email sending
-- validator for email validation (client + server)
+**Avoids:** Image picker silent failure on iOS (requestMediaLibraryPermissionsAsync guard), new event fields with nullable type drift, SQLite cache missing new columns.
 
-**Implements:**
-- Database: invites table
-- Email infrastructure (SMTP configuration, templates)
+**Research flag:** Standard patterns. `expo-image-picker` pattern already in `edit-wishlist-item.tsx`. Direct copy with field additions.
 
-**Addresses:**
-- Features: invite links, QR codes, email invites, status tracking, organizer dashboard
-- Pitfall 7 (email deliverability) — use transactional email service, SPF/DKIM/DMARC
-- Pitfall 7 (privacy) — individual emails, no participant lists, token-based URLs
+---
 
-**Avoids:**
-- Spam filters by using proper email service
-- Privacy leaks by sending individual emails with secure tokens
+### Phase 4: Potluck Screens
 
-### Phase 5: Mobile UI Redesign (Konsta UI + Bottom Navigation)
-**Rationale:** UI redesign comes after features work correctly. Konsta UI components require Tailwind v3+ (upgraded in Phase 1). This is primarily visual—core functionality already exists.
+**Rationale:** Largest phase, most new surface area. Depends on Phase 1 (potluck API routes and `TPotluckCategory`/`TPotluckSlot` types). Benefits from Phases 2 and 3 having validated that `AuthContext` and `_layout.tsx` changes are stable. Sequencing it last ensures infrastructure is fully settled before tackling the new feature with the most complex data flow.
 
 **Delivers:**
-- Konsta UI component library setup (provider, theme configuration)
-- Plus Jakarta Sans font integration
-- Material Symbols icons (replace lucide-react)
-- Bottom navigation bar (iOS-style, 4-5 primary actions)
-- Event cards redesign (visual thumbnails, status indicators)
-- Participant avatars throughout interface
-- Secret assignment reveal card (festive design)
-- Mobile-first responsive layouts
-- Dark mode consistency (existing dark mode extended to new components)
-- Accessibility improvements (alt text, ARIA labels, 44x44px touch targets)
+- `app/potluck-setup.tsx` — organizer category builder: name input, quantity stepper, food image display (`expo-image`), suggestion chips, Add Category, Save and Publish
+- `app/potluck.tsx` — participant grouped list (`SectionList` by category), claimed (avatar) vs unclaimed (Signup button), readiness progress bar; organizer sees same view
+- Signup confirmation bottom sheet: food image hero (`expo-image`), item name field, note field, Confirm (with `expo-haptics` Success notification), Cancel
+- Un-signup flow
+- Route wiring in `event-details.tsx` — remove empty-string route on potluck module row
+- Plan tier check in potluck screens — render paywall/upgrade state (not generic error) for free-tier events
 
-**Uses:**
-- Konsta UI v5.0.0 for iOS-style components
-- @fontsource-variable/plus-jakarta-sans for typography
-- react-material-symbols for icons
+**Implements:** All Potluck P1 features from FEATURES.md.
 
-**Implements:**
-- Complete UI overhaul following design templates in apps/gatherly/docs/screen-templates/
+**Avoids:** Potluck using wishlist's claimedBy-hidden privacy model (separate route file, explicit "PUBLIC" comment), plan tier 403 showing generic error, duplicate claims (handled by Phase 1 UNIQUE constraint).
 
-**Addresses:**
-- Features: mobile-first iOS UI, bottom navigation, event cards, participant avatars, reveal card
-- Stack: Konsta UI, Material Symbols, Plus Jakarta Sans
-- Pitfall 12 (accessibility) — built into mobile redesign
+**Research flag:** The Signup confirmation display pattern (bottom sheet vs full-screen modal) should be verified against existing GlueStack modal usage in the codebase before implementation starts.
 
-**Avoids:**
-- Desktop-first design (mobile-first approach)
-- Poor accessibility by including a11y from start
-
-### Phase 6: Wishlist Priority & Polish (Drag-Drop + UX Refinements)
-**Rationale:** Priority ordering is enhancement to core wishlist feature. Drag-and-drop adds UX polish but isn't blocking for MVP. This phase includes all "nice-to-have" features and edge case handling.
-
-**Delivers:**
-- Drag-and-drop priority reordering (@hello-pangea/dnd)
-- Priority integer calculation and persistence
-- Wishlist item sorting/filtering (by price, priority, claimed status)
-- Event phase state machine UI (phase banner, disable features by phase)
-- Timing controls (wishlist deadlines, assignment reveal date)
-- Loading states and error handling polish
-- Edge case handling (empty wishlists, broken links, concurrent edits)
-- Performance monitoring (track LCP, INP metrics)
-
-**Uses:**
-- @hello-pangea/dnd for drag-and-drop
-- React 19 features (useOptimistic, transitions)
-
-**Implements:**
-- UX refinements and polish
-- Performance optimizations
-
-**Addresses:**
-- Features: priority levels with drag-and-drop, sorting/filtering
-- Pitfall 8 (UX confusion around timing) — phase state machine
-- Pitfall 9 (React Context performance) — monitoring and optimization if needed
-- Pitfall 11 (no reminder system) — deadlines and notifications
-
-**Avoids:**
-- Performance issues through monitoring and optimization
-- UX confusion through clear phase indicators
+---
 
 ### Phase Ordering Rationale
 
-- **Foundation first:** Database schema, authorization, and privacy safeguards must be correct before features are built on top. Retrofitting security is error-prone.
-- **Core value next:** Wishlists (Phase 2) → Claiming (Phase 3) delivers the main value proposition. Invites (Phase 4) are important but independent.
-- **UI redesign after functionality:** Ensures features work correctly before visual overhaul. Konsta UI requires Tailwind v3 (upgraded in Phase 1).
-- **Polish last:** Drag-and-drop priority and UX refinements are enhancements, not blockers for MVP.
-
-**Dependency chain:**
-- Phase 2 depends on Phase 1 (database tables + Tailwind)
-- Phase 3 depends on Phase 2 (wishlists must exist to claim them)
-- Phase 4 is independent (can run parallel to Phase 2-3 if needed)
-- Phase 5 depends on Phase 1 (Tailwind v3) and benefits from Phase 2-3 (features exist to style)
-- Phase 6 depends on Phase 2-5 (polish after core features)
+- Phase 1 is mandatory first: schema and API types are the contract that all mobile phases consume. Building screens against stubs forces rework.
+- Phase 2 (Onboarding) before Phase 4 (Potluck) because onboarding modifies `AuthContext` and `_layout.tsx` — the foundational navigation layer. Potluck navigation layers on top of a stable auth/routing foundation.
+- Phase 3 (Event fields) is the smallest phase with no downstream dependencies. Placing it between the two larger phases provides a low-risk ship point and validates the `expo-image` install before potluck needs it.
+- Phase 4 is last: largest scope, benefits from validated infrastructure and confirmed stable navigation guard behavior from Phases 2 and 3.
 
 ### Research Flags
 
-Phases likely needing deeper research during planning:
+Phases needing a quick pre-implementation check:
+- **Phase 4 (Potluck):** Verify which GlueStack or Expo component to use for the Signup confirmation sheet (`Potluck-Signup.png` shows a full-screen modal) before implementation starts.
 
-- **Phase 1 (Foundation & Privacy):** Authorization model for claim visibility is complex—may need additional research on role-based access patterns in React + Express. PostgreSQL transaction isolation levels (SERIALIZABLE vs READ COMMITTED) need performance testing with concurrent claims.
-- **Phase 4 (Invite System):** Email deliverability (SPF/DKIM/DMARC setup, transactional email service selection) needs operational research. QR code size optimization for embedding in emails (PNG vs SVG) needs testing across email clients.
-- **Phase 6 (Polish):** Performance optimization strategy if EventsContext becomes bottleneck—may need research on Zustand + TanStack Query migration patterns.
+Phases with standard patterns (no additional research needed):
+- **Phase 1 (Infrastructure):** Follow `011-phase25-modules-polls-rsvp.sql` as the exact migration template. Polls route structure in `modules.ts` is the model for potluck routes.
+- **Phase 2 (Onboarding):** SecureStore, Stack.Protected, and PagerView patterns are in-repo or SDK-documented.
+- **Phase 3 (Event fields):** `edit-wishlist-item.tsx` is the direct template for the cover photo picker flow.
 
-Phases with standard patterns (skip research-phase):
-
-- **Phase 2 (Wishlist Core):** Standard CRUD operations, existing codebase has similar patterns for gifts. Image compression has well-documented browser APIs.
-- **Phase 3 (Claiming System):** Optimistic updates are well-documented in React 19 docs. PostgreSQL ON CONFLICT is standard concurrency pattern.
-- **Phase 5 (Mobile UI Redesign):** Konsta UI has comprehensive documentation. Design templates already provided. Component implementation is straightforward.
+---
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All recommended libraries are mature, actively maintained, and React 19 compatible. Versions verified with official sources (npm, GitHub). Konsta UI v5.0.0 specifically updated for React 19 API. |
-| Features | HIGH | Competitors (Elfster, Giftster, Giftwhale, Drawnames) validated as feature benchmarks. Table stakes vs. differentiators clearly identified through UX research and review analysis. MVP scope well-defined. |
-| Architecture | HIGH | Extends proven existing architecture (React 19 + Express + PostgreSQL). Separate wishlists table recommended over modifying gifts table (clear separation of concerns). Hybrid storage pattern limitations understood. |
-| Pitfalls | HIGH | Critical pitfalls (privacy leaks, race conditions) verified with codebase analysis (EventsContext.tsx, gifts.ts, edit.tsx). Prevention strategies sourced from official PostgreSQL docs, React docs, and security research. |
+| Stack | HIGH | All versions verified against in-repo `bundledNativeModules.json` and `package.json`. New arch compatibility confirmed via `app.json` inspection. All 3 new packages are first-party or Expo-bundled. |
+| Features | HIGH | Screen templates are authoritative specs — scope is tightly bounded by design. Competitor analysis (SignUpGenius, PerfectPotluck) confirms potluck data model. Onboarding patterns verified against NNGroup and Appcues research. |
+| Architecture | HIGH | All decisions sourced from direct codebase inspection. JWT shape, navigation guard structure, module route patterns, and wishlist claiming logic all observed in live files. No inference. |
+| Pitfalls | HIGH | All critical pitfalls grounded in specific lines or patterns in the codebase. Race condition approach sourced directly from `wishlists.ts` ON CONFLICT implementation. `updateMe` signature issue confirmed in `users.ts`. |
 
-**Overall confidence:** HIGH
+**Overall confidence: HIGH**
 
-Research is comprehensive and actionable. All four research files cross-reference each other and the existing codebase. Recommendations are backed by official documentation, competitor analysis, and codebase inspection.
+### Open Questions to Resolve During Planning
 
-### Gaps to Address
+- **Food photo source for potluck categories:** The screen templates show per-category food images. Architecture stores these as `image_url TEXT`. But who provides the URL? Options: organizer pastes a URL, organizer uploads a photo, or Gatherly ships a curated library. This is a product decision with UI flow implications for `potluck-setup.tsx`. Must be resolved during Phase 4 planning — the column supports all three options without schema changes.
 
-While research confidence is high, a few areas need validation during planning/execution:
+- **Interests data consumer:** The Preferences screen title says "Personalize Your Feed" but no feed or discovery feature exists. `users.interests TEXT[]` is captured in v2.2 but has no consumer until v2.3+. The roadmap should explicitly note this so the prompt text on the Preferences screen accurately sets expectations ("Help us suggest events" rather than "Personalize Your Feed" if the feed doesn't exist yet).
 
-- **localStorage sync for wishlists:** Research recommends API-only for wishlists/claiming, but PROJECT.md emphasizes hybrid storage pattern as a key feature. Need decision: extend localStorage to wishlists (adds complexity) or make wishlists API-only (simpler, recommended). If extending localStorage, need to implement useSyncExternalStore + conflict resolution + versioned schemas.
+- **Expo Go vs dev build for testing:** Expo Go pre-grants image picker permissions; the actual permission prompt can only be validated in a development build. Phase 3 should include an explicit dev build test step for the cover photo permission flow on both iOS and Android.
 
-- **Assignment algorithm interaction with wishlists:** Research strongly recommends keeping wishlists as suggestions (don't modify algorithm), but need to validate this with user expectations. If users expect "must receive gifts from wishlist" behavior, Phase 2 needs to include algorithm modifications (bipartite matching with capacity constraints), significantly increasing complexity.
-
-- **Transactional email service selection:** Research mentions SendGrid, Postmark, AWS SES as options but doesn't compare them. During Phase 4, need to evaluate: pricing (how many invites per month?), deliverability rates, ease of setup, SMTP vs API integration. Nodemailer supports both.
-
-- **Mobile performance with large events:** Research assumes typical events have 5-50 participants with ~10 items each (500 wishlist items max). If events grow to 100+ participants, EventsContext performance becomes a concern. Phase 6 may need to split contexts or migrate to Zustand + TanStack Query. Need to define performance budgets and monitor during development.
-
-- **Email template design:** Research mentions HTML email templates but doesn't provide specifics. During Phase 4, need to design email template (header, body, CTA button, QR code placement) and test across email clients (Gmail, Outlook, Apple Mail, mobile clients). Inline CSS required (no external stylesheets in email).
+---
 
 ## Sources
 
-### Primary (HIGH confidence)
+### Primary (HIGH confidence — in-repo verification)
 
-**Stack Research:**
-- [qrcode.react - npm](https://www.npmjs.com/package/qrcode.react) — QR code generation
-- [nodemailer - npm](https://www.npmjs.com/package/nodemailer) — Email sending
-- [Konsta UI - Official Docs](https://konstaui.com/) — Mobile UI components
-- [Konsta UI React](https://konstaui.com/react) — React integration
-- [Konsta UI Release Notes](https://konstaui.com/release-notes) — React 19 compatibility verified
-- [@hello-pangea/dnd - npm](https://www.npmjs.com/package/@hello-pangea/dnd) — Drag-and-drop
-- [validator - npm](https://www.npmjs.com/package/validator) — Email validation
-- [@fontsource-variable/plus-jakarta-sans - npm](https://www.npmjs.com/package/@fontsource-variable/plus-jakarta-sans) — Typography
+- `apps/gatherly-mobile/node_modules/expo/bundledNativeModules.json` — version constraints for all 3 new packages, confirmed in-repo
+- `apps/gatherly-mobile/app.json` — `newArchEnabled: true` (drives expo-image choice over react-native-fast-image)
+- `apps/gatherly-mobile/app/_layout.tsx` — Stack.Protected guard structure, magic-link redirect chain
+- `apps/gatherly-mobile/app/contexts/AuthContext.tsx` — session restore flow, SecureStore usage pattern
+- `apps/gatherly-mobile/app/api/users.ts` — `updateMe(name: string)` positional signature confirmed
+- `apps/gatherly-mobile/app/api/events.ts` — `TEvent` with phase-annotated additions pattern
+- `apps/api/src/routes/wishlists.ts` — atomic claim ON CONFLICT pattern (informs potluck race prevention)
+- `apps/api/src/routes/modules.ts` — polls/rsvp route structure, plan tier enforcement pattern
+- `apps/api/src/db/migrations/011-phase25-modules-polls-rsvp.sql` — migration template for Phase 1
+- `apps/gatherly-mobile/screen-templates/Potluck/*.png` — authoritative potluck scope definition
+- `apps/gatherly-mobile/screen-templates/Welcoming/*.png` — authoritative onboarding scope definition
+- `apps/gatherly-mobile/screen-templates/Edit.png` — new event field UI spec
 
-**Feature Research:**
-- [Elfster: Secret Santa Website & Gift Exchange App](https://www.elfster.com/) — Competitor analysis
-- [Giftster Group Wish List Maker](https://www.giftster.com) — Competitor analysis
-- [Giftwhale: Easiest Way to Create & Share Wish Lists](https://giftwhale.com) — Competitor analysis
-- [Drawnames: Wish Lists, Secret Santa, Gift Finder](https://www.drawnames.com/) — Competitor analysis
-- [Favory Launches Privacy-First Wishlist Platform](https://www.openpr.com/news/4189488/favory-launches-privacy-first-wishlist-platform-with) — Privacy patterns
+### Secondary (MEDIUM confidence — external research)
 
-**Architecture Research:**
-- [useOptimistic – React](https://react.dev/reference/react/useOptimistic) — React 19 optimistic updates
-- [PostgreSQL Transaction Isolation](https://www.postgresql.org/docs/current/transaction-iso.html) — Concurrency control
-- [PostgreSQL Relationships | One to One, One to Many, Many to Many](https://hasura.io/learn/database/postgresql/core-concepts/6-postgresql-relationships/) — Schema design
-
-**Pitfalls Research:**
-- [Race Condition Exploit - Schneier on Security](https://www.schneier.com/blog/archives/2015/05/race_condition_.html) — Concurrency vulnerabilities
-- [Backward Compatible Database Changes — PlanetScale](https://planetscale.com/blog/backward-compatible-databases-changes) — Migration patterns
-- [Persisting React State in localStorage - Josh Comeau](https://www.joshwcomeau.com/react/persisting-react-state-in-localstorage/) — localStorage pitfalls
-- [How to Write Performant React Apps with Context](https://www.developerway.com/posts/how-to-write-performant-react-apps-with-context) — Context performance
-
-**Codebase Analysis:**
-- `apps/gatherly/src/contexts/EventsContext.tsx` — Hybrid storage implementation
-- `apps/api/src/routes/gifts.ts` — Current claiming logic (race condition identified)
-- `apps/gatherly/src/pages/events/edit.tsx` — Assignment algorithm (2000 permutations, greedy backtracking)
-- `apps/api/src/db/schema.sql` — Database schema with UNIQUE constraint on gift_claims
-
-### Secondary (MEDIUM confidence)
-
-**Mobile UX:**
-- [9 Mobile App Design Trends for 2026 - UX Pilot](https://uxpilot.ai/blogs/mobile-app-design-trends) — iOS design patterns
-- [Essential iOS App UI/UX Guidelines for 2026 - EITBIZ](https://www.eitbiz.com/blog/ios-app-ui-ux-design-guidelines-you-should-follow/) — Mobile-first best practices
-- [Mobile Navigation Design: 6 Patterns That Work in 2026](https://phone-simulator.com/blog/mobile-navigation-patterns-in-2026) — Bottom navigation trends
-
-**Performance:**
-- [How to Optimize Website Images 2026 - Request Metrics](https://requestmetrics.com/web-performance/high-performance-images/) — Image optimization
-- [Impact of Image Optimization](https://www.androidheadlines.com/2026/01/the-impact-of-image-optimization-on-website-performance.html) — Performance metrics
-- [React State Management in 2025: What You Actually Need](https://www.developerway.com/posts/react-state-management-2025) — Zustand vs Context
-
-**Email & Invites:**
-- [Node.js Send Email: Tutorial with Code Snippets [2026] - Mailtrap](https://mailtrap.io/blog/send-emails-with-nodejs/) — Email integration
-- [Email Validation in React - Mailtrap Blog](https://mailtrap.io/blog/validate-emails-in-react/) — Client-side validation
-- [QR Codes for Wedding Invitations 2026 - TLinky](https://tlinky.com/qr-codes-for-wedding-invitations/) — QR code trends
-
-### Tertiary (LOW confidence)
-
-**Wishlist UX:**
-- [Wishlists, Gift Cards, and Gift Giving - Nielsen Norman Group](https://www.nngroup.com/reports/ecommerce-ux-wishlists-and-gifts/) — UX research (requires validation for Secret Santa context)
-- [Best Practices for Managing Wishlists Over Time - GiftList](https://giftlist.com/blog/best-practices-for-managing-wishlists-over-time) — General wishlist patterns (not Secret Santa specific)
+- [SignUpGenius Potluck](https://www.signupgenius.com/how-to-use/potluck), [PerfectPotluck](https://perfectpotluck.com/), [withlome](https://www.withlome.com/potluck-planner) — validated category/slot/quantity data model
+- [NNGroup Mobile App Onboarding](https://www.nngroup.com/articles/mobile-app-onboarding/) — component and technique baseline
+- [Appcues Mobile Onboarding Best Practices](https://www.appcues.com/blog/mobile-onboarding-best-practices) — completion rates, slide count thresholds, permission timing
+- [VWO Mobile App Onboarding Guide](https://vwo.com/blog/mobile-app-onboarding-guide/) — personalization timing, value-first approach
+- Expo SDK 54 documentation — `expo-image`, `expo-haptics`, `react-native-pager-view` APIs and caching behavior
 
 ---
-*Research completed: 2026-02-06*
+
+*Research completed: 2026-03-17*
 *Ready for roadmap: yes*
