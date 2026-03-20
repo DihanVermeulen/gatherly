@@ -1,4 +1,5 @@
 "use client";
+import { TextShimmer } from "@repo/ui-react/text-shimmer";
 import { use, useEffect, useState } from "react";
 
 type State = "loading" | "not_installed";
@@ -15,8 +16,8 @@ export default function MagicLinkPage({ params }: PageProps) {
     // For development: redirect to Expo Go using a clean URL (no #Intent fragment).
     // For production: use the proper intent:// scheme with Android intent syntax.
     const redirectUrl = appURL
-      ? `${appURL}/--/magic-link/${token}`     // Expo Go dev override
-      : `gatherly://magic-link/${token}`;      // custom scheme: dev builds + production
+      ? `${appURL}/--/magic-link/${token}` // Expo Go dev override
+      : `gatherly://magic-link/${token}`; // custom scheme: dev builds + production
 
     // Attempt deep link redirect.
     // NOTE: Chrome may block this from a timer (no user gesture) — the visible
@@ -38,8 +39,8 @@ export default function MagicLinkPage({ params }: PageProps) {
 
   const appURL = process.env.NEXT_PUBLIC_EXPO_URL;
   const deepLinkUrl = appURL
-    ? `${appURL}/--/magic-link/${token}`     // Expo Go dev override
-    : `gatherly://magic-link/${token}`;      // custom scheme: dev builds + production
+    ? `${appURL}/--/magic-link/${token}` // Expo Go dev override
+    : `gatherly://magic-link/${token}`; // custom scheme: dev builds + production
 
   if (state === "not_installed") {
     return (
@@ -102,12 +103,9 @@ export default function MagicLinkPage({ params }: PageProps) {
         A
       </div>
 
-      {/* Spinner */}
-      <div className="w-10 h-10 border-4 border-brand-500/20 border-t-brand-500 rounded-full animate-spin mb-6" />
-
-      <h1 className="text-xl font-semibold text-gray-900 mb-2">
+      <TextShimmer className="text-xl font-semibold mb-2" duration={1}>
         Opening the app...
-      </h1>
+      </TextShimmer>
       <p className="text-gray-400 text-sm max-w-xs">
         If the app doesn&apos;t open automatically, you may need to install
         Gatherly first.
