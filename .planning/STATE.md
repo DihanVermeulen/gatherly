@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 31 of 33 (Onboarding Screens)
-Plan: 01 of 02
-Status: In progress
-Last activity: 2026-03-20 — Completed 31-01-PLAN.md (onboarding plumbing, welcome carousel, auth types)
+Plan: 02 of 02
+Status: Phase complete
+Last activity: 2026-03-20 — Completed 31-02-PLAN.md (profile setup + preferences onboarding screens)
 
-Progress: [████████████████████████░░] v2.1 complete, v2.2 Phase 30 done, Phase 31 plan 1/2 done
+Progress: [█████████████████████████░] v2.1 complete, v2.2 Phase 30 done, Phase 31 complete
 
 ## Performance Metrics
 
@@ -28,7 +28,7 @@ Progress: [███████████████████████
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 30. Infrastructure | 4 | — | — |
-| 31. Onboarding Screens | 1/2 done | 12m 28s | 12m 28s |
+| 31. Onboarding Screens | 2/2 done | ~32m | ~16m |
 | 32. Screen Redesigns | TBD | — | — |
 | 33. Potluck Screens | TBD | — | — |
 
@@ -50,6 +50,9 @@ Progress: [███████████████████████
 - welcome screen is first entry in unauth guard block — default landing for unauthenticated users
 - onboarding screens registered in auth guard block (not a separate guard) — accessible to logged-in users
 - router.replace('...as never') pattern for onboarding routes — Expo Router strict types don't include nested onboarding routes
+- Onboarding completion pattern: usersApi.updateMe({ onboardingComplete: true }) + updateUser locally + router.replace('/(tabs)') — always in this order; catch block still calls updateUser locally (non-fatal)
+- Gift Preferences field in profile-setup.tsx is cosmetic — no gift_preferences column in DB, field not sent to API
+- expo-haptics required for Preferences screen chip toggles — installed via npm --ignore-scripts
 - Trigger function name is update_updated_at_column() — not set_updated_at(); always use update_updated_at_column() in new migrations
 - Phase 30 DB migration (014-phase30-v22.sql) applied — potluck tables, events columns (location/cover_photo/allow_guest_invites/is_public), users columns (bio/interests/avatar_url/onboarding_complete) all exist
 - Phase 31 DB migration (015-phase31-onboarding.sql) applied — onboarding_complete now defaults to FALSE for new users
@@ -79,8 +82,8 @@ Progress: [███████████████████████
 
 ## Session Continuity
 
-Last session: 2026-03-20T07:48:42Z
-Stopped at: Completed 31-01-PLAN.md — onboarding plumbing, welcome carousel, auth types
+Last session: 2026-03-20
+Stopped at: Completed 31-02-PLAN.md — profile setup + preferences onboarding screens, Phase 31 complete
 Resume file: None
 
-Next step: Execute Phase 31 Plan 02 (Onboarding Screens UI).
+Next step: Execute Phase 32 (Screen Redesigns).
