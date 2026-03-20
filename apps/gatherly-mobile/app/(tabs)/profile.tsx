@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  ScrollView,
-  TextInput,
-  View,
-} from "react-native";
+import { ActivityIndicator, ScrollView, TextInput, View } from "react-native";
 import { LogOut, Pencil, X, Check, User } from "lucide-react-native";
 import { useSession } from "@/app/contexts/AuthContext";
 import { Text } from "@/components/ui/text";
@@ -49,7 +44,7 @@ export default function ProfileScreen() {
     setSaveError(null);
     try {
       const updated = await usersApi.updateMe(nameInput.trim());
-      setProfile((prev) => prev ? { ...prev, name: updated.name } : prev);
+      setProfile((prev) => (prev ? { ...prev, name: updated.name } : prev));
       setEditing(false);
     } catch (err: any) {
       setSaveError(err?.response?.data?.error || "Failed to save name.");
@@ -102,7 +97,12 @@ export default function ProfileScreen() {
                   value={nameInput}
                   onChangeText={setNameInput}
                   placeholder="Your name"
-                  style={{ fontSize: 18, fontWeight: "700", color: "#0f172a", minWidth: 160 }}
+                  style={{
+                    fontSize: 18,
+                    fontWeight: "700",
+                    color: "#0f172a",
+                    minWidth: 160,
+                  }}
                   autoFocus
                   returnKeyType="done"
                   onSubmitEditing={handleSaveName}
@@ -148,7 +148,9 @@ export default function ProfileScreen() {
             <Text className="text-error-500 text-sm mt-1">{saveError}</Text>
           ) : null}
 
-          <Text className="text-typography-500 text-sm mt-1">{displayEmail}</Text>
+          <Text className="text-typography-500 text-sm mt-1">
+            {displayEmail}
+          </Text>
         </View>
 
         {/* ── Stats row ─────────────────────────────────── */}
@@ -159,14 +161,6 @@ export default function ProfileScreen() {
             </Text>
             <Text className="text-xs text-typography-500 mt-1 text-center">
               Events Organised
-            </Text>
-          </View>
-          <View className="flex-1 rounded-2xl border border-outline-100 bg-white p-4 items-center">
-            <Text className="text-2xl font-bold text-indigo-500">
-              {user?.role === "organizer" ? "Organiser" : "Member"}
-            </Text>
-            <Text className="text-xs text-typography-500 mt-1 text-center">
-              Account Type
             </Text>
           </View>
         </View>

@@ -88,7 +88,7 @@ function RootLayoutNav() {
 
   return (
     <GluestackUIProvider mode={colorMode}>
-      <EventsProvider key={session ?? "unauthenticated"}>
+      <EventsProvider>
         <GestureHandlerRootView style={{ flex: 1 }}>
           <View className="h-full w-full bg-background-500">
             <SafeAreaView

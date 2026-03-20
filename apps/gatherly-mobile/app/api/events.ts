@@ -39,7 +39,6 @@ export type TEvent = {
   totalWishlistCount?: number;
   claimedCount?: number;
   // Phase 24 additions
-  eventType?: string;
   featureFlags?: Record<string, any>;
   // Phase 25 additions
   planTier?: 'free' | 'standard';

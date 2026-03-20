@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { View, TextInput, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { CheckCircle, AlertTriangle } from "lucide-react-native";
@@ -14,14 +14,14 @@ import { VStack } from "@/components/ui/vstack";
 import { Input, InputField } from "@/components/ui/input";
 
 type MagicLinkState =
-  | "loading"         // calling /lookup
-  | "preview"         // show event info + choice
-  | "name-prompt"     // without-account path: full-screen name input
-  | "joining"         // calling /redeem
-  | "success"         // auto-dismiss 1.5s then event-details
-  | "already-joined"  // user already a participant
-  | "invalid"         // token expired/not-found
-  | "error";          // network or unexpected error
+  | "loading" // calling /lookup
+  | "preview" // show event info + choice
+  | "name-prompt" // without-account path: full-screen name input
+  | "joining" // calling /redeem
+  | "success" // auto-dismiss 1.5s then event-details
+  | "already-joined" // user already a participant
+  | "invalid" // token expired/not-found
+  | "error"; // network or unexpected error
 
 const HERO_COLORS = [
   "#14b8a6", // teal-500
@@ -36,7 +36,7 @@ export default function MagicLinkScreen() {
   const { token } = useLocalSearchParams<{ token: string }>();
   const router = useRouter();
   const { signIn, session, user } = useSession();
-  const { state: eventsState } = useEvents();
+  const { state: eventsState, refreshEvents } = useEvents();
   const events = eventsState.events;
 
   const [state, setState] = useState<MagicLinkState>("loading");
@@ -48,6 +48,7 @@ export default function MagicLinkScreen() {
   const [participantName, setParticipantName] = useState("");
   const [isSubmittingName, setIsSubmittingName] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const hasJoined = useRef(false);
 
   const heroColor = eventId
     ? HERO_COLORS[eventId % HERO_COLORS.length]
@@ -55,6 +56,7 @@ export default function MagicLinkScreen() {
 
   // On mount (or retry): call /lookup to get event preview without creating any participant record
   useEffect(() => {
+    if (hasJoined.current) return; // don't re-run lookup after a successful join
     if (!token) {
       setState("invalid");
       return;
@@ -73,7 +75,7 @@ export default function MagicLinkScreen() {
         // Already-joined check: if user is logged in, see if they're already in this event
         if (session && user) {
           const existingEvent = events.find(
-            (e) => e.id === String(preview.eventId)
+            (e) => e.id === String(preview.eventId),
           );
           if (existingEvent && existingEvent.people?.includes(user.name)) {
             setState("already-joined");
@@ -84,7 +86,8 @@ export default function MagicLinkScreen() {
         setState("preview");
       })
       .catch((err: unknown) => {
-        const status = (err as { response?: { status?: number } })?.response?.status;
+        const status = (err as { response?: { status?: number } })?.response
+          ?.status;
         if (status === 401 || status === 400 || status === 404) {
           setState("invalid");
         } else {
@@ -96,35 +99,45 @@ export default function MagicLinkScreen() {
   // Auto-join when session becomes truthy after redirect from sign-in
   // (user went through "Join with account" flow and returned here)
   useEffect(() => {
-    if (session && state === "preview") {
+    if (session && state === "preview" && !hasJoined.current) {
       handleJoin();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session]);
+  }, [session, state]);
 
-  // Navigate to event details 1.5 seconds after success
+  // Navigate to event details 1.5 seconds after success (wait for event to be in context)
   useEffect(() => {
+    console.log("🚀 ~ MagicLinkScreen ~ eventId:", eventId);
+    console.log("🚀 ~ MagicLinkScreen ~ state:", state);
     if (state === "success" && eventId !== null) {
+      const eventInContext = events.some((e) => e.id === String(eventId));
+      if (!eventInContext) return; // wait for refreshEvents to populate
       const timer = setTimeout(() => {
-        router.push(`/event-details?id=${eventId}` as never);
+        router.replace(`/event-details?id=${eventId}` as never);
       }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [state, eventId]);
+  }, [state, eventId, events]);
 
   // Handle join for logged-in users
   async function handleJoin() {
-    if (state === "joining") return; // double-call guard
+    console.log("🚀 ~ handleJoin ~ state:", state);
+    if (state === "joining" || hasJoined.current) return; // double-call guard
     setState("joining");
     try {
       const response = await authApi.redeemMagicLink(token, user?.email);
-      await signIn(response.accessToken, response.user);
+      // Update local state first to ensure hasJoined is true before signIn might trigger side effects
+      hasJoined.current = true;
       const resolvedEventId = response.user.eventId ?? eventId;
       if (resolvedEventId) setEventId(resolvedEventId);
       if (response.user.eventName) setEventName(response.user.eventName);
+
+      await signIn(response.accessToken, response.user);
+      await refreshEvents();
       setState("success");
     } catch (err: unknown) {
-      const status = (err as { response?: { status?: number } })?.response?.status;
+      const status = (err as { response?: { status?: number } })?.response
+        ?.status;
       if (status === 401 || status === 400) {
         setState("invalid");
       } else {
@@ -144,11 +157,17 @@ export default function MagicLinkScreen() {
     if (!participantName.trim()) return;
     setIsSubmittingName(true);
     try {
-      const response = await authApi.redeemMagicLink(token, undefined, participantName.trim());
+      const response = await authApi.redeemMagicLink(
+        token,
+        undefined,
+        participantName.trim(),
+      );
       await signIn(response.accessToken, response.user);
       const resolvedEventId = response.user.eventId ?? eventId;
       if (resolvedEventId) setEventId(resolvedEventId);
       if (response.user.eventName) setEventName(response.user.eventName);
+      await refreshEvents();
+      hasJoined.current = true;
       setState("success");
     } catch {
       setState("error");
@@ -183,7 +202,10 @@ export default function MagicLinkScreen() {
             </View>
             {/* Details */}
             <View className="px-4 mt-6">
-              <Heading size="2xl" className="text-typography-900 font-bold mb-2">
+              <Heading
+                size="2xl"
+                className="text-typography-900 font-bold mb-2"
+              >
                 {eventName}
               </Heading>
               {organizerName && (
@@ -263,7 +285,10 @@ export default function MagicLinkScreen() {
       case "name-prompt":
         return (
           <View className="flex-1 items-center justify-center px-8 gap-6">
-            <Heading size="2xl" className="text-typography-900 font-bold text-center">
+            <Heading
+              size="2xl"
+              className="text-typography-900 font-bold text-center"
+            >
               What's your name?
             </Heading>
             <Text className="text-typography-500 text-center">
@@ -301,7 +326,10 @@ export default function MagicLinkScreen() {
         return (
           <View className="flex-1 items-center justify-center px-8 gap-4">
             <CheckCircle size={64} color="#10b981" />
-            <Heading size="2xl" className="text-typography-900 font-bold text-center">
+            <Heading
+              size="2xl"
+              className="text-typography-900 font-bold text-center"
+            >
               Welcome!
             </Heading>
             <Text className="text-typography-500 text-center">
@@ -324,7 +352,10 @@ export default function MagicLinkScreen() {
               </Text>
             </View>
             <View className="px-4 mt-6 items-center">
-              <Heading size="xl" className="text-typography-900 font-bold text-center mb-2">
+              <Heading
+                size="xl"
+                className="text-typography-900 font-bold text-center mb-2"
+              >
                 You're already a member
               </Heading>
               <Text className="text-typography-500 text-center mb-6">
@@ -335,7 +366,7 @@ export default function MagicLinkScreen() {
                 action="primary"
                 className="w-full rounded-2xl"
                 onPress={() =>
-                  router.push(`/event-details?id=${eventId}` as never)
+                  router.replace(`/event-details?id=${eventId}` as never)
                 }
               >
                 <ButtonText className="font-semibold">View Event</ButtonText>
@@ -349,7 +380,10 @@ export default function MagicLinkScreen() {
           <View className="flex-1 items-center justify-center px-8 gap-4">
             <AlertTriangle size={64} color="#f59e0b" />
             <VStack className="items-center gap-2">
-              <Heading size="xl" className="text-typography-900 font-bold text-center">
+              <Heading
+                size="xl"
+                className="text-typography-900 font-bold text-center"
+              >
                 This link is no longer valid
               </Heading>
               <Text className="text-typography-500 text-center">
@@ -373,7 +407,10 @@ export default function MagicLinkScreen() {
           <View className="flex-1 items-center justify-center px-8 gap-4">
             <AlertTriangle size={64} color="#ef4444" />
             <VStack className="items-center gap-2">
-              <Heading size="xl" className="text-typography-900 font-bold text-center">
+              <Heading
+                size="xl"
+                className="text-typography-900 font-bold text-center"
+              >
                 Something went wrong
               </Heading>
               <Text className="text-typography-500 text-center">

@@ -42,8 +42,14 @@ type EventsAction =
       type: "SET_WISHLISTS";
       payload: { eventId: string; items: WishlistItem[] };
     }
-  | { type: "CLAIM_WISHLIST_ITEM"; payload: { eventId: string; itemId: number } }
-  | { type: "UNCLAIM_WISHLIST_ITEM"; payload: { eventId: string; itemId: number } };
+  | {
+      type: "CLAIM_WISHLIST_ITEM";
+      payload: { eventId: string; itemId: number };
+    }
+  | {
+      type: "UNCLAIM_WISHLIST_ITEM";
+      payload: { eventId: string; itemId: number };
+    };
 
 const initialState: EventsState = {
   events: [],
@@ -157,10 +163,10 @@ const eventsReducer = (
                 wishlists: (event.wishlists || []).map((item) =>
                   item.id === action.payload.itemId
                     ? { ...item, isClaimed: true, claimedByMe: true }
-                    : item
+                    : item,
                 ),
               }
-            : event
+            : event,
         ),
       };
     case "UNCLAIM_WISHLIST_ITEM":
@@ -173,10 +179,10 @@ const eventsReducer = (
                 wishlists: (event.wishlists || []).map((item) =>
                   item.id === action.payload.itemId
                     ? { ...item, isClaimed: false, claimedByMe: false }
-                    : item
+                    : item,
                 ),
               }
-            : event
+            : event,
         ),
       };
     default:
@@ -192,7 +198,7 @@ export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({
   const [state, dispatch] = useReducer(eventsReducer, initialState);
 
   const db = useDatabase();
-  const { user } = useSession();
+  const { session, user } = useSession();
   const userId = user?.id ? String(user.id) : null;
 
   // Load cached events from SQLite on mount, filtered to the current user.
@@ -209,11 +215,18 @@ export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     };
     loadFromStorage();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [db, userId]);
 
   // Check if API is available on mount, then fetch fresh data
   useEffect(() => {
+    if (!session) {
+      setUseApi(false);
+      dispatch({ type: "SET_EVENTS", payload: [] });
+      return;
+    }
     let mounted = true;
     const checkApi = async () => {
       try {
@@ -235,8 +248,10 @@ export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     };
     checkApi();
-    return () => { mounted = false; };
-  }, [db, userId]);
+    return () => {
+      mounted = false;
+    };
+  }, [db, userId, session]);
 
   // Refresh events from API (for manual refresh calls)
   const refreshEvents = async () => {

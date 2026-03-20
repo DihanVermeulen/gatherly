@@ -6,7 +6,7 @@ export type Invite = {
   email: string | null;
   invite_url: string;
   magic_link_url: string;
-  status: 'pending' | 'accepted' | 'expired';
+  status: "pending" | "accepted" | "expired";
   participant_name?: string;
   created_at: string;
   expires_at: string;
@@ -37,9 +37,7 @@ export const invitesApi = {
 
   // List all invites for an event
   list: (eventId: string): Promise<{ invites: Invite[] }> =>
-    apiClient
-      .get(`/api/events/${eventId}/invites`)
-      .then((r) => r.data),
+    apiClient.get(`/api/events/${eventId}/invites`).then((r) => r.data),
 
   // Delete a single invite
   delete: (eventId: string, inviteId: number): Promise<void> =>
@@ -48,19 +46,24 @@ export const invitesApi = {
       .then((r) => r.data),
 
   // Resend magic link for a pending invite
-  resend: (eventId: string, inviteId: number): Promise<{ magic_link_url: string; email_sent: boolean }> =>
+  resend: (
+    eventId: string,
+    inviteId: number,
+  ): Promise<{ magic_link_url: string; email_sent: boolean }> =>
     apiClient
       .post(`/api/events/${eventId}/invites/${inviteId}/resend-magic-link`)
       .then((r) => r.data),
 
   // Validate an invite code (public endpoint, no auth required)
   validate: (code: string): Promise<InvitePreview> =>
-    apiClient
-      .post('/api/invites/validate', { code })
-      .then((r) => r.data),
+    apiClient.post("/api/invites/validate", { code }).then((r) => r.data),
 
   // Accept an invite (public endpoint, but app enforces auth client-side)
-  accept: (code: string, participantName: string, email?: string): Promise<JoinResult> =>
+  accept: (
+    code: string,
+    participantName: string,
+    email?: string,
+  ): Promise<JoinResult> =>
     apiClient
       .post(`/api/invites/${code}/accept`, { participantName, email })
       .then((r) => r.data),
