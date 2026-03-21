@@ -74,11 +74,11 @@ Plans:
   1. The Event Details screen shows module cards (Gift Exchange, Potluck) and displays the event cover photo hero and location when set
   2. The Manage Event screen exposes cover photo picker, location field, allow_guest_invites toggle, and is_public toggle alongside the existing guest list and active modules sections
   3. The Module Config screen matches the ModuleConfig.png template with the "Customize Your Event" redesign
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 32-01: Event Hub (Details) + Manage Event screen redesigns
-- [ ] 32-02: Module Config screen redesign
+- [ ] 32-01-PLAN.md — Backend API changes (organizerName, remove gift_exchange auto-insert) + Event Hub screen redesign
+- [ ] 32-02-PLAN.md — Manage Event redesign + edit-event-details sub-screen + Module Config redesign
 
 #### Phase 33: Potluck Screens
 **Goal**: Organizers can set up a potluck with categorised items and quantities; all event members can view the live list and claim or withdraw slots with full visibility of who signed up.
