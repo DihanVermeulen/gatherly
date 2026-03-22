@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 Phase: 33 of 33 (Potluck Screens)
 Plan: 00 of TBD
 Status: Not started
-Last activity: 2026-03-22 — Completed Phase 32 gap-04: event-details module fixes (Secret Assignment gate, bottom bar removal, inactive-module toast)
+Last activity: 2026-03-22 — Completed Phase 32 gap closure (plans 04-06) — 9/9 must-haves verified, phase fully complete (6/6 plans)
 
 Progress: [█████████████████████████░] v2.1 complete, v2.2 Phase 30 done, Phase 31 complete
 
@@ -29,7 +29,7 @@ Progress: [███████████████████████
 |-------|-------|-------|----------|
 | 30. Infrastructure | 4 | — | — |
 | 31. Onboarding Screens | 2/2 done | ~32m | ~16m |
-| 32. Screen Redesigns | 2/TBD | ~25m | ~12m |
+| 32. Screen Redesigns | 6/6 done | ~55m | ~9m |
 | 33. Potluck Screens | TBD | — | — |
 
 *Updated after each plan completion*
@@ -96,7 +96,7 @@ Progress: [███████████████████████
 ## Session Continuity
 
 Last session: 2026-03-22
-Stopped at: Phase 32 gap-04 complete — event-details three-fix plan done
+Stopped at: Phase 32 complete — all 6 plans done, 9/9 gap must-haves verified
 Resume file: None
 
 Next step: Plan and execute Phase 33 (Potluck Screens).
