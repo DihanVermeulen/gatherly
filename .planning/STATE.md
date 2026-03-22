@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 Phase: 33 of 33 (Potluck Screens)
 Plan: 00 of TBD
 Status: Not started
-Last activity: 2026-03-22 — Completed Phase 32 (Screen Redesigns) — all 3 plans done, 10/10 must-haves verified
+Last activity: 2026-03-22 — Completed Phase 32 gap-04: event-details module fixes (Secret Assignment gate, bottom bar removal, inactive-module toast)
 
 Progress: [█████████████████████████░] v2.1 complete, v2.2 Phase 30 done, Phase 31 complete
 
@@ -68,6 +68,8 @@ Progress: [███████████████████████
 - expo-file-system installed in gatherly-mobile (npm --ignore-scripts) for cover photo base64 reading in edit-event-details
 - expo-file-system EncodingType removed from main export in newer version — use string literal 'base64' instead of FileSystem.EncodingType.Base64
 - Module Config auto-save pattern: optimistic update -> modulesApi.setModules(all active) -> revert on error; no Save button
+- Module-gated UI pattern: wrap module-specific cards in activeModuleTypes.has('type') guard — Secret Assignment card is the canonical example
+- Module Pressable disabled={isComingSoon} only — inactive (non-comingSoon) modules must remain tappable to show "Enable in Module Config" toast
 - Modules are categorized: ACTIVITY (gift_exchange, white_elephant), COLLABORATION (potluck, expense_splitter, polls, rsvp), MEMORIES (photo_gallery)
 - comingSoon modules: disabled toggle + grayed opacity + badge text; NOT sent to API
 - showToast() helper: ToastAndroid.show() on Android, Alert.alert() on iOS — use for cross-platform toast
@@ -94,7 +96,7 @@ Progress: [███████████████████████
 ## Session Continuity
 
 Last session: 2026-03-22
-Stopped at: Phase 32 complete — all 3 plans done, verified 10/10
+Stopped at: Phase 32 gap-04 complete — event-details three-fix plan done
 Resume file: None
 
 Next step: Plan and execute Phase 33 (Potluck Screens).
