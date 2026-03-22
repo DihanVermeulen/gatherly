@@ -191,6 +191,16 @@ router.get(
     );
     const wishlistStats = wishlistStatsResult.rows[0] || { total_wishlist_count: 0, claimed_count: 0 };
 
+    // Get organizer name
+    let organizerName: string | null = null;
+    if (event.organizer_id) {
+      const organizerResult = await query(
+        "SELECT name FROM users WHERE id = $1",
+        [event.organizer_id],
+      );
+      organizerName = organizerResult.rows[0]?.name || null;
+    }
+
     res.json({
       id: event.id.toString(),
       name: event.name,
@@ -215,6 +225,7 @@ router.get(
       isPublic: event.is_public || false,
       totalWishlistCount: wishlistStats.total_wishlist_count,
       claimedCount: wishlistStats.claimed_count,
+      organizerName,
     });
   }),
 );
@@ -237,12 +248,6 @@ router.post(
     );
 
     const event = result.rows[0];
-
-    // Auto-insert gift_exchange module for new events
-    await query(
-      "INSERT INTO event_modules (event_id, module_type, status, sort_order) VALUES ($1, 'gift_exchange', 'active', 0) ON CONFLICT (event_id, module_type) DO NOTHING",
-      [event.id],
-    );
 
     res.status(201).json({
       id: event.id.toString(),

@@ -42,6 +42,14 @@ export type TEvent = {
   featureFlags?: Record<string, any>;
   // Phase 25 additions
   planTier?: 'free' | 'standard';
+  // Phase 30 additions
+  hasCoverPhoto?: boolean;
+  // Phase 32 additions
+  coverPhotoUrl?: string | null;
+  location?: string | null;
+  allowGuestInvites?: boolean;
+  isPublic?: boolean;
+  organizerName?: string | null;
 };
 
 export type TEventModule = {
