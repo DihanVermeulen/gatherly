@@ -7,9 +7,9 @@
 
 ### Screen Redesigns
 
-- [ ] **REDESIGN-01**: User sees event details as an Event Hub with module cards (Gift Exchange, Potluck, Memories)
-- [ ] **REDESIGN-02**: Organizer can manage event via redesigned Manage Event screen (cover photo, location, guest list, active modules, global settings)
-- [ ] **REDESIGN-03**: Organizer can configure event modules via redesigned Module Config screen matching new ModuleConfig.png template
+- [x] **REDESIGN-01**: User sees event details as an Event Hub with module cards (Gift Exchange, Potluck, Memories)
+- [x] **REDESIGN-02**: Organizer can manage event via redesigned Manage Event screen (cover photo, location, guest list, active modules, global settings)
+- [x] **REDESIGN-03**: Organizer can configure event modules via redesigned Module Config screen matching new ModuleConfig.png template
 
 ### Welcoming Onboarding
 
@@ -79,9 +79,9 @@
 | ONBOARD-03 | Phase 31 | Pending |
 | ONBOARD-04 | Phase 31 | Pending |
 | ONBOARD-05 | Phase 31 | Pending |
-| REDESIGN-01 | Phase 32 | Pending |
-| REDESIGN-02 | Phase 32 | Pending |
-| REDESIGN-03 | Phase 32 | Pending |
+| REDESIGN-01 | Phase 32 | Complete |
+| REDESIGN-02 | Phase 32 | Complete |
+| REDESIGN-03 | Phase 32 | Complete |
 | POTLUCK-01 | Phase 33 | Pending |
 | POTLUCK-02 | Phase 33 | Pending |
 | POTLUCK-03 | Phase 33 | Pending |

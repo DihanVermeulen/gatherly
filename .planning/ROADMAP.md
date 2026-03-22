@@ -79,7 +79,7 @@ Plans:
 Plans:
 - [x] 32-01-PLAN.md — Backend API changes (organizerName, remove gift_exchange auto-insert) + Event Hub screen redesign
 - [x] 32-02-PLAN.md — Manage Event redesign + edit-event-details sub-screen + Module Config redesign
-- [ ] 32-03-PLAN.md — Gap closure: wire coverPhotoUrl + organizerName via getById fetch
+- [x] 32-03-PLAN.md — Gap closure: wire coverPhotoUrl + organizerName via getById fetch
 
 #### Phase 33: Potluck Screens
 **Goal**: Organizers can set up a potluck with categorised items and quantities; all event members can view the live list and claim or withdraw slots with full visibility of who signed up.
@@ -122,5 +122,5 @@ Plans:
 | 29. Phase 27 Fix — Smart Join Flow | v2.1 | 3/3 | Complete | 2026-03-13 |
 | 30. Infrastructure — Migration and API | v2.2 | 4/4 | Complete | 2026-03-18 |
 | 31. Onboarding Screens | v2.2 | 0/2 | Not started | - |
-| 32. Screen Redesigns | v2.2 | 2/3 | In progress | - |
+| 32. Screen Redesigns | v2.2 | 3/3 | Complete | 2026-03-22 |
 | 33. Potluck Screens | v2.2 | 0/2 | Not started | - |
