@@ -1,4 +1,10 @@
-import React, { useState, useRef, useMemo, useCallback, useEffect } from "react";
+import React, {
+  useState,
+  useRef,
+  useMemo,
+  useCallback,
+  useEffect,
+} from "react";
 import { useColorScheme } from "@/components/useColorScheme";
 import BottomSheet, {
   BottomSheetView,
@@ -30,6 +36,7 @@ import { Text } from "@/components/ui/text";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Fab, FabIcon } from "@/components/ui/fab";
 import { useRouter } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 import { eventsApi } from "@/app/api/events";
 import { TEvent } from "@/app/api/events";
 import { useSession } from "@/app/contexts/AuthContext";
@@ -37,15 +44,6 @@ import { useSession } from "@/app/contexts/AuthContext";
 // Filter pill types
 type FilterType = "All" | "Planning" | "Active";
 
-// Colour palette for event hero blocks — cycles through based on index
-const HERO_COLORS = [
-  "bg-teal-500",
-  "bg-indigo-500",
-  "bg-rose-500",
-  "bg-amber-500",
-  "bg-emerald-500",
-  "bg-violet-500",
-];
 
 export default function EventsScreen() {
   const colorScheme = useColorScheme();
@@ -132,50 +130,6 @@ export default function EventsScreen() {
 
   return (
     <View className="flex-1 bg-background-0">
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog
-        isOpen={isDeleteAlertOpen}
-        onClose={() => {
-          setIsDeleteAlertOpen(false);
-          setEventToDeleteId(null);
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogCloseButton>
-              <Text className="text-base font-bold text-typography-900">
-                Delete Event
-              </Text>
-            </AlertDialogCloseButton>
-          </AlertDialogHeader>
-          <AlertDialogBody>
-            <Text className="text-typography-700">
-              Are you sure you want to delete this event? This cannot be undone.
-            </Text>
-          </AlertDialogBody>
-          <AlertDialogFooter>
-            <View className="flex-row gap-3 w-full">
-              <Button
-                variant="outline"
-                className="flex-1 rounded-xl"
-                onPress={() => {
-                  setIsDeleteAlertOpen(false);
-                  setEventToDeleteId(null);
-                }}
-              >
-                <ButtonText>Cancel</ButtonText>
-              </Button>
-              <Button
-                className="flex-1 rounded-xl bg-error-600"
-                onPress={handleDeleteConfirmed}
-              >
-                <ButtonText className="text-white font-bold">Delete</ButtonText>
-              </Button>
-            </View>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
       {/* Header */}
       <View className="flex-row items-center justify-between px-5 pt-4 pb-3">
         <Text className="text-2xl font-bold text-typography-900">
@@ -273,10 +227,9 @@ export default function EventsScreen() {
           data={filteredEvents}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 120 }}
-          renderItem={({ item, index }) => (
+          renderItem={({ item }) => (
             <EventCard
               item={item}
-              index={index}
               onPress={() => router.push(`/event-details?id=${item.id}`)}
               onManage={() => router.push(`/edit-event?id=${item.id}`)}
               onDelete={() => confirmDelete(item.id)}
@@ -322,7 +275,6 @@ export default function EventsScreen() {
 
 type EventCardProps = {
   item: TEvent;
-  index: number;
   onPress: () => void;
   onManage: () => void;
   onDelete: () => void;
@@ -330,13 +282,11 @@ type EventCardProps = {
 
 function EventCard({
   item,
-  index,
   onPress,
   onManage,
   onDelete,
 }: EventCardProps) {
   const isActive = item.assignments !== null && item.assignments !== undefined;
-  const heroColor = HERO_COLORS[index % HERO_COLORS.length];
   const initial = item.name.charAt(0).toUpperCase();
   const participantCount =
     item.people?.length ?? item.participants?.length ?? 0;
@@ -355,7 +305,12 @@ function EventCard({
       }}
     >
       {/* Hero block */}
-      <View className={`h-32 ${heroColor} items-center justify-center`}>
+      <LinearGradient
+        colors={["#14b8a6", "#0f766e", "#134e4a"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{ height: 128, alignItems: "center", justifyContent: "center" }}
+      >
         <Text
           className="text-5xl font-bold text-white"
           style={{ opacity: 0.9 }}
@@ -372,7 +327,7 @@ function EventCard({
             {isActive ? "Active" : "Planning"}
           </Text>
         </View>
-      </View>
+      </LinearGradient>
 
       {/* Card body */}
       <View className="p-4">
@@ -405,22 +360,6 @@ function EventCard({
               </Text>
             </View>
           ) : null}
-        </View>
-
-        {/* Action row */}
-        <View className="flex-row gap-2 items-center">
-          <Pressable
-            onPress={onManage}
-            className="flex-1 rounded-xl bg-primary-500 py-2.5 items-center active:opacity-80"
-          >
-            <Text className="text-white font-bold text-sm">Manage</Text>
-          </Pressable>
-          <Pressable
-            onPress={onDelete}
-            className="h-10 w-10 rounded-xl border border-error-200 items-center justify-center active:bg-error-50"
-          >
-            <Trash2 size={16} color="#ef4444" />
-          </Pressable>
         </View>
       </View>
     </Pressable>

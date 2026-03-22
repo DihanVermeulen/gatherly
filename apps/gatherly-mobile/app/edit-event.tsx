@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -9,7 +9,7 @@ import {
   Platform,
   Alert,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import {
   ArrowLeft,
   Check,
@@ -170,6 +170,12 @@ export default function EditEventScreen() {
       setModulesLoading(false);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (id) loadModules();
+    }, [id])
+  );
 
   useEffect(() => {
     eventsApi.getById(id).then((detail) => {
