@@ -1,17 +1,28 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, Share, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  Share,
+  ToastAndroid,
+  View,
+  Platform,
+  Alert,
+} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ArrowLeft,
   Check,
-  ChevronRight,
   Copy,
   Eye,
   EyeOff,
-  Minus,
-  Plus,
+  Settings,
+  MapPin,
+  Pencil,
   Share2,
+  UserPlus,
   X,
+  Calendar,
 } from "lucide-react-native";
 import QRCode from "react-qr-code";
 import * as Clipboard from "expo-clipboard";
@@ -19,6 +30,8 @@ import * as Clipboard from "expo-clipboard";
 import { useEvents } from "./contexts/EventsContext";
 import { useSession } from "./contexts/AuthContext";
 import { eventsApi } from "./api/events";
+import { modulesApi } from "./api/modules";
+import { TEventModule } from "./api/events";
 import { invitesApi, Invite } from "./api/invites";
 
 import { Text } from "@/components/ui/text";
@@ -47,6 +60,41 @@ const AVATAR_COLORS = [
   "#f43f5e", // rose-500
 ];
 
+// Module display metadata
+const MODULE_META: Record<string, { label: string; icon: string }> = {
+  gift_exchange: { label: "Gift Exchange", icon: "🎁" },
+  polls: { label: "Polls", icon: "📊" },
+  rsvp: { label: "RSVP", icon: "✅" },
+  potluck: { label: "Potluck", icon: "🍽️" },
+  white_elephant: { label: "White Elephant", icon: "🐘" },
+  photo_gallery: { label: "Photo Gallery", icon: "📷" },
+  expense_splitter: { label: "Expense Splitter", icon: "💰" },
+};
+
+function formatEventDate(dateString?: string | null): string {
+  if (!dateString) return "";
+  try {
+    const d = new Date(dateString);
+    return d.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return dateString;
+  }
+}
+
+function showToast(message: string) {
+  if (Platform.OS === "android") {
+    ToastAndroid.show(message, ToastAndroid.SHORT);
+  } else {
+    Alert.alert("", message);
+  }
+}
+
 export default function EditEventScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -58,7 +106,6 @@ export default function EditEventScreen() {
   const { user } = useSession();
 
   // ── State ────────────────────────────────────────────────────────
-  const [loading, setLoading] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [currentInvite, setCurrentInvite] = useState<Invite | null>(null);
   const [inviteLoading, setInviteLoading] = useState(false);
@@ -76,6 +123,12 @@ export default function EditEventScreen() {
   const [inviteList, setInviteList] = useState<Invite[]>([]);
   const [inviteListLoading, setInviteListLoading] = useState(false);
   const [resendingInvite, setResendingInvite] = useState<number | null>(null);
+  const [showGuestDetails, setShowGuestDetails] = useState(false);
+  const [activeModules, setActiveModules] = useState<TEventModule[]>([]);
+  const [modulesLoading, setModulesLoading] = useState(true);
+  const [allowGuestInvites, setAllowGuestInvites] = useState(false);
+  const [isPublic, setIsPublic] = useState(false);
+  const [updatingSettings, setUpdatingSettings] = useState(false);
 
   // ── Derived values ───────────────────────────────────────────────
   const event = events.find((e) => e.id === id) ?? null;
@@ -86,8 +139,10 @@ export default function EditEventScreen() {
   // ── On mount: initialise state from event ────────────────────────
   useEffect(() => {
     if (!event) return;
-    setGiftCount(1); // giftCount is local UI state — not stored in TEvent
+    setGiftCount(1);
     setCoupleCrossing(event.coupleCrossing ?? false);
+    setAllowGuestInvites(event.allowGuestInvites ?? false);
+    setIsPublic(event.isPublic ?? false);
     if (isLocked) {
       eventsApi.getCodes(id).then((codesData) => {
         setGeneratedCodes(
@@ -99,8 +154,21 @@ export default function EditEventScreen() {
       });
     }
     loadInvites();
+    loadModules();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event?.id]);
+
+  const loadModules = async () => {
+    setModulesLoading(true);
+    try {
+      const modules = await modulesApi.getModules(id);
+      setActiveModules(modules.filter((m) => m.status === "active"));
+    } catch (err) {
+      console.error("Failed to load modules:", err);
+    } finally {
+      setModulesLoading(false);
+    }
+  };
 
   // ── Handlers ─────────────────────────────────────────────────────
 
@@ -151,21 +219,11 @@ export default function EditEventScreen() {
       const invite = await invitesApi.create(id);
       setCurrentInvite(invite);
       setShowInviteModal(true);
-      await loadInvites(); // refresh list
+      await loadInvites();
     } catch (err) {
       console.error("Failed to create invite:", err);
     } finally {
       setInviteLoading(false);
-    }
-  };
-
-  const handleCoupleCrossing = async (value: boolean) => {
-    setCoupleCrossing(value);
-    try {
-      await eventsApi.update(id, { coupleCrossing: value });
-      await refreshEvents();
-    } catch (err) {
-      console.error("Failed to update couple crossing:", err);
     }
   };
 
@@ -174,7 +232,6 @@ export default function EditEventScreen() {
     setGenerateError(null);
     try {
       await eventsApi.generateAssignments(id, giftCount);
-      // getCodes returns { codes: Record<string, string> } — transform to array
       const codesData = await eventsApi.getCodes(id);
       setGeneratedCodes(
         Object.entries(codesData.codes || {}).map(([participant, code]) => ({
@@ -218,6 +275,36 @@ export default function EditEventScreen() {
     setRevealedCodes((prev) => ({ ...prev, [participant]: !prev[participant] }));
   };
 
+  const handleAllowGuestInvitesToggle = async (value: boolean) => {
+    setAllowGuestInvites(value);
+    try {
+      await eventsApi.update(id, { allowGuestInvites: value });
+      await refreshEvents();
+    } catch (err) {
+      console.error("Failed to update allowGuestInvites:", err);
+      setAllowGuestInvites(!value); // revert on error
+    }
+  };
+
+  const handleIsPublicToggle = async (value: boolean) => {
+    setIsPublic(value);
+    try {
+      await eventsApi.update(id, { isPublic: value });
+      await refreshEvents();
+    } catch (err) {
+      console.error("Failed to update isPublic:", err);
+      setIsPublic(!value); // revert on error
+    }
+  };
+
+  const handleModuleGear = (moduleType: string) => {
+    if (moduleType === "gift_exchange") {
+      router.push(`/manage-exclusions?id=${id}`);
+    } else {
+      showToast("Settings coming soon");
+    }
+  };
+
   // ── Not found guard ──────────────────────────────────────────────
   if (!event) {
     return (
@@ -236,6 +323,7 @@ export default function EditEventScreen() {
   }
 
   const couplesCount = event.couples?.length ?? 0;
+  const displayDate = formatEventDate(event.eventDate ?? event.date);
 
   return (
     <SafeAreaView
@@ -252,9 +340,8 @@ export default function EditEventScreen() {
             <ArrowLeft size={20} color="#0f172a" />
           </Pressable>
           <Text className="text-lg font-bold text-typography-900">
-            {event.name}
+            Manage Event
           </Text>
-          {/* Spacer to balance the back button */}
           <View className="h-10 w-10" />
         </View>
 
@@ -262,313 +349,401 @@ export default function EditEventScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 40, paddingTop: 16 }}
         >
-          {/* ── Participants section ──────────────────────────────── */}
-          <View className="mx-4 mb-4 rounded-2xl border border-outline-100 bg-white p-4">
-            <View className="flex-row items-center justify-between mb-3">
+          {/* ── Section 1: Event Details card ──────────────────── */}
+          <View className="mx-4 mb-4">
+            <View className="flex-row items-center justify-between mb-2">
               <Text className="text-base font-bold text-typography-900">
-                Participants
+                Event Details
               </Text>
-              <View className="rounded-full px-2.5 py-1" style={{ backgroundColor: "#f0fdfa" }}>
-                <Text className="text-xs font-bold" style={{ color: "#0d9488" }}>
-                  {participants.length} Total
+              <Pressable
+                onPress={() => router.push(`/edit-event-details?id=${id}` as never)}
+                className="flex-row items-center gap-1 active:opacity-70"
+              >
+                <Pencil size={14} color="#0d9488" />
+                <Text className="text-sm font-semibold" style={{ color: "#0d9488" }}>
+                  Edit
                 </Text>
-              </View>
+              </Pressable>
             </View>
 
-            {/* Participant chips */}
-            {participants.length === 0 ? (
-              <View className="rounded-xl border border-dashed border-outline-200 p-4 items-center mb-3">
-                <Text className="text-typography-400 text-sm text-center">
-                  No participants yet. Add someone to get started.
+            <View className="rounded-2xl border border-outline-100 bg-white p-4 flex-row items-center gap-3">
+              {/* Thumbnail */}
+              {event.coverPhotoUrl ? (
+                <Image
+                  source={{ uri: event.coverPhotoUrl }}
+                  className="h-14 w-14 rounded-xl"
+                  style={{ width: 56, height: 56, borderRadius: 12 }}
+                />
+              ) : (
+                <View
+                  className="h-14 w-14 rounded-xl items-center justify-center"
+                  style={{ width: 56, height: 56, borderRadius: 12, backgroundColor: "#0d9488" }}
+                >
+                  <Text className="text-white text-xl font-bold">
+                    {event.name?.charAt(0)?.toUpperCase() ?? "E"}
+                  </Text>
+                </View>
+              )}
+
+              {/* Event info */}
+              <View className="flex-1">
+                <Text className="text-base font-bold text-typography-900" numberOfLines={1}>
+                  {event.name}
                 </Text>
+                {displayDate ? (
+                  <View className="flex-row items-center gap-1 mt-1">
+                    <Calendar size={12} color="#64748b" />
+                    <Text className="text-xs text-typography-500">{displayDate}</Text>
+                  </View>
+                ) : null}
+                {event.location ? (
+                  <View className="flex-row items-center gap-1 mt-0.5">
+                    <MapPin size={12} color="#64748b" />
+                    <Text className="text-xs text-typography-500" numberOfLines={1}>
+                      {event.location}
+                    </Text>
+                  </View>
+                ) : null}
               </View>
-            ) : (
-              <View className="flex-row flex-wrap gap-2 mb-3">
-                {participants.map((name, idx) => {
-                  const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
-                  return (
+            </View>
+          </View>
+
+          {/* ── Section 2: Guest List ───────────────────────────── */}
+          <View className="mx-4 mb-4">
+            <View className="flex-row items-center justify-between mb-2">
+              <Text className="text-base font-bold text-typography-900">
+                Guest List
+              </Text>
+              <Pressable
+                onPress={() => setShowGuestDetails((prev) => !prev)}
+                className="active:opacity-70"
+              >
+                <Text className="text-sm font-semibold" style={{ color: "#0d9488" }}>
+                  {showGuestDetails ? "Hide" : "Manage"}
+                </Text>
+              </Pressable>
+            </View>
+
+            {/* Summary row — always visible */}
+            <View className="rounded-2xl border border-outline-100 bg-white p-4">
+              <View className="flex-row items-center gap-2">
+                {/* Overlapping avatars — first 4 */}
+                <View className="flex-row" style={{ marginRight: 4 }}>
+                  {participants.slice(0, 4).map((name, idx) => (
                     <View
                       key={name}
-                      className="flex-row items-center rounded-full px-3 py-1.5 gap-1.5 border border-outline-100"
-                      style={{ backgroundColor: "#f8fafc" }}
+                      style={{
+                        marginLeft: idx === 0 ? 0 : -10,
+                        zIndex: 10 - idx,
+                        borderRadius: 20,
+                        borderWidth: 2,
+                        borderColor: "#fff",
+                      }}
                     >
-                      <Avatar size="xs" style={{ backgroundColor: avatarColor }}>
+                      <Avatar
+                        size="sm"
+                        style={{ backgroundColor: AVATAR_COLORS[idx % AVATAR_COLORS.length] }}
+                      >
                         <AvatarFallbackText className="text-white text-xs">
                           {name}
                         </AvatarFallbackText>
                       </Avatar>
-                      <Text className="text-sm font-semibold text-typography-800">
-                        {name}
-                      </Text>
-                      {/* X button hidden when locked */}
-                      {!isLocked && (
-                        <Pressable
-                          onPress={() => handleRemoveParticipant(name)}
-                          className="ml-1 h-5 w-5 rounded-full bg-slate-200 items-center justify-center active:opacity-70"
-                        >
-                          <X size={11} color="#64748b" />
-                        </Pressable>
-                      )}
                     </View>
-                  );
-                })}
-              </View>
-            )}
-
-            {/* + Add Participant button — hidden when locked */}
-            {!isLocked && (
-              <Pressable
-                onPress={handleCreateInvite}
-                disabled={inviteLoading}
-                className="flex-row items-center justify-center rounded-xl border border-outline-200 py-2.5 gap-2 active:opacity-70"
-              >
-                {inviteLoading ? (
-                  <Text className="text-sm font-semibold" style={{ color: "#0d9488" }}>
-                    Creating invite...
-                  </Text>
-                ) : (
-                  <>
-                    <Plus size={16} color="#0d9488" />
-                    <Text
-                      className="text-sm font-semibold"
-                      style={{ color: "#0d9488" }}
+                  ))}
+                  {participants.length > 4 && (
+                    <View
+                      style={{
+                        marginLeft: -10,
+                        zIndex: 0,
+                        borderRadius: 20,
+                        borderWidth: 2,
+                        borderColor: "#fff",
+                        backgroundColor: "#e2e8f0",
+                        width: 32,
+                        height: 32,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
                     >
-                      Add Participant
-                    </Text>
-                  </>
-                )}
-              </Pressable>
-            )}
+                      <Text className="text-xs font-bold text-typography-600">
+                        +{participants.length - 4}
+                      </Text>
+                    </View>
+                  )}
+                </View>
 
-            {/* Locked notice */}
-            {isLocked && (
-              <View className="rounded-xl px-3 py-2 mt-1" style={{ backgroundColor: "#fef9c3" }}>
-                <Text className="text-xs text-center" style={{ color: "#92400e" }}>
-                  Participant list is locked after generation.
-                </Text>
+                <View className="flex-1">
+                  <Text className="text-sm font-semibold text-typography-800">
+                    {participants.length} attending
+                  </Text>
+                  {inviteList.filter((i) => i.status === "pending").length > 0 && (
+                    <Text className="text-xs text-typography-400">
+                      {inviteList.filter((i) => i.status === "pending").length} pending invite
+                      {inviteList.filter((i) => i.status === "pending").length !== 1 ? "s" : ""}
+                    </Text>
+                  )}
+                </View>
+
+                {/* Invite button */}
+                {!isLocked && (
+                  <Pressable
+                    onPress={handleCreateInvite}
+                    disabled={inviteLoading}
+                    className="h-9 w-9 rounded-full items-center justify-center active:opacity-70"
+                    style={{ backgroundColor: "#f0fdfa" }}
+                  >
+                    {inviteLoading ? (
+                      <ActivityIndicator size="small" color="#0d9488" />
+                    ) : (
+                      <UserPlus size={16} color="#0d9488" />
+                    )}
+                  </Pressable>
+                )}
               </View>
-            )}
+
+              {/* Expanded guest details */}
+              {showGuestDetails && (
+                <View className="mt-4 pt-4 border-t border-outline-100">
+                  {/* Participant chips */}
+                  {participants.length === 0 ? (
+                    <View className="rounded-xl border border-dashed border-outline-200 p-4 items-center mb-3">
+                      <Text className="text-typography-400 text-sm text-center">
+                        No participants yet. Add someone to get started.
+                      </Text>
+                    </View>
+                  ) : (
+                    <View className="flex-row flex-wrap gap-2 mb-3">
+                      {participants.map((name, idx) => {
+                        const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+                        return (
+                          <View
+                            key={name}
+                            className="flex-row items-center rounded-full px-3 py-1.5 gap-1.5 border border-outline-100"
+                            style={{ backgroundColor: "#f8fafc" }}
+                          >
+                            <Avatar size="xs" style={{ backgroundColor: avatarColor }}>
+                              <AvatarFallbackText className="text-white text-xs">
+                                {name}
+                              </AvatarFallbackText>
+                            </Avatar>
+                            <Text className="text-sm font-semibold text-typography-800">
+                              {name}
+                            </Text>
+                            {!isLocked && (
+                              <Pressable
+                                onPress={() => handleRemoveParticipant(name)}
+                                className="ml-1 h-5 w-5 rounded-full bg-slate-200 items-center justify-center active:opacity-70"
+                              >
+                                <X size={11} color="#64748b" />
+                              </Pressable>
+                            )}
+                          </View>
+                        );
+                      })}
+                    </View>
+                  )}
+
+                  {/* Locked notice */}
+                  {isLocked && (
+                    <View className="rounded-xl px-3 py-2 mb-3" style={{ backgroundColor: "#fef9c3" }}>
+                      <Text className="text-xs text-center" style={{ color: "#92400e" }}>
+                        Participant list is locked after generation.
+                      </Text>
+                    </View>
+                  )}
+
+                  {/* Invites list */}
+                  {!isLocked && inviteList.length > 0 && (
+                    <View className="mt-2">
+                      <Text className="text-xs font-bold uppercase tracking-wide text-typography-400 mb-2">
+                        Invites
+                      </Text>
+                      {inviteList.map((invite, idx) => {
+                        const isPending = invite.status === "pending";
+                        const isResending = resendingInvite === invite.id;
+                        return (
+                          <View
+                            key={invite.id}
+                            className={`flex-row items-center justify-between py-2 ${
+                              idx < inviteList.length - 1 ? "border-b border-outline-100" : ""
+                            }`}
+                          >
+                            <View className="flex-1 mr-2">
+                              <Text
+                                className="text-sm font-semibold text-typography-800"
+                                numberOfLines={1}
+                              >
+                                {invite.email ||
+                                  invite.invite_url?.split("/").pop() ||
+                                  `Invite #${invite.id}`}
+                              </Text>
+                              <View
+                                className="mt-0.5 self-start rounded-full px-2 py-0.5"
+                                style={{
+                                  backgroundColor: isPending ? "#fef9c3" : "#dcfce7",
+                                }}
+                              >
+                                <Text
+                                  className="text-xs font-bold uppercase tracking-wide"
+                                  style={{ color: isPending ? "#92400e" : "#15803d" }}
+                                >
+                                  {invite.status}
+                                </Text>
+                              </View>
+                            </View>
+                            <View className="flex-row gap-2">
+                              {isPending && (
+                                <Pressable
+                                  onPress={() => handleResendInvite(invite.id)}
+                                  disabled={isResending}
+                                  className="px-3 py-1.5 rounded-lg border border-outline-200 active:opacity-70"
+                                >
+                                  <Text className="text-xs font-semibold text-typography-600">
+                                    {isResending ? "..." : "Resend"}
+                                  </Text>
+                                </Pressable>
+                              )}
+                              <Pressable
+                                onPress={() => handleRevokeInvite(invite.id)}
+                                className="h-8 w-8 rounded-full bg-red-50 items-center justify-center active:opacity-70"
+                              >
+                                <X size={14} color="#ef4444" />
+                              </Pressable>
+                            </View>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  )}
+                </View>
+              )}
+            </View>
           </View>
 
-          {/* ── Invites section ──────────────────────────────── */}
-          {!isLocked && (
-            <View className="mx-4 mb-4 rounded-2xl border border-outline-100 bg-white p-4">
-              <View className="flex-row items-center justify-between mb-3">
-                <Text className="text-base font-bold text-typography-900">
-                  Invites
+          {/* ── Section 3: Active Modules ───────────────────────── */}
+          <View className="mx-4 mb-4">
+            <View className="flex-row items-center justify-between mb-2">
+              <Text className="text-base font-bold text-typography-900">
+                Active Modules
+              </Text>
+              <Pressable
+                onPress={() => router.push(`/modules-config?id=${id}` as never)}
+                className="active:opacity-70"
+              >
+                <Text className="text-sm font-semibold" style={{ color: "#0d9488" }}>
+                  Add Module
                 </Text>
-                {inviteListLoading && (
-                  <Text className="text-xs text-typography-400">Loading...</Text>
-                )}
-              </View>
+              </Pressable>
+            </View>
 
-              {inviteList.length === 0 ? (
-                <Text className="text-sm text-typography-400 text-center py-2">
-                  No invites sent yet.
-                </Text>
+            <View className="rounded-2xl border border-outline-100 bg-white overflow-hidden">
+              {modulesLoading ? (
+                <View className="p-4 items-center">
+                  <ActivityIndicator color="#0d9488" />
+                </View>
+              ) : activeModules.length === 0 ? (
+                <View className="p-4 items-center">
+                  <Text className="text-sm text-typography-400 text-center">
+                    No modules active. Tap "Add Module" to enable features.
+                  </Text>
+                </View>
               ) : (
-                inviteList.map((invite, idx) => {
-                  const isPending = invite.status === 'pending';
-                  const isResending = resendingInvite === invite.id;
+                activeModules.map((mod, idx) => {
+                  const meta = MODULE_META[mod.moduleType] ?? {
+                    label: mod.moduleType,
+                    icon: "⚙️",
+                  };
                   return (
                     <View
-                      key={invite.id}
-                      className={`flex-row items-center justify-between py-2.5 ${
-                        idx < inviteList.length - 1 ? "border-b border-outline-100" : ""
+                      key={mod.moduleType}
+                      className={`flex-row items-center px-4 py-3 ${
+                        idx < activeModules.length - 1 ? "border-b border-outline-100" : ""
                       }`}
                     >
-                      <View className="flex-1 mr-2">
-                        <Text className="text-sm font-semibold text-typography-800" numberOfLines={1}>
-                          {invite.email || invite.invite_url?.split('/').pop() || `Invite #${invite.id}`}
+                      {/* Icon circle */}
+                      <View
+                        className="h-10 w-10 rounded-full items-center justify-center mr-3"
+                        style={{ backgroundColor: "#f0fdfa" }}
+                      >
+                        <Text className="text-base">{meta.icon}</Text>
+                      </View>
+
+                      {/* Label + subtitle */}
+                      <View className="flex-1">
+                        <Text className="text-sm font-semibold text-typography-800">
+                          {meta.label}
                         </Text>
-                        <View
-                          className="mt-1 self-start rounded-full px-2 py-0.5"
-                          style={{ backgroundColor: isPending ? '#fef9c3' : '#dcfce7' }}
-                        >
-                          <Text
-                            className="text-xs font-bold uppercase tracking-wide"
-                            style={{ color: isPending ? '#92400e' : '#15803d' }}
-                          >
-                            {invite.status}
-                          </Text>
-                        </View>
+                        <Text className="text-xs text-typography-400">
+                          {participants.length} participants
+                        </Text>
                       </View>
-                      <View className="flex-row gap-2">
-                        {isPending && (
-                          <Pressable
-                            onPress={() => handleResendInvite(invite.id)}
-                            disabled={isResending}
-                            className="px-3 py-1.5 rounded-lg border border-outline-200 active:opacity-70"
-                          >
-                            <Text className="text-xs font-semibold text-typography-600">
-                              {isResending ? '...' : 'Resend'}
-                            </Text>
-                          </Pressable>
-                        )}
-                        <Pressable
-                          onPress={() => handleRevokeInvite(invite.id)}
-                          className="h-8 w-8 rounded-full bg-red-50 items-center justify-center active:opacity-70"
-                        >
-                          <X size={14} color="#ef4444" />
-                        </Pressable>
-                      </View>
+
+                      {/* Gear icon */}
+                      <Pressable
+                        onPress={() => handleModuleGear(mod.moduleType)}
+                        className="h-9 w-9 rounded-full bg-background-100 items-center justify-center active:opacity-70"
+                      >
+                        <Settings size={16} color="#64748b" />
+                      </Pressable>
                     </View>
                   );
                 })
               )}
             </View>
-          )}
-
-          {/* ── Wishlists Status card ─────────────────────────────── */}
-          <View className="mx-4 mb-4 rounded-2xl border border-outline-100 bg-white p-4">
-            <Text className="text-base font-bold text-typography-900 mb-3">
-              Wishlists Status
-            </Text>
-            {participants.length === 0 ? (
-              <Text className="text-sm text-typography-400 text-center py-2">
-                No participants yet.
-              </Text>
-            ) : (
-              participants.map((name, idx) => {
-                // Derive wishlist status from event.wishlists data
-                const hasWishlist =
-                  event.wishlists && event.wishlists.some(
-                    (item) => item.participantName === name,
-                  );
-                const isReady = !!hasWishlist;
-                return (
-                  <View
-                    key={name}
-                    className={`flex-row items-center justify-between py-2.5 ${
-                      idx < participants.length - 1
-                        ? "border-b border-outline-100"
-                        : ""
-                    }`}
-                  >
-                    <Text className="text-sm font-semibold text-typography-800">
-                      {name}
-                    </Text>
-                    <View
-                      className="rounded-full px-2.5 py-0.5"
-                      style={{
-                        backgroundColor: isReady ? "#dcfce7" : "#f1f5f9",
-                      }}
-                    >
-                      <Text
-                        className="text-xs font-bold uppercase tracking-wide"
-                        style={{ color: isReady ? "#15803d" : "#64748b" }}
-                      >
-                        {isReady ? "READY" : "PENDING"}
-                      </Text>
-                    </View>
-                  </View>
-                );
-              })
-            )}
           </View>
 
-          {/* ── Event Settings & Rules card ───────────────────────── */}
-          <View className="mx-4 mb-4 rounded-2xl border border-outline-100 bg-white p-4">
-            <Text className="text-base font-bold text-typography-900 mb-3">
-              Event Settings & Rules
+          {/* ── Section 4: Global Settings ──────────────────────── */}
+          <View className="mx-4 mb-4">
+            <Text className="text-base font-bold text-typography-900 mb-2">
+              Global Settings
             </Text>
 
-            {/* Gifts Per Person row */}
-            <View className="flex-row items-center justify-between py-3 border-b border-outline-100">
-              <View className="flex-1 mr-3">
-                <Text className="text-sm font-semibold text-typography-800">
-                  Gifts Per Person
-                </Text>
-                <Text className="text-xs text-typography-400 mt-0.5">
-                  Limit per participant
-                </Text>
+            <View className="rounded-2xl border border-outline-100 bg-white overflow-hidden">
+              {/* Allow guests to invite others */}
+              <View className="flex-row items-center px-4 py-3 border-b border-outline-100">
+                <View className="flex-1 mr-3">
+                  <Text className="text-sm font-semibold text-typography-800">
+                    Allow guests to invite others
+                  </Text>
+                  <Text className="text-xs text-typography-400 mt-0.5">
+                    Guests can add people to the event
+                  </Text>
+                </View>
+                <Switch
+                  value={allowGuestInvites}
+                  onValueChange={handleAllowGuestInvitesToggle}
+                  trackColor={{ false: "#cbd5e1", true: "#0d9488" }}
+                  thumbColor="#ffffff"
+                />
               </View>
-              <View className="flex-row items-center gap-3">
-                <Pressable
-                  onPress={() => !isLocked && setGiftCount(Math.max(1, giftCount - 1))}
-                  disabled={isLocked}
-                  className="h-8 w-8 rounded-full bg-background-100 items-center justify-center active:opacity-70"
-                  style={{ opacity: isLocked ? 0.4 : 1 }}
-                >
-                  <Minus size={16} color="#374151" />
-                </Pressable>
-                <Text className="text-base font-bold text-typography-900 min-w-[20px] text-center">
-                  {giftCount}
-                </Text>
-                <Pressable
-                  onPress={() =>
-                    !isLocked &&
-                    setGiftCount(
-                      Math.min(
-                        Math.max(participants.length - 1, 1),
-                        giftCount + 1,
-                      ),
-                    )
-                  }
-                  disabled={isLocked}
-                  className="h-8 w-8 rounded-full bg-background-100 items-center justify-center active:opacity-70"
-                  style={{ opacity: isLocked ? 0.4 : 1 }}
-                >
-                  <Plus size={16} color="#374151" />
-                </Pressable>
+
+              {/* Public event */}
+              <View className="flex-row items-center px-4 py-3">
+                <View className="flex-1 mr-3">
+                  <Text className="text-sm font-semibold text-typography-800">
+                    Public event
+                  </Text>
+                  <Text className="text-xs text-typography-400 mt-0.5">
+                    Anyone can discover this event
+                  </Text>
+                </View>
+                <Switch
+                  value={isPublic}
+                  onValueChange={handleIsPublicToggle}
+                  trackColor={{ false: "#cbd5e1", true: "#0d9488" }}
+                  thumbColor="#ffffff"
+                />
               </View>
             </View>
 
-            {/* Partner Exclusions toggle row */}
-            <View className="flex-row items-center justify-between py-3 border-b border-outline-100">
-              <View className="flex-1 mr-3">
-                <Text className="text-sm font-semibold text-typography-800">
-                  Partner Exclusions
-                </Text>
-                <Text className="text-xs text-typography-400 mt-0.5">
-                  Allow couples to buy for each other
-                </Text>
-              </View>
-              <Switch
-                value={coupleCrossing}
-                onValueChange={handleCoupleCrossing}
-                disabled={isLocked}
-                trackColor={{ false: "#cbd5e1", true: "#0d9488" }}
-                thumbColor="#ffffff"
-              />
-            </View>
-
-            {/* Manage Exclusions row */}
-            <Pressable
-              onPress={() =>
-                !isLocked && router.push(`/manage-exclusions?id=${id}`)
-              }
-              disabled={isLocked}
-              className="flex-row items-center justify-between py-3 active:opacity-70"
-              style={{ opacity: isLocked ? 0.4 : 1 }}
-            >
-              <View className="flex-1 mr-3">
-                <Text className="text-sm font-semibold text-typography-800">
-                  Manage Exclusions
-                </Text>
-                <Text className="text-xs text-typography-400 mt-0.5">
-                  {couplesCount === 0
-                    ? "No rules defined"
-                    : `${couplesCount} ${couplesCount === 1 ? "rule" : "rules"} defined`}
-                </Text>
-              </View>
-              <ChevronRight size={18} color="#94a3b8" />
-            </Pressable>
-
-            {/* Manage Modules row */}
-            <Pressable
-              onPress={() => router.push(`/modules-config?id=${id}`)}
-              className="flex-row items-center justify-between py-3 active:opacity-70"
-            >
-              <View className="flex-1 mr-3">
-                <Text className="text-sm font-semibold text-typography-800">
-                  Manage Modules
-                </Text>
-                <Text className="text-xs text-typography-400 mt-0.5">
-                  Enable Polls, RSVP, Potluck, and more
-                </Text>
-              </View>
-              <ChevronRight size={18} color="#94a3b8" />
+            {/* Cancel Event */}
+            <Pressable className="mt-4 items-center active:opacity-70">
+              <Text className="text-sm font-semibold" style={{ color: "#ef4444" }}>
+                Cancel Event
+              </Text>
+              <Text className="text-xs text-typography-400 mt-0.5">
+                Permanently deactivate this event
+              </Text>
             </Pressable>
           </View>
 
@@ -595,15 +770,16 @@ export default function EditEventScreen() {
                 )}
               </Pressable>
 
-              {/* Helper text */}
               <Text className="text-xs text-typography-400 text-center mt-2 px-2">
                 Clicking generate will assign pairings and lock the participant
                 list. Each person will receive a unique access code.
               </Text>
 
-              {/* Error message */}
               {generateError && (
-                <View className="mt-2 rounded-xl px-3 py-2" style={{ backgroundColor: "#fef2f2" }}>
+                <View
+                  className="mt-2 rounded-xl px-3 py-2"
+                  style={{ backgroundColor: "#fef2f2" }}
+                >
                   <Text className="text-xs text-center" style={{ color: "#dc2626" }}>
                     {generateError}
                   </Text>
@@ -615,7 +791,6 @@ export default function EditEventScreen() {
           {/* ── Secret Access Codes section ───────────────────────── */}
           {generatedCodes.length > 0 && (
             <View className="mx-4 mb-4">
-              {/* Section header with badge */}
               <View className="flex-row items-center gap-2 mb-3">
                 <Text className="text-base font-bold text-typography-900">
                   Secret Access Codes
@@ -633,7 +808,6 @@ export default function EditEventScreen() {
                 </View>
               </View>
 
-              {/* Code cards */}
               {generatedCodes.map(({ participant, code }) => {
                 const isRevealed = !!revealedCodes[participant];
                 const isCopied = copiedCode === code;
@@ -706,17 +880,14 @@ export default function EditEventScreen() {
           <ModalBody>
             {currentInvite ? (
               <>
-                {/* QR Code */}
                 <View className="items-center py-4">
                   <QRCode value={currentInvite.magic_link_url} size={200} />
                 </View>
 
-                {/* Helper text */}
                 <Text className="text-sm text-typography-500 text-center mb-4">
                   Scan QR code or share the link below
                 </Text>
 
-                {/* Copyable invite URL row */}
                 <View className="flex-row items-center rounded-xl border border-outline-200 bg-background-50 px-3 py-2 mb-3 gap-2">
                   <Text
                     className="flex-1 text-xs text-typography-600"
@@ -733,7 +904,6 @@ export default function EditEventScreen() {
                   </Pressable>
                 </View>
 
-                {/* Share button */}
                 <Pressable
                   onPress={() => handleShare(currentInvite.magic_link_url)}
                   className="flex-row items-center justify-center rounded-xl border border-outline-300 py-3 gap-2 active:opacity-70"
