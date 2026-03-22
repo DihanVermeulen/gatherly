@@ -129,6 +129,7 @@ export default function EditEventScreen() {
   const [allowGuestInvites, setAllowGuestInvites] = useState(false);
   const [isPublic, setIsPublic] = useState(false);
   const [updatingSettings, setUpdatingSettings] = useState(false);
+  const [detailCoverPhotoUrl, setDetailCoverPhotoUrl] = useState<string | null>(null);
 
   // ── Derived values ───────────────────────────────────────────────
   const event = events.find((e) => e.id === id) ?? null;
@@ -169,6 +170,12 @@ export default function EditEventScreen() {
       setModulesLoading(false);
     }
   };
+
+  useEffect(() => {
+    eventsApi.getById(id).then((detail) => {
+      setDetailCoverPhotoUrl(detail.coverPhotoUrl ?? null);
+    }).catch(() => {});
+  }, [id]);
 
   // ── Handlers ─────────────────────────────────────────────────────
 
@@ -368,9 +375,9 @@ export default function EditEventScreen() {
 
             <View className="rounded-2xl border border-outline-100 bg-white p-4 flex-row items-center gap-3">
               {/* Thumbnail */}
-              {event.coverPhotoUrl ? (
+              {detailCoverPhotoUrl ? (
                 <Image
-                  source={{ uri: event.coverPhotoUrl }}
+                  source={{ uri: detailCoverPhotoUrl }}
                   className="h-14 w-14 rounded-xl"
                   style={{ width: 56, height: 56, borderRadius: 12 }}
                 />
