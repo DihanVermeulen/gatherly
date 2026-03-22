@@ -1,18 +1,27 @@
 import React, { useEffect, useState } from "react";
-import { ScrollView, View } from "react-native";
+import {
+  ScrollView,
+  View,
+  Image,
+  Dimensions,
+  StatusBar,
+  Platform,
+} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   Eye,
   EyeOff,
   ArrowLeft,
-  MoreVertical,
-  Users,
   Gift,
   ChevronRight,
   BarChart2,
   CheckSquare,
   Utensils,
+  Lock,
+  Camera,
+  DollarSign,
 } from "lucide-react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { modulesApi } from "./api/modules";
 import { TEventModule } from "./api/events";
 
@@ -21,20 +30,120 @@ import { useSession } from "./contexts/AuthContext";
 
 import { Text } from "@/components/ui/text";
 import { Button, ButtonText } from "@/components/ui/button";
-import { Badge, BadgeText } from "@/components/ui/badge";
-import { Avatar, AvatarFallbackText } from "@/components/ui/avatar";
 import { Pressable } from "@/components/ui/pressable";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useToast, Toast, ToastTitle } from "@/components/ui/toast";
 
-// Colour palette matching the Events list hero blocks
-const HERO_COLORS = [
-  "#14b8a6", // teal-500
-  "#6366f1", // indigo-500
-  "#f43f5e", // rose-500
-  "#f59e0b", // amber-500
-  "#10b981", // emerald-500
-  "#8b5cf6", // violet-500
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const HERO_HEIGHT = 260;
+
+// ─── Module catalog ────────────────────────────────────────────────────────────
+
+type ModuleCategory = "ACTIVITY" | "COLLABORATION" | "MEMORIES";
+
+type ModuleCatalogEntry = {
+  type: string;
+  label: string;
+  description: string;
+  icon: (color: string) => React.ReactNode;
+  category: ModuleCategory;
+  comingSoon?: boolean;
+};
+
+const MODULE_CATALOG: ModuleCatalogEntry[] = [
+  // ACTIVITY
+  {
+    type: "gift_exchange",
+    label: "Gift Exchange",
+    description: "Join the secret santa pool",
+    icon: (color) => <Gift size={18} color={color} />,
+    category: "ACTIVITY",
+  },
+  {
+    type: "white_elephant",
+    label: "White Elephant",
+    description: "Fun group gift exchange game",
+    icon: (color) => <Gift size={18} color={color} />,
+    category: "ACTIVITY",
+    comingSoon: true,
+  },
+  // COLLABORATION
+  {
+    type: "potluck",
+    label: "Potluck",
+    description: "Coordinate food and drink signups",
+    icon: (color) => <Utensils size={18} color={color} />,
+    category: "COLLABORATION",
+  },
+  {
+    type: "polls",
+    label: "Polls",
+    description: "Let guests vote on event details",
+    icon: (color) => <BarChart2 size={18} color={color} />,
+    category: "COLLABORATION",
+  },
+  {
+    type: "rsvp",
+    label: "RSVP",
+    description: "Collect attendance confirmations",
+    icon: (color) => <CheckSquare size={18} color={color} />,
+    category: "COLLABORATION",
+  },
+  {
+    type: "expense_splitter",
+    label: "Expense Splitter",
+    description: "Split costs among guests",
+    icon: (color) => <DollarSign size={18} color={color} />,
+    category: "COLLABORATION",
+    comingSoon: true,
+  },
+  // MEMORIES
+  {
+    type: "photo_gallery",
+    label: "Photo Gallery",
+    description: "Share event photos",
+    icon: (color) => <Camera size={18} color={color} />,
+    category: "MEMORIES",
+    comingSoon: true,
+  },
 ];
+
+const CATEGORY_ORDER: ModuleCategory[] = ["ACTIVITY", "COLLABORATION", "MEMORIES"];
+
+// ─── Date badge helpers ────────────────────────────────────────────────────────
+
+function getDateBadge(eventDate: string | null | undefined): {
+  label: string;
+  bg: string;
+  text: string;
+} | null {
+  if (!eventDate) return null;
+  const now = new Date();
+  const date = new Date(eventDate);
+  const nowDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const eventDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diff = eventDay.getTime() - nowDay.getTime();
+  if (diff === 0) return { label: "TODAY", bg: "#f59e0b", text: "#ffffff" };
+  if (diff > 0) return { label: "UPCOMING", bg: "#14b8a6", text: "#ffffff" };
+  return { label: "PAST", bg: "#64748b", text: "#ffffff" };
+}
+
+function formatEventDate(eventDate: string | null | undefined, location: string | null | undefined): string {
+  const parts: string[] = [];
+  if (eventDate) {
+    parts.push(
+      new Date(eventDate).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    );
+  }
+  if (location) parts.push(location);
+  return parts.join(" • ");
+}
+
+// ─── Main screen ──────────────────────────────────────────────────────────────
 
 export default function EventDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -43,6 +152,7 @@ export default function EventDetailsScreen() {
     state: { events },
   } = useEvents();
   const { user } = useSession();
+  const toast = useToast();
 
   const [assignmentRevealed, setAssignmentRevealed] = useState(false);
   const [activeModules, setActiveModules] = useState<TEventModule[]>([]);
@@ -52,167 +162,212 @@ export default function EventDetailsScreen() {
   }, [id]);
 
   // Find the event
-  const eventIndex = events.findIndex((e) => e.id === id);
-  const event = events[eventIndex] ?? null;
+  const event = events.find((e) => e.id === id) ?? null;
 
   // Edge case: event not found
   if (!event) {
     return (
-      <View className="flex-1 items-center justify-center bg-background-0 px-8">
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff", paddingHorizontal: 32 }}>
         <Text className="text-typography-500 text-base text-center">
           Event not found.
         </Text>
         <Pressable
           onPress={() => router.back()}
-          className="mt-4 rounded-xl bg-primary-500 px-6 py-3"
+          style={{ marginTop: 16, borderRadius: 12, backgroundColor: "#0d9488", paddingHorizontal: 24, paddingVertical: 12 }}
         >
-          <Text className="text-white font-semibold">Go Back</Text>
+          <Text style={{ color: "#ffffff", fontWeight: "600" }}>Go Back</Text>
         </Pressable>
       </View>
     );
   }
 
   // Derived values
-  const hasAssignments =
-    event.assignments !== null && event.assignments !== undefined;
-  const isActive = hasAssignments;
-  const heroColor = HERO_COLORS[eventIndex % HERO_COLORS.length];
-  const memberCount = event.people?.length ?? 0;
-  const giftCount = Object.keys(event.gifts ?? {}).length;
-
-  // Current user's assignment
+  const hasAssignments = event.assignments !== null && event.assignments !== undefined;
   const myAssignment: string[] = event.assignments?.[user?.name ?? ""] ?? [];
+  const isOrganizer = user?.participantId === undefined;
+  const dateBadge = getDateBadge(event.eventDate);
+  const dateLocationLine = formatEventDate(event.eventDate, event.location);
+
+  // Active module types set for fast lookup
+  const activeModuleTypes = new Set(
+    activeModules.filter((m) => m.status === "active").map((m) => m.moduleType)
+  );
+
+  // Module card tap handler
+  function handleModuleTap(entry: ModuleCatalogEntry) {
+    if (entry.comingSoon) return;
+    const isActive = activeModuleTypes.has(entry.type as any);
+    if (!isActive) return;
+
+    switch (entry.type) {
+      case "gift_exchange":
+        router.push(`/view-wishlists?id=${id}` as any);
+        break;
+      case "potluck":
+        toast.show({
+          placement: "bottom",
+          duration: 3000,
+          render: ({ id: toastId }) => (
+            <Toast nativeID={`toast-${toastId}`} action="info" variant="solid">
+              <ToastTitle>Potluck screen coming soon</ToastTitle>
+            </Toast>
+          ),
+        });
+        break;
+      case "polls":
+        router.push(`/polls?id=${id}` as any);
+        break;
+      case "rsvp":
+        router.push(`/rsvp?id=${id}` as any);
+        break;
+      default:
+        break;
+    }
+  }
+
+  // Gift Exchange status line
+  function giftExchangeStatus(): string {
+    if (hasAssignments) return "Assignments generated";
+    return "Setup needed";
+  }
+
+  // Module status line
+  function moduleStatusLine(entry: ModuleCatalogEntry): string {
+    if (entry.type === "gift_exchange") return giftExchangeStatus();
+    return entry.description;
+  }
+
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaView
-      className="h-full w-full max-w-7xl mx-auto bg-background-0"
-      edges={["bottom"]}
-    >
-      <View className="flex-1 bg-background-0">
-        {/* ── Header bar ─────────────────────────────────────────── */}
-        <View className="flex-row items-center justify-between px-4 pt-3 pb-2">
-          <Pressable
-            onPress={() => router.back()}
-            className="h-10 w-10 rounded-full bg-background-100 items-center justify-center active:opacity-70"
-          >
-            <ArrowLeft size={20} color="#0f172a" />
-          </Pressable>
-          <Pressable
-            className="h-10 w-10 rounded-full bg-background-100 items-center justify-center active:opacity-70"
-            onPress={() => {
-              // Stub: event options menu (future phase)
-              console.log("Event options");
-            }}
-          >
-            <MoreVertical size={20} color="#0f172a" />
-          </Pressable>
-        </View>
-
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }} edges={["bottom"]}>
+      <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 120 }}
         >
-          {/* ── Hero block ─────────────────────────────────────────── */}
-          <View
-            className="mx-4 rounded-2xl h-48 items-center justify-center"
-            style={{ backgroundColor: heroColor }}
-          >
-            <Text
-              className="text-white font-bold"
-              style={{ fontSize: 72, lineHeight: 80, opacity: 0.9 }}
+          {/* ── Full-bleed hero ──────────────────────────────────────────── */}
+          <View style={{ height: HERO_HEIGHT, width: SCREEN_WIDTH, position: "relative" }}>
+            {/* Background: cover photo or teal gradient */}
+            {event.coverPhotoUrl ? (
+              <Image
+                source={{ uri: event.coverPhotoUrl }}
+                style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" }}
+                resizeMode="cover"
+              />
+            ) : (
+              <LinearGradient
+                colors={["#14b8a6", "#0f766e", "#134e4a"]}
+                style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              />
+            )}
+
+            {/* Bottom scrim for text legibility */}
+            <LinearGradient
+              colors={["transparent", "rgba(0,0,0,0.65)"]}
+              style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 140 }}
+            />
+
+            {/* Back arrow */}
+            <Pressable
+              onPress={() => router.back()}
+              style={{
+                position: "absolute",
+                top: Platform.OS === "ios" ? 12 : (StatusBar.currentHeight ?? 0) + 8,
+                left: 16,
+                height: 40,
+                width: 40,
+                borderRadius: 20,
+                backgroundColor: "rgba(0,0,0,0.3)",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
-              {event.name.charAt(0).toUpperCase()}
-            </Text>
+              <ArrowLeft size={20} color="#ffffff" />
+            </Pressable>
+
+            {/* Date badge */}
+            {dateBadge ? (
+              <View
+                style={{
+                  position: "absolute",
+                  top: Platform.OS === "ios" ? 12 : (StatusBar.currentHeight ?? 0) + 8,
+                  right: 16,
+                  borderRadius: 12,
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  backgroundColor: dateBadge.bg,
+                }}
+              >
+                <Text style={{ color: dateBadge.text, fontSize: 11, fontWeight: "700", letterSpacing: 0.5 }}>
+                  {dateBadge.label}
+                </Text>
+              </View>
+            ) : null}
+
+            {/* Event name + date/location overlaid at bottom of hero */}
+            <View style={{ position: "absolute", bottom: 16, left: 16, right: 16 }}>
+              <Text style={{ color: "#ffffff", fontSize: 24, fontWeight: "800", marginBottom: 4 }} numberOfLines={2}>
+                {event.name}
+              </Text>
+              {dateLocationLine ? (
+                <Text style={{ color: "rgba(255,255,255,0.85)", fontSize: 13 }}>
+                  {dateLocationLine}
+                </Text>
+              ) : null}
+            </View>
           </View>
 
-          {/* ── Create account banner (participant-only sessions) ──── */}
+          {/* ── Organized by line ──────────────────────────────────────── */}
+          {event.organizerName ? (
+            <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 4 }}>
+              <Text style={{ fontSize: 13, color: "#64748b" }}>
+                Organized by {event.organizerName}
+              </Text>
+            </View>
+          ) : null}
+
+          {/* ── Create account banner (participant-only sessions) ────── */}
           {user?.participantId !== undefined ? (
             <View
-              className="mx-4 mt-4 rounded-xl p-4"
-              style={{ backgroundColor: "#f0fdfa" }}
+              style={{ marginHorizontal: 16, marginTop: 12, borderRadius: 12, padding: 16, backgroundColor: "#f0fdfa" }}
             >
-              <Text className="text-sm font-semibold text-typography-900 mb-1">
+              <Text style={{ fontSize: 14, fontWeight: "600", color: "#0f172a", marginBottom: 4 }}>
                 Create an account
               </Text>
-              <Text className="text-sm text-typography-500 mb-3">
+              <Text style={{ fontSize: 14, color: "#64748b", marginBottom: 12 }}>
                 Sign up to manage your events and wishlists across devices
               </Text>
               <Button
                 size="sm"
-                className="self-start rounded-lg"
-                style={{ backgroundColor: "#0d9488" }}
+                style={{ alignSelf: "flex-start", borderRadius: 8, backgroundColor: "#0d9488" }}
                 onPress={() => router.push("/register" as never)}
               >
-                <ButtonText className="text-white font-semibold">
+                <ButtonText style={{ color: "#ffffff", fontWeight: "600" }}>
                   Sign Up
                 </ButtonText>
               </Button>
             </View>
           ) : null}
 
-          <View className="px-4 mt-4">
-            {/* ── Status badge ───────────────────────────────────────── */}
-            <View className="flex-row mb-2">
-              <View
-                className={`rounded-full px-3 py-1 ${
-                  isActive ? "bg-emerald-100" : "bg-blue-100"
-                }`}
-              >
-                <Text
-                  className={`text-xs font-bold uppercase tracking-wide ${
-                    isActive ? "text-emerald-700" : "text-blue-700"
-                  }`}
-                >
-                  {isActive ? "Active" : "Planning"}
-                </Text>
-              </View>
-            </View>
-
-            {/* ── Event name ─────────────────────────────────────────── */}
-            <Text className="text-3xl font-bold text-typography-900 mb-2">
-              {event.name}
-            </Text>
-
-            {/* ── Stats row ──────────────────────────────────────────── */}
-            <View className="flex-row items-center gap-3 mb-6">
-              <View className="flex-row items-center gap-1.5">
-                <Users size={14} color="#64748b" />
-                <Text className="text-sm text-typography-500">
-                  {memberCount} {memberCount === 1 ? "Member" : "Members"}
-                </Text>
-              </View>
-              <Text className="text-typography-300 text-sm">|</Text>
-              <View className="flex-row items-center gap-1.5">
-                <Gift size={14} color="#64748b" />
-                <Text className="text-sm text-typography-500">
-                  {giftCount} {giftCount === 1 ? "Gift" : "Gifts"}
-                </Text>
-              </View>
-              {event.eventDate ? (
-                <>
-                  <Text className="text-typography-300 text-sm">|</Text>
-                  <View className="flex-row items-center gap-1.5">
-                    <Text className="text-sm text-typography-500">
-                      {new Date(event.eventDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                    </Text>
-                  </View>
-                </>
-              ) : null}
-            </View>
-
-            {/* ── Wishlist progress ─────────────────────────── */}
+          <View style={{ paddingHorizontal: 16, marginTop: 16 }}>
+            {/* ── Wishlist progress ──────────────────────────────────── */}
             {(event.totalWishlistCount ?? 0) > 0 ? (
-              <View className="rounded-2xl border border-outline-100 bg-white p-4 mb-4">
-                <View className="flex-row items-center justify-between mb-2">
-                  <Text className="text-sm font-bold text-typography-700">Wishlists Progress</Text>
-                  <Text className="text-sm font-bold text-teal-600">
+              <View style={{ borderRadius: 16, borderWidth: 1, borderColor: "#e2e8f0", backgroundColor: "#ffffff", padding: 16, marginBottom: 16 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                  <Text style={{ fontSize: 14, fontWeight: "700", color: "#334155" }}>Wishlists Progress</Text>
+                  <Text style={{ fontSize: 14, fontWeight: "700", color: "#0f766e" }}>
                     {event.claimedCount ?? 0}/{event.totalWishlistCount ?? 0} claimed
                   </Text>
                 </View>
-                <View className="h-2 rounded-full bg-background-100 overflow-hidden">
+                <View style={{ height: 8, borderRadius: 4, backgroundColor: "#f1f5f9", overflow: "hidden" }}>
                   <View
-                    className="h-full rounded-full bg-teal-500"
                     style={{
+                      height: "100%",
+                      borderRadius: 4,
+                      backgroundColor: "#14b8a6",
                       width: `${Math.round(((event.claimedCount ?? 0) / (event.totalWishlistCount ?? 1)) * 100)}%`,
                     }}
                   />
@@ -220,232 +375,219 @@ export default function EventDetailsScreen() {
               </View>
             ) : null}
 
-            {/* ── Countdown banner ──────────────────────────── */}
+            {/* ── Countdown banner ───────────────────────────────────── */}
             {event.eventDate ? (() => {
               const now = new Date();
-              const eventDate = new Date(event.eventDate);
+              const eventDate = new Date(event.eventDate!);
               const diffMs = eventDate.getTime() - now.getTime();
               const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
               if (diffDays <= 0) return null;
               return (
-                <View className="rounded-2xl px-4 py-3 mb-4 flex-row items-center gap-2" style={{ backgroundColor: "#fef3c7" }}>
-                  <Text className="text-2xl">🎁</Text>
-                  <Text className="text-sm font-semibold" style={{ color: "#92400e" }}>
+                <View style={{ borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12, marginBottom: 16, flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#fef3c7" }}>
+                  <Text style={{ fontSize: 22 }}>🎁</Text>
+                  <Text style={{ fontSize: 14, fontWeight: "600", color: "#92400e" }}>
                     {diffDays === 1 ? "Tomorrow is the day!" : `${diffDays} days to go!`}
                   </Text>
                 </View>
               );
             })() : null}
 
-            {/* ── Secret Assignment card ─────────────────────────────── */}
+            {/* ── Secret Assignment card ────────────────────────────── */}
             <View
-              className="rounded-2xl p-4 mb-6"
-              style={{ backgroundColor: "#f0fdfa" }}
+              style={{ borderRadius: 16, padding: 16, marginBottom: 24, backgroundColor: "#f0fdfa" }}
             >
-              <Text
-                className="font-bold text-lg mb-1"
-                style={{ color: "#0f766e" }}
-              >
+              <Text style={{ fontWeight: "700", fontSize: 18, color: "#0f766e", marginBottom: 4 }}>
                 Your Secret Assignment
               </Text>
 
               {!hasAssignments ? (
-                /* No assignments generated yet */
-                <Text className="text-sm text-typography-500 mt-1">
+                <Text style={{ fontSize: 14, color: "#64748b", marginTop: 4 }}>
                   Assignments haven't been generated yet. The event organizer
                   will generate them when everyone is ready.
                 </Text>
               ) : myAssignment.length === 0 ? (
-                /* User not in assignment map */
-                <Text className="text-sm text-typography-500 mt-1">
+                <Text style={{ fontSize: 14, color: "#64748b", marginTop: 4 }}>
                   No assignment found for your account. Make sure your name
                   matches the participant list.
                 </Text>
               ) : (
-                /* Assignment exists */
                 <>
-                  <Text className="text-sm text-typography-600 mt-1 leading-5">
+                  <Text style={{ fontSize: 14, color: "#475569", marginTop: 4, lineHeight: 20 }}>
                     {assignmentRevealed
                       ? `You are buying for: ${myAssignment.join(", ")}`
                       : "Shh! It's a secret. Tap the button to reveal who you are buying for."}
                   </Text>
                   <Button
-                    className="mt-3 rounded-xl"
-                    style={{ backgroundColor: "#0f766e" }}
+                    style={{ marginTop: 12, borderRadius: 12, backgroundColor: "#0f766e" }}
                     onPress={() => setAssignmentRevealed((prev) => !prev)}
                   >
                     {assignmentRevealed ? (
-                      <EyeOff
-                        size={16}
-                        color="white"
-                        style={{ marginRight: 6 }}
-                      />
+                      <EyeOff size={16} color="white" style={{ marginRight: 6 }} />
                     ) : (
                       <Eye size={16} color="white" style={{ marginRight: 6 }} />
                     )}
-                    <ButtonText className="text-white font-semibold">
-                      {assignmentRevealed
-                        ? "Hide Assignment"
-                        : "View My Assignment"}
+                    <ButtonText style={{ color: "#ffffff", fontWeight: "600" }}>
+                      {assignmentRevealed ? "Hide Assignment" : "View My Assignment"}
                     </ButtonText>
                   </Button>
                 </>
               )}
             </View>
 
-            {/* ── Modules section ────────────────────────────────────── */}
-            {activeModules.filter((m) => m.moduleType !== "gift_exchange" && m.status === "active").length > 0 ? (
-              <View className="mb-6">
-                <Text className="text-lg font-bold text-typography-900 mb-3">
-                  Event Modules
-                </Text>
-                <View className="rounded-2xl border border-outline-100 overflow-hidden">
-                  {activeModules
-                    .filter((m) => m.moduleType !== "gift_exchange" && m.status === "active")
-                    .map((mod, idx, arr) => {
-                      const isLast = idx === arr.length - 1;
-                      let icon = <Gift size={18} color="#0d9488" />;
-                      let label: string = mod.moduleType;
-                      let route = "";
-                      if (mod.moduleType === "polls") {
-                        icon = <BarChart2 size={18} color="#0d9488" />;
-                        label = "Polls";
-                        route = `/polls?id=${id}`;
-                      } else if (mod.moduleType === "rsvp") {
-                        icon = <CheckSquare size={18} color="#0d9488" />;
-                        label = "RSVP";
-                        route = `/rsvp?id=${id}`;
-                      } else if (mod.moduleType === "potluck") {
-                        icon = <Utensils size={18} color="#0d9488" />;
-                        label = "Potluck";
+            {/* ── Event Hub section ─────────────────────────────────── */}
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <Text style={{ fontSize: 20, fontWeight: "700", color: "#0f172a" }}>
+                Event Hub
+              </Text>
+              {isOrganizer ? (
+                <Pressable onPress={() => router.push(`/edit-event?id=${id}` as any)}>
+                  <Text style={{ fontSize: 14, color: "#0d9488", fontWeight: "600" }}>
+                    Manage All
+                  </Text>
+                </Pressable>
+              ) : null}
+            </View>
+
+            {/* ── Module cards grouped by category ─────────────────── */}
+            {CATEGORY_ORDER.map((category) => {
+              const entries = MODULE_CATALOG.filter((m) => m.category === category);
+              return (
+                <View key={category} style={{ marginBottom: 20 }}>
+                  {/* Category header */}
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      fontWeight: "700",
+                      color: "#94a3b8",
+                      letterSpacing: 1,
+                      textTransform: "uppercase",
+                      marginBottom: 8,
+                    }}
+                  >
+                    {category}
+                  </Text>
+
+                  {/* Module cards */}
+                  <View style={{ borderRadius: 16, borderWidth: 1, borderColor: "#e2e8f0", overflow: "hidden", backgroundColor: "#ffffff" }}>
+                    {entries.map((entry, idx) => {
+                      const isActive = activeModuleTypes.has(entry.type as any);
+                      const isComingSoon = entry.comingSoon === true;
+                      const isLast = idx === entries.length - 1;
+                      const isTappable = isActive && !isComingSoon;
+                      const iconColor = isComingSoon || !isActive ? "#94a3b8" : "#0d9488";
+                      const iconBg = isComingSoon || !isActive ? "#f8fafc" : "#f0fdfa";
+
+                      // Status line
+                      let statusLine: string;
+                      if (isComingSoon) {
+                        statusLine = "Coming soon";
+                      } else if (!isActive) {
+                        statusLine = entry.description;
+                      } else {
+                        statusLine = moduleStatusLine(entry);
                       }
+
                       return (
                         <Pressable
-                          key={mod.id}
-                          onPress={() => route && router.push(route as any)}
-                          disabled={!route}
-                          className={`flex-row items-center px-4 py-3 active:opacity-70 ${!isLast ? "border-b border-outline-100" : ""}`}
+                          key={entry.type}
+                          onPress={() => isTappable && handleModuleTap(entry)}
+                          disabled={!isTappable}
+                          style={({ pressed }: { pressed: boolean }) => ({
+                            flexDirection: "row",
+                            alignItems: "center",
+                            paddingHorizontal: 16,
+                            paddingVertical: 14,
+                            borderBottomWidth: isLast ? 0 : 1,
+                            borderBottomColor: "#e2e8f0",
+                            opacity: pressed ? 0.7 : 1,
+                          })}
                         >
+                          {/* Icon circle */}
                           <View
-                            className="h-9 w-9 rounded-xl items-center justify-center mr-3 flex-shrink-0"
-                            style={{ backgroundColor: "#f0fdfa" }}
+                            style={{
+                              height: 40,
+                              width: 40,
+                              borderRadius: 12,
+                              alignItems: "center",
+                              justifyContent: "center",
+                              marginRight: 12,
+                              flexShrink: 0,
+                              backgroundColor: iconBg,
+                            }}
                           >
-                            {icon}
+                            {entry.icon(iconColor)}
                           </View>
-                          <Text className="flex-1 text-sm font-semibold text-typography-900 capitalize">
-                            {label}
-                          </Text>
-                          {route ? <ChevronRight size={16} color="#94a3b8" /> : null}
+
+                          {/* Text block */}
+                          <View style={{ flex: 1 }}>
+                            <Text
+                              style={{
+                                fontSize: 15,
+                                fontWeight: "600",
+                                color: isComingSoon || !isActive ? "#94a3b8" : "#0f172a",
+                                marginBottom: 2,
+                              }}
+                            >
+                              {entry.label}
+                            </Text>
+                            <Text
+                              style={{
+                                fontSize: 12,
+                                color: isComingSoon || !isActive ? "#cbd5e1" : "#64748b",
+                              }}
+                            >
+                              {statusLine}
+                            </Text>
+                          </View>
+
+                          {/* Right icon */}
+                          {isComingSoon ? (
+                            <Lock size={14} color="#cbd5e1" />
+                          ) : isTappable ? (
+                            <ChevronRight size={16} color="#94a3b8" />
+                          ) : null}
                         </Pressable>
                       );
                     })}
+                  </View>
                 </View>
-              </View>
-            ) : null}
-
-            {/* ── Participants section ───────────────────────────────── */}
-            <View>
-              <View className="flex-row justify-between items-center mb-3">
-                <Text className="text-lg font-bold text-typography-900">
-                  Participants
-                </Text>
-                <Text className="text-sm text-typography-400">
-                  Invite Members
-                </Text>
-              </View>
-
-              {memberCount === 0 ? (
-                <View className="rounded-xl border border-outline-100 p-6 items-center">
-                  <Users size={28} color="#cbd5e1" />
-                  <Text className="text-typography-400 text-sm mt-2 text-center">
-                    No participants yet.
-                  </Text>
-                </View>
-              ) : (
-                <View className="rounded-2xl border border-outline-100 overflow-hidden">
-                  {event.people.map((name, idx) => {
-                    const isCurrentUser = name === user?.name;
-                    const isOrganizer =
-                      isCurrentUser && user?.participantId === undefined;
-
-                    return (
-                      <View
-                        key={name}
-                        className={`flex-row items-center px-4 py-3 ${
-                          idx < event.people.length - 1
-                            ? "border-b border-outline-100"
-                            : ""
-                        }`}
-                      >
-                        {/* Avatar */}
-                        <Avatar
-                          size="sm"
-                          className={
-                            isOrganizer ? "bg-teal-500" : "bg-slate-400"
-                          }
-                        >
-                          <AvatarFallbackText className="text-white">
-                            {name}
-                          </AvatarFallbackText>
-                        </Avatar>
-
-                        {/* Name */}
-                        <Text className="flex-1 ml-3 font-semibold text-typography-900">
-                          {name}
-                          {isCurrentUser ? (
-                            <Text className="font-normal text-typography-400">
-                              {" (you)"}
-                            </Text>
-                          ) : null}
-                        </Text>
-
-                        {/* Role badge */}
-                        <View
-                          className={`rounded-full px-2.5 py-0.5 mr-2 ${
-                            isOrganizer ? "bg-teal-100" : "bg-slate-100"
-                          }`}
-                        >
-                          <Text
-                            className={`text-xs font-bold uppercase tracking-wide ${
-                              isOrganizer ? "text-teal-700" : "text-slate-500"
-                            }`}
-                          >
-                            {isOrganizer ? "Organizer" : "Participant"}
-                          </Text>
-                        </View>
-
-                        {/* Chevron */}
-                        <ChevronRight size={16} color="#94a3b8" />
-                      </View>
-                    );
-                  })}
-                </View>
-              )}
-            </View>
+              );
+            })}
           </View>
         </ScrollView>
 
-        {/* ── Bottom action bar ──────────────────────────────────────── */}
+        {/* ── Bottom action bar ──────────────────────────────────────────── */}
         <View
-          className="absolute bottom-0 left-0 right-0 flex-row gap-3 px-4 py-3 bg-white border-t border-outline-100"
-          style={{ paddingBottom: 16 }}
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            flexDirection: "row",
+            gap: 12,
+            paddingHorizontal: 16,
+            paddingTop: 12,
+            paddingBottom: 16,
+            backgroundColor: "#ffffff",
+            borderTopWidth: 1,
+            borderTopColor: "#e2e8f0",
+          }}
         >
           <Button
             variant="outline"
-            className="flex-1 rounded-xl border-outline-300"
-            onPress={() => router.push(`/view-wishlists?id=${id}`)}
+            style={{ flex: 1, borderRadius: 12, borderColor: "#cbd5e1" }}
+            onPress={() => router.push(`/view-wishlists?id=${id}` as any)}
           >
             <Gift size={16} color="#64748b" style={{ marginRight: 6 }} />
-            <ButtonText className="text-typography-700 font-semibold">
+            <ButtonText style={{ color: "#334155", fontWeight: "600" }}>
               View Wishlists
             </ButtonText>
           </Button>
           <Button
-            className="flex-1 rounded-xl"
-            style={{ backgroundColor: "#0d9488" }}
-            onPress={() => router.push(`/my-wishlist?id=${event.id}`)}
+            style={{ flex: 1, borderRadius: 12, backgroundColor: "#0d9488" }}
+            onPress={() => router.push(`/my-wishlist?id=${event.id}` as any)}
           >
-            <ButtonText className="text-white font-semibold">
+            <ButtonText style={{ color: "#ffffff", fontWeight: "600" }}>
               + Add My Gifts
             </ButtonText>
           </Button>

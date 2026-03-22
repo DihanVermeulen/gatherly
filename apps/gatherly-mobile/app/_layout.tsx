@@ -143,6 +143,22 @@ function RootLayoutNav() {
                         name="onboarding/preferences"
                         options={{ headerShown: false }}
                       />
+                      <Stack.Screen
+                        name="polls"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="rsvp"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="modules-config"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="edit-event-details"
+                        options={{ headerShown: false }}
+                      />
                     </Stack.Protected>
 
                     {/* Unauthenticated routes — only accessible when no session */}
