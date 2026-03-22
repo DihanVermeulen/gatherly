@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
+  Platform,
   ScrollView,
   TextInput,
   View,
@@ -9,7 +10,8 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowLeft, Camera } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
-import * as FileSystem from "expo-file-system";
+import { File } from "expo-file-system";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 import { useEvents } from "./contexts/EventsContext";
 import { eventsApi } from "./api/events";
@@ -42,6 +44,7 @@ export default function EditEventDetailsScreen() {
   const [coverPhotoPreview, setCoverPhotoPreview] = useState<string | null>(
     event?.coverPhotoUrl ?? null,
   );
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -80,9 +83,8 @@ export default function EditEventDetailsScreen() {
     setCoverPhotoPreview(asset.uri);
 
     try {
-      const base64 = await FileSystem.readAsStringAsync(asset.uri, {
-        encoding: "base64",
-      });
+      const file = new File(asset.uri);
+      const base64 = await file.base64();
       setCoverPhotoBase64(`data:image/jpeg;base64,${base64}`);
     } catch (err) {
       console.error("Failed to read image:", err);
@@ -233,14 +235,10 @@ export default function EditEventDetailsScreen() {
           <Text className="text-sm font-semibold text-typography-700 mb-1.5">
             Date & Time
           </Text>
-          <TextInput
-            value={eventDate}
-            onChangeText={setEventDate}
-            placeholder="YYYY-MM-DDTHH:MM (e.g. 2026-12-25T18:00)"
-            placeholderTextColor="#94a3b8"
+          <Pressable
+            onPress={() => setShowDatePicker(true)}
             style={{
               fontSize: 14,
-              color: "#0f172a",
               borderWidth: 1,
               borderColor: "#e2e8f0",
               borderRadius: 12,
@@ -248,8 +246,34 @@ export default function EditEventDetailsScreen() {
               paddingHorizontal: 16,
               paddingVertical: 12,
               marginBottom: 16,
+              justifyContent: "center",
             }}
-          />
+          >
+            <Text style={{ fontSize: 14, color: eventDate ? "#0f172a" : "#94a3b8" }}>
+              {eventDate
+                ? new Date(eventDate).toLocaleString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "Select date & time"}
+            </Text>
+          </Pressable>
+          {showDatePicker && (
+            <DateTimePicker
+              value={eventDate ? new Date(eventDate) : new Date()}
+              mode="datetime"
+              display={Platform.OS === "ios" ? "inline" : "default"}
+              onChange={(_event: any, selectedDate?: Date) => {
+                setShowDatePicker(Platform.OS === "ios");
+                if (selectedDate) {
+                  setEventDate(selectedDate.toISOString());
+                }
+              }}
+            />
+          )}
 
           {/* ── Location ─────────────────────────────────────── */}
           <Text className="text-sm font-semibold text-typography-700 mb-1.5">
@@ -290,7 +314,7 @@ export default function EditEventDetailsScreen() {
             onPress={handleSave}
             disabled={saving}
             className="rounded-2xl py-4"
-            style={{ backgroundColor: saving ? "#0f766e" : "#0d9488" }}
+            style={{ backgroundColor: saving ? "#0f766e" : "#0d9488", width: "100%" }}
           >
             {saving && <ButtonSpinner color="white" />}
             <ButtonText className="text-white font-bold text-base ml-1">
