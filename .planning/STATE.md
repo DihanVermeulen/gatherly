@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 32 of 33 (Screen Redesigns)
-Plan: 02 of TBD
+Plan: 03 of TBD
 Status: In progress
-Last activity: 2026-03-22 — Completed 32-02-PLAN.md (Manage Event redesign, edit-event-details sub-screen, Module Config redesign)
+Last activity: 2026-03-22 — Completed 32-03-PLAN.md (gap closure — coverPhotoUrl + organizerName wired in event-details.tsx and edit-event.tsx)
 
 Progress: [█████████████████████████░] v2.1 complete, v2.2 Phase 30 done, Phase 31 complete
 
@@ -72,6 +72,7 @@ Progress: [███████████████████████
 - comingSoon modules: disabled toggle + grayed opacity + badge text; NOT sent to API
 - showToast() helper: ToastAndroid.show() on Android, Alert.alert() on iOS — use for cross-platform toast
 - Potluck API (30-04): participantName sourced from request body for both token types; slot_taken (409) covers both full-slot and duplicate-participant cases; SELECT FOR UPDATE race guard pattern for slot booking
+- getById-on-mount pattern: screens needing detail fields (coverPhotoUrl, organizerName) call eventsApi.getById(id) in a useEffect and store in local state — list endpoint does not carry these fields; do NOT read detail fields from EventsContext
 
 ### Pending Todos
 
@@ -93,7 +94,7 @@ Progress: [███████████████████████
 ## Session Continuity
 
 Last session: 2026-03-22
-Stopped at: Completed 32-02-PLAN.md — Manage Event redesign, edit-event-details sub-screen, Module Config with categories/auto-save
+Stopped at: Completed 32-03-PLAN.md — coverPhotoUrl + organizerName wired in event-details.tsx and edit-event.tsx via getById-on-mount pattern
 Resume file: None
 
 Next step: Execute next plan in Phase 32 (Screen Redesigns) or Phase 33 (Potluck Screens).
