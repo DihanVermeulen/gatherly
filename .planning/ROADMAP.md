@@ -74,12 +74,15 @@ Plans:
   1. The Event Details screen shows module cards (Gift Exchange, Potluck) and displays the event cover photo hero and location when set
   2. The Manage Event screen exposes cover photo picker, location field, allow_guest_invites toggle, and is_public toggle alongside the existing guest list and active modules sections
   3. The Module Config screen matches the ModuleConfig.png template with the "Customize Your Event" redesign
-**Plans:** 3 plans
+**Plans:** 6 plans
 
 Plans:
 - [x] 32-01-PLAN.md — Backend API changes (organizerName, remove gift_exchange auto-insert) + Event Hub screen redesign
 - [x] 32-02-PLAN.md — Manage Event redesign + edit-event-details sub-screen + Module Config redesign
 - [x] 32-03-PLAN.md — Gap closure: wire coverPhotoUrl + organizerName via getById fetch
+- [ ] 32-04-PLAN.md — Gap closure: gate Secret Assignment card, remove bottom bar, fix inactive-module toast
+- [ ] 32-05-PLAN.md — Gap closure: fix cover photo deprecated API, native date picker, Save button width
+- [ ] 32-06-PLAN.md — Gap closure: useFocusEffect module reload + event list LinearGradient hero
 
 #### Phase 33: Potluck Screens
 **Goal**: Organizers can set up a potluck with categorised items and quantities; all event members can view the live list and claim or withdraw slots with full visibility of who signed up.
@@ -122,5 +125,5 @@ Plans:
 | 29. Phase 27 Fix — Smart Join Flow | v2.1 | 3/3 | Complete | 2026-03-13 |
 | 30. Infrastructure — Migration and API | v2.2 | 4/4 | Complete | 2026-03-18 |
 | 31. Onboarding Screens | v2.2 | 0/2 | Not started | - |
-| 32. Screen Redesigns | v2.2 | 3/3 | Complete | 2026-03-22 |
+| 32. Screen Redesigns | v2.2 | 3/6 | In progress | - |
 | 33. Potluck Screens | v2.2 | 0/2 | Not started | - |
