@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ScrollView,
   View,
@@ -7,7 +7,7 @@ import {
   StatusBar,
   Platform,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import {
   Eye,
   EyeOff,
@@ -159,9 +159,11 @@ export default function EventDetailsScreen() {
   const [detailCoverPhotoUrl, setDetailCoverPhotoUrl] = useState<string | null>(null);
   const [detailOrganizerName, setDetailOrganizerName] = useState<string | null>(null);
 
-  useEffect(() => {
-    modulesApi.getModules(id).then(setActiveModules).catch(() => {});
-  }, [id]);
+  useFocusEffect(
+    useCallback(() => {
+      modulesApi.getModules(id).then(setActiveModules).catch(() => {});
+    }, [id])
+  );
 
   useEffect(() => {
     eventsApi.getById(id).then((detail) => {
@@ -206,7 +208,18 @@ export default function EventDetailsScreen() {
   function handleModuleTap(entry: ModuleCatalogEntry) {
     if (entry.comingSoon) return;
     const isActive = activeModuleTypes.has(entry.type as any);
-    if (!isActive) return;
+    if (!isActive) {
+      toast.show({
+        placement: "bottom",
+        duration: 3000,
+        render: ({ id: toastId }) => (
+          <Toast nativeID={`toast-${toastId}`} action="info" variant="solid">
+            <ToastTitle>Enable this module in Module Config to use it</ToastTitle>
+          </Toast>
+        ),
+      });
+      return;
+    }
 
     switch (entry.type) {
       case "gift_exchange":
@@ -253,7 +266,7 @@ export default function EventDetailsScreen() {
       <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 120 }}
+          contentContainerStyle={{ paddingBottom: 40 }}
         >
           {/* ── Full-bleed hero ──────────────────────────────────────────── */}
           <View style={{ height: HERO_HEIGHT, width: SCREEN_WIDTH, position: "relative" }}>
@@ -402,6 +415,7 @@ export default function EventDetailsScreen() {
             })() : null}
 
             {/* ── Secret Assignment card ────────────────────────────── */}
+            {activeModuleTypes.has('gift_exchange') && (
             <View
               style={{ borderRadius: 16, padding: 16, marginBottom: 24, backgroundColor: "#f0fdfa" }}
             >
@@ -442,6 +456,7 @@ export default function EventDetailsScreen() {
                 </>
               )}
             </View>
+            )}
 
             {/* ── Event Hub section ─────────────────────────────────── */}
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
@@ -499,8 +514,8 @@ export default function EventDetailsScreen() {
                       return (
                         <Pressable
                           key={entry.type}
-                          onPress={() => isTappable && handleModuleTap(entry)}
-                          disabled={!isTappable}
+                          onPress={() => handleModuleTap(entry)}
+                          disabled={isComingSoon}
                           style={({ pressed }: { pressed: boolean }) => ({
                             flexDirection: "row",
                             alignItems: "center",
@@ -565,42 +580,6 @@ export default function EventDetailsScreen() {
           </View>
         </ScrollView>
 
-        {/* ── Bottom action bar ──────────────────────────────────────────── */}
-        <View
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            flexDirection: "row",
-            gap: 12,
-            paddingHorizontal: 16,
-            paddingTop: 12,
-            paddingBottom: 16,
-            backgroundColor: "#ffffff",
-            borderTopWidth: 1,
-            borderTopColor: "#e2e8f0",
-          }}
-        >
-          <Button
-            variant="outline"
-            style={{ flex: 1, borderRadius: 12, borderColor: "#cbd5e1" }}
-            onPress={() => router.push(`/view-wishlists?id=${id}` as any)}
-          >
-            <Gift size={16} color="#64748b" style={{ marginRight: 6 }} />
-            <ButtonText style={{ color: "#334155", fontWeight: "600" }}>
-              View Wishlists
-            </ButtonText>
-          </Button>
-          <Button
-            style={{ flex: 1, borderRadius: 12, backgroundColor: "#0d9488" }}
-            onPress={() => router.push(`/my-wishlist?id=${event.id}` as any)}
-          >
-            <ButtonText style={{ color: "#ffffff", fontWeight: "600" }}>
-              + Add My Gifts
-            </ButtonText>
-          </Button>
-        </View>
       </View>
     </SafeAreaView>
   );
