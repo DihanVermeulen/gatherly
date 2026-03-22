@@ -23,7 +23,7 @@ import {
 } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { modulesApi } from "./api/modules";
-import { TEventModule } from "./api/events";
+import { eventsApi, TEventModule } from "./api/events";
 
 import { useEvents } from "./contexts/EventsContext";
 import { useSession } from "./contexts/AuthContext";
@@ -156,9 +156,18 @@ export default function EventDetailsScreen() {
 
   const [assignmentRevealed, setAssignmentRevealed] = useState(false);
   const [activeModules, setActiveModules] = useState<TEventModule[]>([]);
+  const [detailCoverPhotoUrl, setDetailCoverPhotoUrl] = useState<string | null>(null);
+  const [detailOrganizerName, setDetailOrganizerName] = useState<string | null>(null);
 
   useEffect(() => {
     modulesApi.getModules(id).then(setActiveModules).catch(() => {});
+  }, [id]);
+
+  useEffect(() => {
+    eventsApi.getById(id).then((detail) => {
+      setDetailCoverPhotoUrl(detail.coverPhotoUrl ?? null);
+      setDetailOrganizerName(detail.organizerName ?? null);
+    }).catch(() => {});
   }, [id]);
 
   // Find the event
@@ -249,9 +258,9 @@ export default function EventDetailsScreen() {
           {/* ── Full-bleed hero ──────────────────────────────────────────── */}
           <View style={{ height: HERO_HEIGHT, width: SCREEN_WIDTH, position: "relative" }}>
             {/* Background: cover photo or teal gradient */}
-            {event.coverPhotoUrl ? (
+            {detailCoverPhotoUrl ? (
               <Image
-                source={{ uri: event.coverPhotoUrl }}
+                source={{ uri: detailCoverPhotoUrl }}
                 style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" }}
                 resizeMode="cover"
               />
@@ -321,10 +330,10 @@ export default function EventDetailsScreen() {
           </View>
 
           {/* ── Organized by line ──────────────────────────────────────── */}
-          {event.organizerName ? (
+          {detailOrganizerName ? (
             <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 4 }}>
               <Text style={{ fontSize: 13, color: "#64748b" }}>
-                Organized by {event.organizerName}
+                Organized by {detailOrganizerName}
               </Text>
             </View>
           ) : null}
