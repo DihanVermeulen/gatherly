@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** v2.2 UI Rehaul — Phase 31: Onboarding Screens
+**Current focus:** v2.2 UI Rehaul — Phase 32: Screen Redesigns
 
 ## Current Position
 
-Phase: 31 of 33 (Onboarding Screens)
-Plan: 02 of 02
-Status: Phase complete
-Last activity: 2026-03-20 — Completed 31-02-PLAN.md (profile setup + preferences onboarding screens)
+Phase: 32 of 33 (Screen Redesigns)
+Plan: 01 of TBD
+Status: In progress
+Last activity: 2026-03-22 — Completed 32-01-PLAN.md (Event Hub screen redesign with full-bleed hero and module cards)
 
 Progress: [█████████████████████████░] v2.1 complete, v2.2 Phase 30 done, Phase 31 complete
 
@@ -29,7 +29,7 @@ Progress: [███████████████████████
 |-------|-------|-------|----------|
 | 30. Infrastructure | 4 | — | — |
 | 31. Onboarding Screens | 2/2 done | ~32m | ~16m |
-| 32. Screen Redesigns | TBD | — | — |
+| 32. Screen Redesigns | 1/TBD | ~18m | ~18m |
 | 33. Potluck Screens | TBD | — | — |
 
 *Updated after each plan completion*
@@ -61,6 +61,10 @@ Progress: [███████████████████████
 - AuthContext exposes updateUser(patch: Partial<User>) helper — patches in-memory user + SecureStore cache
 - Patch pattern: 'field in body' check + parallel params[]/clauses[] arrays + JSON.stringify for JSONB — use this pattern for future dynamic UPDATE routes
 - Events API (30-03): list returns hasCoverPhoto boolean (no URL), detail/fetchEventById return coverPhotoUrl + location + allowGuestInvites + isPublic; PUT uses $1-$9 SET + $10 WHERE id with String(bool) coercion for optional boolean updates
+- Events API (32-01): GET /api/events/:id now also returns organizerName (string|null) from users table lookup on organizer_id
+- gift_exchange module is NO LONGER auto-inserted on POST /api/events — modules managed explicitly via modules-config screen
+- MODULE_CATALOG pattern: define full module catalog client-side as static constant with type/label/description/icon/category/comingSoon; API active list gates interactivity only
+- expo-linear-gradient installed in gatherly-mobile (npm --ignore-scripts) for hero gradient rendering
 - Potluck API (30-04): participantName sourced from request body for both token types; slot_taken (409) covers both full-slot and duplicate-participant cases; SELECT FOR UPDATE race guard pattern for slot booking
 
 ### Pending Todos
@@ -82,8 +86,8 @@ Progress: [███████████████████████
 
 ## Session Continuity
 
-Last session: 2026-03-20
-Stopped at: Completed 31-02-PLAN.md — profile setup + preferences onboarding screens, Phase 31 complete
+Last session: 2026-03-22
+Stopped at: Completed 32-01-PLAN.md — Event Hub screen redesign with full-bleed hero, module cards, organizerName API field
 Resume file: None
 
-Next step: Execute Phase 32 (Screen Redesigns).
+Next step: Execute next plan in Phase 32 (Screen Redesigns).
