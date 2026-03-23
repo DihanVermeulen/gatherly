@@ -24,6 +24,7 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { modulesApi } from "./api/modules";
 import { eventsApi, TEventModule } from "./api/events";
+import { isSafeImageUri } from "./utils/imageUri";
 
 import { useEvents } from "./contexts/EventsContext";
 import { useSession } from "./contexts/AuthContext";
@@ -167,7 +168,8 @@ export default function EventDetailsScreen() {
 
   useEffect(() => {
     eventsApi.getById(id).then((detail) => {
-      setDetailCoverPhotoUrl(detail.coverPhotoUrl ?? null);
+      const url = detail.coverPhotoUrl ?? null;
+      setDetailCoverPhotoUrl(isSafeImageUri(url) ? url : null);
       setDetailOrganizerName(detail.organizerName ?? null);
     }).catch(() => {});
   }, [id]);
@@ -271,7 +273,7 @@ export default function EventDetailsScreen() {
           {/* ── Full-bleed hero ──────────────────────────────────────────── */}
           <View style={{ height: HERO_HEIGHT, width: SCREEN_WIDTH, position: "relative" }}>
             {/* Background: cover photo or teal gradient */}
-            {detailCoverPhotoUrl ? (
+            {isSafeImageUri(detailCoverPhotoUrl) ? (
               <Image
                 source={{ uri: detailCoverPhotoUrl }}
                 style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" }}
@@ -475,54 +477,89 @@ export default function EventDetailsScreen() {
             {/* ── Module cards grouped by category ─────────────────── */}
             {CATEGORY_ORDER.map((category) => {
               const entries = MODULE_CATALOG.filter((m) => m.category === category);
+
+              // Category-level badge: ACTIVITY shows "Setup Complete" when gift_exchange is active + has assignments
+              let categoryBadge: { label: string } | null = null;
+              if (category === "ACTIVITY" && activeModuleTypes.has("gift_exchange") && hasAssignments) {
+                categoryBadge = { label: "Setup Complete" };
+              }
+
               return (
                 <View key={category} style={{ marginBottom: 20 }}>
-                  {/* Category header */}
-                  <Text
-                    style={{
-                      fontSize: 11,
-                      fontWeight: "700",
-                      color: "#94a3b8",
-                      letterSpacing: 1,
-                      textTransform: "uppercase",
-                      marginBottom: 8,
-                    }}
-                  >
-                    {category}
-                  </Text>
+                  {/* Category header row */}
+                  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                    <Text
+                      style={{
+                        fontSize: 11,
+                        fontWeight: "700",
+                        color: "#94a3b8",
+                        letterSpacing: 1,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {category}
+                    </Text>
+                    {categoryBadge ? (
+                      <View style={{ borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3, backgroundColor: "#ccfbf1" }}>
+                        <Text style={{ fontSize: 10, fontWeight: "700", color: "#0f766e", letterSpacing: 0.3 }}>
+                          {categoryBadge.label}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
 
-                  {/* Module cards */}
-                  <View style={{ borderRadius: 16, borderWidth: 1, borderColor: "#e2e8f0", overflow: "hidden", backgroundColor: "#ffffff" }}>
-                    {entries.map((entry, idx) => {
-                      const isActive = activeModuleTypes.has(entry.type as any);
-                      const isComingSoon = entry.comingSoon === true;
-                      const isLast = idx === entries.length - 1;
-                      const isTappable = isActive && !isComingSoon;
-                      const iconColor = isComingSoon || !isActive ? "#94a3b8" : "#0d9488";
-                      const iconBg = isComingSoon || !isActive ? "#f8fafc" : "#f0fdfa";
+                  {/* Individual flat module rows */}
+                  {entries.map((entry) => {
+                    const isActive = activeModuleTypes.has(entry.type as any);
+                    const isComingSoon = entry.comingSoon === true;
+                    const isTappable = isActive && !isComingSoon;
+                    const iconColor = isComingSoon || !isActive ? "#94a3b8" : "#0d9488";
+                    const iconBg = isComingSoon || !isActive ? "#f8fafc" : "#f0fdfa";
 
-                      // Status line
-                      let statusLine: string;
-                      if (isComingSoon) {
-                        statusLine = "Coming soon";
-                      } else if (!isActive) {
-                        statusLine = entry.description;
+                    // Description line (below module name)
+                    const descriptionLine = entry.description;
+
+                    // Right-side status text for active modules
+                    let rightStatusText: string | null = null;
+                    if (isActive && !isComingSoon) {
+                      if (entry.type === "gift_exchange") {
+                        const total = event.totalWishlistCount ?? 0;
+                        const claimed = event.claimedCount ?? 0;
+                        if (total > 0) {
+                          rightStatusText = `${claimed}/${total} items`;
+                        } else if (hasAssignments) {
+                          rightStatusText = "Assignments ready";
+                        } else {
+                          rightStatusText = "Setup needed";
+                        }
                       } else {
-                        statusLine = moduleStatusLine(entry);
+                        rightStatusText = "Active";
                       }
+                    } else if (isComingSoon) {
+                      rightStatusText = "Coming soon";
+                    }
 
-                      return (
+                    return (
+                      <View
+                        key={entry.type}
+                        style={{
+                          borderRadius: 12,
+                          backgroundColor: "#ffffff",
+                          borderWidth: 1,
+                          borderColor: "#f1f5f9",
+                          marginBottom: 8,
+                          overflow: "hidden",
+                          opacity: isComingSoon ? 0.6 : 1,
+                        }}
+                      >
                         <Pressable
-                          key={entry.type}
                           onPress={() => handleModuleTap(entry)}
                           disabled={isComingSoon}
                           style={({ pressed }: { pressed: boolean }) => ({
                             flexDirection: "row",
                             alignItems: "center",
-                            paddingHorizontal: 16,
-                            paddingVertical: 14,
-                            borderBottomWidth: isLast ? 0 : 1,
-                            borderBottomColor: "#e2e8f0",
+                            paddingHorizontal: 14,
+                            paddingVertical: 12,
                             opacity: pressed ? 0.7 : 1,
                           })}
                         >
@@ -560,20 +597,32 @@ export default function EventDetailsScreen() {
                                 color: isComingSoon || !isActive ? "#cbd5e1" : "#64748b",
                               }}
                             >
-                              {statusLine}
+                              {descriptionLine}
                             </Text>
                           </View>
 
-                          {/* Right icon */}
+                          {/* Right status text + icon */}
+                          {rightStatusText ? (
+                            <Text
+                              style={{
+                                fontSize: 11,
+                                color: isActive && !isComingSoon ? "#0d9488" : "#94a3b8",
+                                marginRight: isTappable ? 4 : 0,
+                                flexShrink: 0,
+                              }}
+                            >
+                              {rightStatusText}
+                            </Text>
+                          ) : null}
                           {isComingSoon ? (
                             <Lock size={14} color="#cbd5e1" />
                           ) : isTappable ? (
                             <ChevronRight size={16} color="#94a3b8" />
                           ) : null}
                         </Pressable>
-                      );
-                    })}
-                  </View>
+                      </View>
+                    );
+                  })}
                 </View>
               );
             })}
