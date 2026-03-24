@@ -223,15 +223,11 @@ export default function EventDetailsScreen() {
         router.push(`/view-wishlists?id=${id}` as any);
         break;
       case "potluck":
-        toast.show({
-          placement: "bottom",
-          duration: 3000,
-          render: ({ id: toastId }) => (
-            <Toast nativeID={`toast-${toastId}`} action="info" variant="solid">
-              <ToastTitle>Potluck screen coming soon</ToastTitle>
-            </Toast>
-          ),
-        });
+        if (isOrganizer) {
+          router.push(`/potluck-setup?id=${id}` as any);
+        } else {
+          router.push(`/potluck?id=${id}` as any);
+        }
         break;
       case "polls":
         router.push(`/polls?id=${id}` as any);
