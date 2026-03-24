@@ -55,6 +55,28 @@ export type TRsvpData = {
   note?: string;
 };
 
+export type TPotluckCategory = {
+  id: number;
+  eventId: number;
+  name: string;
+  quantity: number;
+  foodImageUrl: string | null;
+  suggestionChips: string[];
+  status: 'draft' | 'active';
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TPotluckSignup = {
+  id: number;
+  eventId: number;
+  categoryId: number;
+  participantName: string;
+  note: string | null;
+  createdAt: string;
+};
+
 export const modulesApi = {
   getModules: async (eventId: string): Promise<TEventModule[]> => {
     const response = await apiClient.get(`/api/events/${eventId}/modules`);
@@ -94,6 +116,49 @@ export const modulesApi = {
 
   submitRsvp: async (eventId: string, data: TRsvpData): Promise<void> => {
     await apiClient.post(`/api/events/${eventId}/rsvp`, data);
+  },
+
+  getPotluckCategories: async (eventId: string): Promise<TPotluckCategory[]> => {
+    const response = await apiClient.get(`/api/events/${eventId}/potluck/categories`);
+    return response.data;
+  },
+
+  createPotluckCategory: async (
+    eventId: string,
+    data: { name: string; quantity: number; foodImageUrl?: string | null; suggestionChips?: string[]; status?: string },
+  ): Promise<TPotluckCategory> => {
+    const response = await apiClient.post(`/api/events/${eventId}/potluck/categories`, data);
+    return response.data;
+  },
+
+  updatePotluckCategory: async (
+    eventId: string,
+    catId: number,
+    data: Partial<{ name: string; quantity: number; foodImageUrl: string | null; suggestionChips: string[]; status: string; sortOrder: number }>,
+  ): Promise<TPotluckCategory> => {
+    const response = await apiClient.put(`/api/events/${eventId}/potluck/categories/${catId}`, data);
+    return response.data;
+  },
+
+  deletePotluckCategory: async (eventId: string, catId: number): Promise<void> => {
+    await apiClient.delete(`/api/events/${eventId}/potluck/categories/${catId}`);
+  },
+
+  getPotluckSignups: async (eventId: string): Promise<TPotluckSignup[]> => {
+    const response = await apiClient.get(`/api/events/${eventId}/potluck/signups`);
+    return response.data;
+  },
+
+  createPotluckSignup: async (
+    eventId: string,
+    data: { categoryId: number; participantName: string; note?: string },
+  ): Promise<TPotluckSignup> => {
+    const response = await apiClient.post(`/api/events/${eventId}/potluck/signups`, data);
+    return response.data;
+  },
+
+  deletePotluckSignup: async (eventId: string, signupId: number): Promise<void> => {
+    await apiClient.delete(`/api/events/${eventId}/potluck/signups/${signupId}`);
   },
 };
 
