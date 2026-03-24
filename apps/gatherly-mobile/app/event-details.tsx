@@ -4,13 +4,9 @@ import {
   View,
   Image,
   Dimensions,
-  StatusBar,
-  Platform,
 } from "react-native";
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import {
-  Eye,
-  EyeOff,
   ArrowLeft,
   Gift,
   ChevronRight,
@@ -36,7 +32,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useToast, Toast, ToastTitle } from "@/components/ui/toast";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const HERO_HEIGHT = 260;
+const HERO_HEIGHT = 190;
 
 // ─── Module catalog ────────────────────────────────────────────────────────────
 
@@ -155,7 +151,6 @@ export default function EventDetailsScreen() {
   const { user } = useSession();
   const toast = useToast();
 
-  const [assignmentRevealed, setAssignmentRevealed] = useState(false);
   const [activeModules, setActiveModules] = useState<TEventModule[]>([]);
   const [detailCoverPhotoUrl, setDetailCoverPhotoUrl] = useState<string | null>(null);
   const [detailOrganizerName, setDetailOrganizerName] = useState<string | null>(null);
@@ -264,14 +259,74 @@ export default function EventDetailsScreen() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }} edges={["bottom"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }} edges={["top", "bottom"]}>
+      {/* ── Dedicated header bar ──────────────────────────────────────────── */}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          backgroundColor: "#ffffff",
+          paddingHorizontal: 12,
+          paddingVertical: 10,
+          borderBottomWidth: 1,
+          borderBottomColor: "#f1f5f9",
+          minHeight: 56,
+        }}
+      >
+        {/* Back arrow */}
+        <Pressable
+          onPress={() => router.back()}
+          style={{
+            height: 40,
+            width: 40,
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <ArrowLeft size={22} color="#0d9488" />
+        </Pressable>
+
+        {/* Event name + subtitle */}
+        <View style={{ flex: 1, marginHorizontal: 8 }}>
+          <Text
+            style={{ fontSize: 17, fontWeight: "700", color: "#0f172a" }}
+            numberOfLines={1}
+          >
+            {event.name}
+          </Text>
+          {dateLocationLine ? (
+            <Text style={{ fontSize: 12, color: "#64748b", marginTop: 1 }} numberOfLines={1}>
+              {dateLocationLine}
+            </Text>
+          ) : null}
+        </View>
+
+        {/* Date badge */}
+        {dateBadge ? (
+          <View
+            style={{
+              borderRadius: 12,
+              paddingHorizontal: 10,
+              paddingVertical: 4,
+              backgroundColor: dateBadge.bg,
+              flexShrink: 0,
+            }}
+          >
+            <Text style={{ color: dateBadge.text, fontSize: 11, fontWeight: "700", letterSpacing: 0.5 }}>
+              {dateBadge.label}
+            </Text>
+          </View>
+        ) : null}
+      </View>
+
       <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 40 }}
         >
-          {/* ── Full-bleed hero ──────────────────────────────────────────── */}
-          <View style={{ height: HERO_HEIGHT, width: SCREEN_WIDTH, position: "relative" }}>
+          {/* ── Hero banner (purely visual, no overlaid controls) ─────────── */}
+          <View style={{ height: HERO_HEIGHT, width: SCREEN_WIDTH }}>
             {/* Background: cover photo or teal gradient */}
             {isSafeImageUri(detailCoverPhotoUrl) ? (
               <Image
@@ -287,61 +342,6 @@ export default function EventDetailsScreen() {
                 end={{ x: 1, y: 1 }}
               />
             )}
-
-            {/* Bottom scrim for text legibility */}
-            <LinearGradient
-              colors={["transparent", "rgba(0,0,0,0.65)"]}
-              style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 140 }}
-            />
-
-            {/* Back arrow */}
-            <Pressable
-              onPress={() => router.back()}
-              style={{
-                position: "absolute",
-                top: Platform.OS === "ios" ? 12 : (StatusBar.currentHeight ?? 0) + 8,
-                left: 16,
-                height: 40,
-                width: 40,
-                borderRadius: 20,
-                backgroundColor: "rgba(0,0,0,0.3)",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <ArrowLeft size={20} color="#ffffff" />
-            </Pressable>
-
-            {/* Date badge */}
-            {dateBadge ? (
-              <View
-                style={{
-                  position: "absolute",
-                  top: Platform.OS === "ios" ? 12 : (StatusBar.currentHeight ?? 0) + 8,
-                  right: 16,
-                  borderRadius: 12,
-                  paddingHorizontal: 10,
-                  paddingVertical: 4,
-                  backgroundColor: dateBadge.bg,
-                }}
-              >
-                <Text style={{ color: dateBadge.text, fontSize: 11, fontWeight: "700", letterSpacing: 0.5 }}>
-                  {dateBadge.label}
-                </Text>
-              </View>
-            ) : null}
-
-            {/* Event name + date/location overlaid at bottom of hero */}
-            <View style={{ position: "absolute", bottom: 16, left: 16, right: 16 }}>
-              <Text style={{ color: "#ffffff", fontSize: 24, fontWeight: "800", marginBottom: 4 }} numberOfLines={2}>
-                {event.name}
-              </Text>
-              {dateLocationLine ? (
-                <Text style={{ color: "rgba(255,255,255,0.85)", fontSize: 13 }}>
-                  {dateLocationLine}
-                </Text>
-              ) : null}
-            </View>
           </View>
 
           {/* ── Organized by line ──────────────────────────────────────── */}
@@ -416,49 +416,6 @@ export default function EventDetailsScreen() {
               );
             })() : null}
 
-            {/* ── Secret Assignment card ────────────────────────────── */}
-            {activeModuleTypes.has('gift_exchange') && (
-            <View
-              style={{ borderRadius: 16, padding: 16, marginBottom: 24, backgroundColor: "#f0fdfa" }}
-            >
-              <Text style={{ fontWeight: "700", fontSize: 18, color: "#0f766e", marginBottom: 4 }}>
-                Your Secret Assignment
-              </Text>
-
-              {!hasAssignments ? (
-                <Text style={{ fontSize: 14, color: "#64748b", marginTop: 4 }}>
-                  Assignments haven't been generated yet. The event organizer
-                  will generate them when everyone is ready.
-                </Text>
-              ) : myAssignment.length === 0 ? (
-                <Text style={{ fontSize: 14, color: "#64748b", marginTop: 4 }}>
-                  No assignment found for your account. Make sure your name
-                  matches the participant list.
-                </Text>
-              ) : (
-                <>
-                  <Text style={{ fontSize: 14, color: "#475569", marginTop: 4, lineHeight: 20 }}>
-                    {assignmentRevealed
-                      ? `You are buying for: ${myAssignment.join(", ")}`
-                      : "Shh! It's a secret. Tap the button to reveal who you are buying for."}
-                  </Text>
-                  <Button
-                    style={{ marginTop: 12, borderRadius: 12, backgroundColor: "#0f766e" }}
-                    onPress={() => setAssignmentRevealed((prev) => !prev)}
-                  >
-                    {assignmentRevealed ? (
-                      <EyeOff size={16} color="white" style={{ marginRight: 6 }} />
-                    ) : (
-                      <Eye size={16} color="white" style={{ marginRight: 6 }} />
-                    )}
-                    <ButtonText style={{ color: "#ffffff", fontWeight: "600" }}>
-                      {assignmentRevealed ? "Hide Assignment" : "View My Assignment"}
-                    </ButtonText>
-                  </Button>
-                </>
-              )}
-            </View>
-            )}
 
             {/* ── Event Hub section ─────────────────────────────────── */}
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
@@ -555,13 +512,12 @@ export default function EventDetailsScreen() {
                         <Pressable
                           onPress={() => handleModuleTap(entry)}
                           disabled={isComingSoon}
-                          style={({ pressed }: { pressed: boolean }) => ({
+                          style={{
                             flexDirection: "row",
                             alignItems: "center",
                             paddingHorizontal: 14,
                             paddingVertical: 12,
-                            opacity: pressed ? 0.7 : 1,
-                          })}
+                          }}
                         >
                           {/* Icon circle */}
                           <View
