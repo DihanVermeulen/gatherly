@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import {
-  ArrowLeft,
   Check,
   Copy,
   Eye,
@@ -31,6 +30,7 @@ import { useEvents } from "./contexts/EventsContext";
 import { useSession } from "./contexts/AuthContext";
 import { eventsApi } from "./api/events";
 import { modulesApi } from "./api/modules";
+import { isSafeImageUri } from "./utils/imageUri";
 import { TEventModule } from "./api/events";
 import { invitesApi, Invite } from "./api/invites";
 
@@ -49,6 +49,7 @@ import {
   ModalCloseButton,
 } from "@/components/ui/modal";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { AppHeader } from "@/components/AppHeader";
 
 // Avatar background colours for participant chips
 const AVATAR_COLORS = [
@@ -179,7 +180,8 @@ export default function EditEventScreen() {
 
   useEffect(() => {
     eventsApi.getById(id).then((detail) => {
-      setDetailCoverPhotoUrl(detail.coverPhotoUrl ?? null);
+      const url = detail.coverPhotoUrl ?? null;
+      setDetailCoverPhotoUrl(isSafeImageUri(url) ? url : null);
     }).catch(() => {});
   }, [id]);
 
@@ -341,22 +343,11 @@ export default function EditEventScreen() {
   return (
     <SafeAreaView
       className="h-full w-full max-w-7xl mx-auto bg-background-0"
-      edges={["bottom"]}
+      edges={["top", "bottom"]}
     >
       <View className="flex-1 bg-background-0">
-        {/* ── Header bar ─────────────────────────────────────────── */}
-        <View className="flex-row items-center justify-between px-4 pt-3 pb-3 border-b border-outline-100">
-          <Pressable
-            onPress={() => router.back()}
-            className="h-10 w-10 rounded-full bg-background-100 items-center justify-center active:opacity-70"
-          >
-            <ArrowLeft size={20} color="#0f172a" />
-          </Pressable>
-          <Text className="text-lg font-bold text-typography-900">
-            Manage Event
-          </Text>
-          <View className="h-10 w-10" />
-        </View>
+        {/* ── Header ─────────────────────────────────────────────── */}
+        <AppHeader title="Manage Event" onBack={() => router.back()} />
 
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -381,7 +372,7 @@ export default function EditEventScreen() {
 
             <View className="rounded-2xl border border-outline-100 bg-white p-4 flex-row items-center gap-3">
               {/* Thumbnail */}
-              {detailCoverPhotoUrl ? (
+              {isSafeImageUri(detailCoverPhotoUrl) ? (
                 <Image
                   source={{ uri: detailCoverPhotoUrl }}
                   className="h-14 w-14 rounded-xl"

@@ -6,7 +6,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, Gift, CheckCircle } from "lucide-react-native";
+import { Eye, EyeOff, Gift, CheckCircle, Plus } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useEvents } from "./contexts/EventsContext";
@@ -35,6 +35,7 @@ import {
   ActionsheetBackdrop,
 } from "@/components/ui/actionsheet";
 import { useToast, Toast, ToastTitle } from "@/components/ui/toast";
+import { AppHeader } from "@/components/AppHeader";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -350,6 +351,11 @@ export default function ViewWishlistsScreen() {
 
   const isLoading = isLoadingParticipants || isLoadingWishlists;
 
+  // Secret assignment state
+  const [assignmentRevealed, setAssignmentRevealed] = useState(false);
+  const hasAssignments = event?.assignments !== null && event?.assignments !== undefined;
+  const myAssignment: string[] = event?.assignments?.[user?.name ?? ""] ?? [];
+
   // Event not found
   if (!event) {
     return (
@@ -372,26 +378,54 @@ export default function ViewWishlistsScreen() {
   return (
     <SafeAreaView
       className="h-full w-full max-w-7xl mx-auto bg-background-0"
-      edges={["bottom"]}
+      edges={["top", "bottom"]}
     >
       <View className="flex-1 bg-background-0">
-        {/* ── Header bar ───────────────────────────────────────────── */}
-        <View className="flex-row items-center px-4 pt-3 pb-2 gap-3">
-          <Pressable
-            onPress={() => router.back()}
-            className="h-10 w-10 rounded-full bg-background-100 items-center justify-center active:opacity-70"
-          >
-            <ArrowLeft size={20} color="#0f172a" />
-          </Pressable>
-          <View className="flex-1">
-            <Text className="text-xl font-bold text-typography-900">
-              Wishlists
+        {/* ── Header ───────────────────────────────────────────────── */}
+        <AppHeader
+          title="Wishlists"
+          subtitle={event.name}
+          onBack={() => router.back()}
+        />
+
+        {/* ── Secret Assignment card ───────────────────────────────── */}
+        {!isLoading && (
+          <View style={{ marginHorizontal: 16, marginTop: 8, marginBottom: 4, borderRadius: 16, padding: 16, backgroundColor: "#f0fdfa" }}>
+            <Text style={{ fontWeight: "700", fontSize: 18, color: "#0f766e", marginBottom: 4 }}>
+              Your Secret Assignment
             </Text>
-            <Text className="text-sm text-typography-400" numberOfLines={1}>
-              {event.name}
-            </Text>
+            {!hasAssignments ? (
+              <Text style={{ fontSize: 14, color: "#64748b", marginTop: 4 }}>
+                Assignments haven't been generated yet. The event organizer will generate them when everyone is ready.
+              </Text>
+            ) : myAssignment.length === 0 ? (
+              <Text style={{ fontSize: 14, color: "#64748b", marginTop: 4 }}>
+                No assignment found for your account. Make sure your name matches the participant list.
+              </Text>
+            ) : (
+              <>
+                <Text style={{ fontSize: 14, color: "#475569", marginTop: 4, lineHeight: 20 }}>
+                  {assignmentRevealed
+                    ? `You are buying for: ${myAssignment.join(", ")}`
+                    : "Shh! It's a secret. Tap the button to reveal who you are buying for."}
+                </Text>
+                <Button
+                  style={{ marginTop: 12, borderRadius: 12, backgroundColor: "#0f766e" }}
+                  onPress={() => setAssignmentRevealed((prev) => !prev)}
+                >
+                  {assignmentRevealed ? (
+                    <EyeOff size={16} color="white" style={{ marginRight: 6 }} />
+                  ) : (
+                    <Eye size={16} color="white" style={{ marginRight: 6 }} />
+                  )}
+                  <ButtonText style={{ color: "#ffffff", fontWeight: "600" }}>
+                    {assignmentRevealed ? "Hide Assignment" : "View My Assignment"}
+                  </ButtonText>
+                </Button>
+              </>
+            )}
           </View>
-        </View>
+        )}
 
         {/* ── Content ─────────────────────────────────────────────── */}
         {isLoading ? (
@@ -437,6 +471,31 @@ export default function ViewWishlistsScreen() {
             )}
             SectionSeparatorComponent={() => <View className="h-2" />}
           />
+        )}
+
+        {/* ── FAB: Add My Gifts ────────────────────────────────────── */}
+        {myParticipantId > 0 && (
+          <Pressable
+            onPress={() => router.push(`/my-wishlist?id=${id}` as any)}
+            style={{
+              position: "absolute",
+              bottom: 96,
+              right: 16,
+              height: 56,
+              width: 56,
+              borderRadius: 28,
+              backgroundColor: "#0d9488",
+              alignItems: "center",
+              justifyContent: "center",
+              elevation: 4,
+              shadowColor: "#000",
+              shadowOpacity: 0.2,
+              shadowRadius: 8,
+              shadowOffset: { width: 0, height: 3 },
+            }}
+          >
+            <Plus size={26} color="white" />
+          </Pressable>
         )}
 
         {/* ── ActionSheet (long-press menu) ─────────────────────── */}

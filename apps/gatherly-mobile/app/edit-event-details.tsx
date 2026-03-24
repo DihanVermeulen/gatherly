@@ -8,7 +8,7 @@ import {
   View,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, Camera } from "lucide-react-native";
+import { Camera } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import { File } from "expo-file-system";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -20,6 +20,7 @@ import { Text } from "@/components/ui/text";
 import { Pressable } from "@/components/ui/pressable";
 import { Button, ButtonText, ButtonSpinner } from "@/components/ui/button";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { AppHeader } from "@/components/AppHeader";
 
 export default function EditEventDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -147,22 +148,11 @@ export default function EditEventDetailsScreen() {
   return (
     <SafeAreaView
       className="h-full w-full max-w-7xl mx-auto bg-background-0"
-      edges={["bottom"]}
+      edges={["top", "bottom"]}
     >
       <View className="flex-1 bg-background-0">
         {/* ── Header ───────────────────────────────────────────── */}
-        <View className="flex-row items-center justify-between px-4 pt-3 pb-3 border-b border-outline-100">
-          <Pressable
-            onPress={() => router.back()}
-            className="h-10 w-10 rounded-full bg-background-100 items-center justify-center active:opacity-70"
-          >
-            <ArrowLeft size={20} color="#0f172a" />
-          </Pressable>
-          <Text className="text-lg font-bold text-typography-900">
-            Edit Event
-          </Text>
-          <View className="h-10 w-10" />
-        </View>
+        <AppHeader title="Edit Event" onBack={() => router.back()} />
 
         <ScrollView
           showsVerticalScrollIndicator={false}

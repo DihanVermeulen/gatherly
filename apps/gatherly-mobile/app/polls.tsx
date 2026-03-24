@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, TextInput, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, Plus, Trash2, X } from "lucide-react-native";
+import { Plus, Trash2, X } from "lucide-react-native";
 
 import { modulesApi, TPoll } from "./api/modules";
 import { useSession } from "./contexts/AuthContext";
@@ -19,6 +19,7 @@ import {
   ModalCloseButton,
 } from "@/components/ui/modal";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { AppHeader } from "@/components/AppHeader";
 
 export default function PollsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -131,28 +132,21 @@ export default function PollsScreen() {
   const hasVoted = (poll: TPoll) => poll.myVotes.length > 0;
 
   return (
-    <SafeAreaView className="flex-1 bg-background-50" edges={["bottom"]}>
+    <SafeAreaView className="flex-1 bg-background-50" edges={["top", "bottom"]}>
       {/* Header */}
-      <View className="flex-row items-center justify-between px-4 pt-3 pb-2">
-        <Pressable
-          onPress={() => router.back()}
-          className="h-10 w-10 rounded-full bg-background-100 items-center justify-center active:opacity-70"
-        >
-          <ArrowLeft size={20} color="#0f172a" />
-        </Pressable>
-        <Text className="text-lg font-bold text-typography-900">Polls</Text>
-        {isOrganizer ? (
-          <Pressable
-            onPress={() => setShowCreateModal(true)}
-            className="h-10 w-10 rounded-full items-center justify-center active:opacity-70"
-            style={{ backgroundColor: "#0d9488" }}
-          >
-            <Plus size={20} color="white" />
-          </Pressable>
-        ) : (
-          <View className="w-10" />
-        )}
-      </View>
+      <AppHeader
+        title="Polls"
+        onBack={() => router.back()}
+        rightAction={
+          isOrganizer
+            ? {
+                icon: <Plus size={20} color="white" />,
+                onPress: () => setShowCreateModal(true),
+                style: { backgroundColor: "#0d9488" },
+              }
+            : undefined
+        }
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}

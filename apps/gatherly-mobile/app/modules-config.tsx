@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
-  ArrowLeft,
   BarChart2,
   Camera,
   DollarSign,
@@ -30,6 +29,7 @@ import {
   ModalCloseButton,
 } from "@/components/ui/modal";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { AppHeader } from "@/components/AppHeader";
 
 type ModuleCategory = "ACTIVITY" | "COLLABORATION" | "MEMORIES";
 
@@ -196,19 +196,9 @@ export default function ModulesConfigScreen() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background-50" edges={["bottom"]}>
+    <SafeAreaView className="flex-1 bg-background-50" edges={["top", "bottom"]}>
       {/* Header */}
-      <View className="flex-row items-center px-4 pt-3 pb-2">
-        <Pressable
-          onPress={() => router.back()}
-          className="h-10 w-10 rounded-full bg-background-100 items-center justify-center active:opacity-70 mr-3"
-        >
-          <ArrowLeft size={20} color="#0f172a" />
-        </Pressable>
-        <Text className="text-lg font-bold text-typography-900 flex-1 text-center mr-10">
-          Customize Your Event
-        </Text>
-      </View>
+      <AppHeader title="Customize Your Event" onBack={() => router.back()} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}

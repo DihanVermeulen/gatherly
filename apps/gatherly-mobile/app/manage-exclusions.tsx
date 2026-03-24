@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ScrollView, View, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, Trash2 } from "lucide-react-native";
+import { Trash2 } from "lucide-react-native";
 
 import { useEvents } from "./contexts/EventsContext";
 import { eventsApi } from "./api/events";
@@ -12,6 +12,8 @@ import { Avatar, AvatarFallbackText } from "@/components/ui/avatar";
 import { VStack } from "@/components/ui/vstack";
 import { HStack } from "@/components/ui/hstack";
 import { Divider } from "@/components/ui/divider";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { AppHeader } from "@/components/AppHeader";
 
 export default function ManageExclusionsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -95,21 +97,10 @@ export default function ManageExclusionsScreen() {
   const people: string[] = event.people ?? [];
 
   return (
-    <View className="flex-1 bg-background-0">
-      {/* ── Header bar ─────────────────────────────────────────── */}
-      <HStack className="items-center px-4 pt-3 pb-2 justify-between">
-        <Pressable
-          onPress={handleSave}
-          className="h-10 w-10 rounded-full bg-background-100 items-center justify-center active:opacity-70"
-        >
-          <ArrowLeft size={20} color="#0f172a" />
-        </Pressable>
-        <Text className="text-lg font-bold text-typography-900">
-          Manage Exclusions
-        </Text>
-        {/* Spacer to centre the title */}
-        <View className="h-10 w-10" />
-      </HStack>
+    <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
+      <View className="flex-1 bg-background-0">
+        {/* ── Header ─────────────────────────────────────────────── */}
+        <AppHeader title="Manage Exclusions" onBack={handleSave} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -250,6 +241,7 @@ export default function ManageExclusionsScreen() {
           )}
         </Pressable>
       </View>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }

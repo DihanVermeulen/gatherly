@@ -6,7 +6,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, Gift, Plus } from "lucide-react-native";
+import { Gift, Plus } from "lucide-react-native";
 import BottomSheet, {
   BottomSheetView,
   BottomSheetBackdrop,
@@ -17,6 +17,7 @@ import { useEvents } from "./contexts/EventsContext";
 import { useSession } from "./contexts/AuthContext";
 import { eventsApi, TWishlistItem } from "./api/events";
 import { wishlistsApi } from "./api/wishlists";
+import { isSafeImageUri } from "./utils/imageUri";
 
 import { Text } from "@/components/ui/text";
 import { Pressable } from "@/components/ui/pressable";
@@ -39,6 +40,7 @@ import {
   ActionsheetBackdrop,
 } from "@/components/ui/actionsheet";
 import { AddWishlistItem } from "@/components/AddWishlistItem";
+import { AppHeader } from "@/components/AppHeader";
 
 export default function MyWishlistScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -190,6 +192,7 @@ export default function MyWishlistScreen() {
 
   const isLoading = isLoadingParticipants || isLoadingWishlists;
 
+
   // Event not found
   if (!event) {
     return (
@@ -210,26 +213,15 @@ export default function MyWishlistScreen() {
   return (
     <SafeAreaView
       className="h-full w-full max-w-7xl mx-auto bg-background-0"
-      edges={["bottom"]}
+      edges={["top", "bottom"]}
     >
       <View className="flex-1 bg-background-0">
-        {/* ── Header bar ─────────────────────────────────────────── */}
-        <View className="flex-row items-center px-4 pt-3 pb-2 gap-3">
-          <Pressable
-            onPress={() => router.back()}
-            className="h-10 w-10 rounded-full bg-background-100 items-center justify-center active:opacity-70"
-          >
-            <ArrowLeft size={20} color="#0f172a" />
-          </Pressable>
-          <View className="flex-1">
-            <Text className="text-xl font-bold text-typography-900">
-              My Wishlist
-            </Text>
-            <Text className="text-sm text-typography-400" numberOfLines={1}>
-              {event.name}
-            </Text>
-          </View>
-        </View>
+        {/* ── Header ─────────────────────────────────────────────── */}
+        <AppHeader
+          title="My Wishlist"
+          subtitle={event.name}
+          onBack={() => router.back()}
+        />
 
         {/* ── Content ─────────────────────────────────────────────── */}
         {isLoading ? (
@@ -417,8 +409,8 @@ function WishlistCard({ item, onLongPress }: WishlistCardProps) {
         shadowOffset: { width: 0, height: 2 },
       }}
     >
-      {/* Image header — only if imageUrl exists */}
-      {item.imageUrl ? (
+      {/* Image header — only if imageUrl is a safe URI */}
+      {isSafeImageUri(item.imageUrl) ? (
         <Image
           source={{ uri: item.imageUrl }}
           style={{ width: "100%", height: 160 }}

@@ -7,7 +7,6 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import {
-  ArrowLeft,
   Gift,
   ChevronRight,
   BarChart2,
@@ -30,6 +29,7 @@ import { Button, ButtonText } from "@/components/ui/button";
 import { Pressable } from "@/components/ui/pressable";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useToast, Toast, ToastTitle } from "@/components/ui/toast";
+import { AppHeader } from "@/components/AppHeader";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const HERO_HEIGHT = 190;
@@ -260,65 +260,29 @@ export default function EventDetailsScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }} edges={["top", "bottom"]}>
-      {/* ── Dedicated header bar ──────────────────────────────────────────── */}
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          backgroundColor: "#ffffff",
-          paddingHorizontal: 12,
-          paddingVertical: 10,
-          borderBottomWidth: 1,
-          borderBottomColor: "#f1f5f9",
-          minHeight: 56,
-        }}
-      >
-        {/* Back arrow */}
-        <Pressable
-          onPress={() => router.back()}
-          style={{
-            height: 40,
-            width: 40,
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
-          <ArrowLeft size={22} color="#0d9488" />
-        </Pressable>
-
-        {/* Event name + subtitle */}
-        <View style={{ flex: 1, marginHorizontal: 8 }}>
-          <Text
-            style={{ fontSize: 17, fontWeight: "700", color: "#0f172a" }}
-            numberOfLines={1}
-          >
-            {event.name}
-          </Text>
-          {dateLocationLine ? (
-            <Text style={{ fontSize: 12, color: "#64748b", marginTop: 1 }} numberOfLines={1}>
-              {dateLocationLine}
-            </Text>
-          ) : null}
-        </View>
-
-        {/* Date badge */}
-        {dateBadge ? (
-          <View
-            style={{
-              borderRadius: 12,
-              paddingHorizontal: 10,
-              paddingVertical: 4,
-              backgroundColor: dateBadge.bg,
-              flexShrink: 0,
-            }}
-          >
-            <Text style={{ color: dateBadge.text, fontSize: 11, fontWeight: "700", letterSpacing: 0.5 }}>
-              {dateBadge.label}
-            </Text>
-          </View>
-        ) : null}
-      </View>
+      {/* ── Header ──────────────────────────────────────────────────────────── */}
+      <AppHeader
+        title={event.name}
+        subtitle={dateLocationLine || undefined}
+        onBack={() => router.back()}
+        rightElement={
+          dateBadge ? (
+            <View
+              style={{
+                borderRadius: 12,
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                backgroundColor: dateBadge.bg,
+                flexShrink: 0,
+              }}
+            >
+              <Text style={{ color: dateBadge.text, fontSize: 11, fontWeight: "700", letterSpacing: 0.5 }}>
+                {dateBadge.label}
+              </Text>
+            </View>
+          ) : undefined
+        }
+      />
 
       <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
         <ScrollView

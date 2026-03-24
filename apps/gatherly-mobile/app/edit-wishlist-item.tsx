@@ -10,16 +10,18 @@ import {
   Alert,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, X, ImagePlus } from "lucide-react-native";
+import { X, ImagePlus } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useEvents } from "./contexts/EventsContext";
 import { wishlistsApi } from "./api/wishlists";
 import { TWishlistItem } from "./api/events";
+import { isSafeImageUri } from "./utils/imageUri";
 
 import { Text } from "@/components/ui/text";
 import { Pressable } from "@/components/ui/pressable";
+import { AppHeader } from "@/components/AppHeader";
 
 type Priority = "low" | "medium" | "high";
 const PRIORITIES: Priority[] = ["low", "medium", "high"];
@@ -147,7 +149,7 @@ export default function EditWishlistItemScreen() {
   return (
     <SafeAreaView
       className="h-full w-full max-w-7xl mx-auto bg-background-0"
-      edges={["bottom"]}
+      edges={["top", "bottom"]}
     >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -155,33 +157,17 @@ export default function EditWishlistItemScreen() {
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 24}
       >
         <View className="flex-1 bg-background-0">
-          {/* ── Header bar ─────────────────────────────────────────── */}
-          <View className="flex-row items-center justify-between px-4 pt-3 pb-3 border-b border-outline-100">
-            <Pressable
-              onPress={() => router.back()}
-              className="h-10 w-10 rounded-full bg-background-100 items-center justify-center active:opacity-70"
-            >
-              <ArrowLeft size={20} color="#0f172a" />
-            </Pressable>
-
-            <Text className="text-lg font-bold text-typography-900">
-              Edit Item
-            </Text>
-
-            {/* Save button */}
-            <Pressable
-              onPress={handleSave}
-              disabled={isSaving}
-              className="h-10 px-4 rounded-full items-center justify-center active:opacity-70"
-              style={{ backgroundColor: isSaving ? "#0f766e" : "#0d9488" }}
-            >
-              {isSaving ? (
-                <ActivityIndicator size="small" color="white" />
-              ) : (
-                <Text className="text-white font-bold text-sm">Save</Text>
-              )}
-            </Pressable>
-          </View>
+          {/* ── Header ─────────────────────────────────────────────── */}
+          <AppHeader
+            title="Edit Item"
+            onBack={() => router.back()}
+            rightAction={{
+              label: "Save",
+              onPress: handleSave,
+              disabled: isSaving,
+              loading: isSaving,
+            }}
+          />
 
           {/* ── Form ───────────────────────────────────────────────── */}
           <ScrollView
@@ -248,7 +234,7 @@ export default function EditWishlistItemScreen() {
                 <Text className="text-typography-400 font-normal">(optional)</Text>
               </Text>
 
-              {imageUrl ? (
+              {isSafeImageUri(imageUrl) ? (
                 <View className="rounded-xl overflow-hidden border border-outline-200">
                   <Image
                     source={{ uri: imageUrl }}
