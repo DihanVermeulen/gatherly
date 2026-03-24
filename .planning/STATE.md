@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 Phase: 33 of 33 (Potluck Screens)
 Plan: 00 of TBD
 Status: Not started
-Last activity: 2026-03-22 — Completed Phase 32 gap closure (plans 04-06) — 9/9 must-haves verified, phase fully complete (6/6 plans)
+Last activity: 2026-03-24 — Completed quick task 003: Make the event hub match the header of the Details.png screen
 
 Progress: [█████████████████████████░] v2.1 complete, v2.2 Phase 30 done, Phase 31 complete
 
@@ -75,6 +75,14 @@ Progress: [███████████████████████
 - showToast() helper: ToastAndroid.show() on Android, Alert.alert() on iOS — use for cross-platform toast
 - Potluck API (30-04): participantName sourced from request body for both token types; slot_taken (409) covers both full-slot and duplicate-participant cases; SELECT FOR UPDATE race guard pattern for slot booking
 - getById-on-mount pattern: screens needing detail fields (coverPhotoUrl, organizerName) call eventsApi.getById(id) in a useEffect and store in local state — list endpoint does not carry these fields; do NOT read detail fields from EventsContext
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 001 | Redesign Event Hub module cards to match Details.png template | 2026-03-22 | 9aa37c8 | [001-...](./quick/001-redesign-event-hub-module-cards-to-match/) |
+| 002 | (see quick/002) | — | — | [002-...](./quick/002-the-event-modules-in-the-event-hub-scree/) |
+| 003 | Make event hub header match Details.png — back button in own header above banner | 2026-03-24 | 18d6e14 | [003-event-hub-header-match-details-png](./quick/003-event-hub-header-match-details-png/) |
 
 ### Pending Todos
 
