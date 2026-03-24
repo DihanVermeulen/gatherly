@@ -95,11 +95,11 @@ Plans:
   4. A participant who has signed up can withdraw their claim and the slot returns to unclaimed
   5. Signed-up participant names are visible to everyone in the event (not hidden, unlike wishlist claims)
   6. Free-tier events display a plan upgrade prompt instead of the potluck setup screen
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 33-01: Potluck Setup screen (organizer category builder + publish)
-- [ ] 33-02: Potluck List screen (grouped view, progress bar, signup confirmation sheet, un-signup)
+- [ ] 33-01-PLAN.md — Potluck API client + Setup screen (organizer category builder + publish)
+- [ ] 33-02-PLAN.md — Potluck List screen (grouped view, progress bar, signup sheet, un-signup)
 
 ---
 
