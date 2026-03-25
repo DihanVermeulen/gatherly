@@ -21,13 +21,13 @@
 
 ### Potluck Module
 
-- [ ] **POTLUCK-01**: Organizer can create potluck categories with name, quantity stepper, food image, and suggestion chips
-- [ ] **POTLUCK-02**: Organizer can publish potluck (sets module status from `draft` to `active`)
-- [ ] **POTLUCK-03**: All event members can view grouped potluck list by category (claimed/unclaimed states)
-- [ ] **POTLUCK-04**: Potluck list shows event readiness progress bar (total signups / total quantity needed)
-- [ ] **POTLUCK-05**: Participant can claim a potluck slot via signup confirmation sheet (food image, item name, optional note)
-- [ ] **POTLUCK-06**: Participant can withdraw their potluck claim (un-signup)
-- [ ] **POTLUCK-07**: Signed-up names are visible to all event members (public — inverse of wishlist privacy model)
+- [x] **POTLUCK-01**: Organizer can create potluck categories with name, quantity stepper, food image, and suggestion chips
+- [x] **POTLUCK-02**: Organizer can publish potluck (sets module status from `draft` to `active`)
+- [x] **POTLUCK-03**: All event members can view grouped potluck list by category (claimed/unclaimed states)
+- [x] **POTLUCK-04**: Potluck list shows event readiness progress bar (total signups / total quantity needed)
+- [x] **POTLUCK-05**: Participant can claim a potluck slot via signup confirmation sheet (food image, item name, optional note)
+- [x] **POTLUCK-06**: Participant can withdraw their potluck claim (un-signup)
+- [x] **POTLUCK-07**: Signed-up names are visible to all event members (public — inverse of wishlist privacy model)
 
 ### Infrastructure
 
@@ -82,13 +82,13 @@
 | REDESIGN-01 | Phase 32 | Complete |
 | REDESIGN-02 | Phase 32 | Complete |
 | REDESIGN-03 | Phase 32 | Complete |
-| POTLUCK-01 | Phase 33 | Pending |
-| POTLUCK-02 | Phase 33 | Pending |
-| POTLUCK-03 | Phase 33 | Pending |
-| POTLUCK-04 | Phase 33 | Pending |
-| POTLUCK-05 | Phase 33 | Pending |
-| POTLUCK-06 | Phase 33 | Pending |
-| POTLUCK-07 | Phase 33 | Pending |
+| POTLUCK-01 | Phase 33 | Complete |
+| POTLUCK-02 | Phase 33 | Complete |
+| POTLUCK-03 | Phase 33 | Complete |
+| POTLUCK-04 | Phase 33 | Complete |
+| POTLUCK-05 | Phase 33 | Complete |
+| POTLUCK-06 | Phase 33 | Complete |
+| POTLUCK-07 | Phase 33 | Complete |
 
 **Coverage:**
 - v2.2 requirements: 22 total

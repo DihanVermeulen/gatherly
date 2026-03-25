@@ -63,8 +63,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 31-01-PLAN.md — Backend auth + types + AuthContext + welcome carousel + navigation guards
-- [ ] 31-02-PLAN.md — Profile Setup screen + Preferences screen + onboarding completion flow
+- [x] 31-01-PLAN.md — Backend auth + types + AuthContext + welcome carousel + navigation guards
+- [x] 31-02-PLAN.md — Profile Setup screen + Preferences screen + onboarding completion flow
 
 #### Phase 32: Screen Redesigns
 **Goal**: The three primary event screens match their new design templates, giving the app a consistent updated layout with cover photo, location, module cards, and global settings.
@@ -95,11 +95,12 @@ Plans:
   4. A participant who has signed up can withdraw their claim and the slot returns to unclaimed
   5. Signed-up participant names are visible to everyone in the event (not hidden, unlike wishlist claims)
   6. Free-tier events display a plan upgrade prompt instead of the potluck setup screen
-**Plans:** 2 plans
+**Plans:** 3 plans
 
 Plans:
-- [ ] 33-01-PLAN.md — Potluck API client + Setup screen (organizer category builder + publish)
-- [ ] 33-02-PLAN.md — Potluck List screen (grouped view, progress bar, signup sheet, un-signup)
+- [x] 33-01-PLAN.md — Potluck API client + Setup screen (organizer category builder + publish)
+- [x] 33-02-PLAN.md — Potluck List screen (grouped view, progress bar, signup sheet, un-signup)
+- [x] 33-03-PLAN.md — Gap closure: local-first optimistic category creation (fix "name is required" on Add New)
 
 ---
 
@@ -124,6 +125,6 @@ Plans:
 | 28. Remove Account Roles | v2.1 | 1/1 | Complete | 2026-03-16 |
 | 29. Phase 27 Fix — Smart Join Flow | v2.1 | 3/3 | Complete | 2026-03-13 |
 | 30. Infrastructure — Migration and API | v2.2 | 4/4 | Complete | 2026-03-18 |
-| 31. Onboarding Screens | v2.2 | 0/2 | Not started | - |
+| 31. Onboarding Screens | v2.2 | 2/2 | Complete | 2026-03-24 |
 | 32. Screen Redesigns | v2.2 | 6/6 | Complete | 2026-03-22 |
-| 33. Potluck Screens | v2.2 | 0/2 | Not started | - |
+| 33. Potluck Screens | v2.2 | 3/3 | Complete | 2026-03-25 |
