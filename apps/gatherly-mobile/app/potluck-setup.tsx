@@ -11,13 +11,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import {
-  Minus,
-  Plus,
-  Trash2,
-  Utensils,
-  X,
-} from "lucide-react-native";
+import { Minus, Plus, Trash2, Utensils, X } from "lucide-react-native";
 
 import { modulesApi, TPotluckCategory } from "./api/modules";
 import { useEvents } from "./contexts/EventsContext";
@@ -28,6 +22,10 @@ import { Text } from "@/components/ui/text";
 import { Pressable } from "@/components/ui/pressable";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppHeader } from "@/components/AppHeader";
+
+// ─── Local type alias supporting temp IDs ─────────────────────────────────────
+
+type LocalCategory = Omit<TPotluckCategory, "id"> & { id: number | string };
 
 // ─── showToast helper ────────────────────────────────────────────────────────
 
@@ -63,7 +61,14 @@ function ChipInput({ chips, onAddChip, onRemoveChip }: ChipInputProps) {
     <View>
       {/* Existing chips */}
       {chips.length > 0 ? (
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            flexWrap: "wrap",
+            gap: 6,
+            marginBottom: 8,
+          }}
+        >
           {chips.map((chip) => (
             <View
               key={chip}
@@ -77,8 +82,15 @@ function ChipInput({ chips, onAddChip, onRemoveChip }: ChipInputProps) {
                 gap: 4,
               }}
             >
-              <Text style={{ fontSize: 12, color: "#0f766e", fontWeight: "600" }}>{chip}</Text>
-              <Pressable onPress={() => onRemoveChip(chip)} style={{ padding: 1 }}>
+              <Text
+                style={{ fontSize: 12, color: "#0f766e", fontWeight: "600" }}
+              >
+                {chip}
+              </Text>
+              <Pressable
+                onPress={() => onRemoveChip(chip)}
+                style={{ padding: 1 }}
+              >
                 <X size={12} color="#0f766e" />
               </Pressable>
             </View>
@@ -116,24 +128,51 @@ function ChipInput({ chips, onAddChip, onRemoveChip }: ChipInputProps) {
 // ─── Category card ────────────────────────────────────────────────────────────
 
 type CategoryCardProps = {
-  cat: TPotluckCategory;
+  cat: LocalCategory;
   eventId: string;
   onUpdate: (updated: TPotluckCategory) => void;
-  onDelete: (catId: number) => void;
+  onDelete: (catId: number | string) => void;
+  onReplace: (tempId: number | string, serverCat: TPotluckCategory) => void;
 };
 
-function CategoryCard({ cat, eventId, onUpdate, onDelete }: CategoryCardProps) {
+function CategoryCard({
+  cat,
+  eventId,
+  onUpdate,
+  onDelete,
+  onReplace,
+}: CategoryCardProps) {
   const [name, setName] = useState(cat.name);
   const [quantity, setQuantity] = useState(cat.quantity);
-  const [foodImageUrl, setFoodImageUrl] = useState<string | null>(cat.foodImageUrl);
+  const [foodImageUrl, setFoodImageUrl] = useState<string | null>(
+    cat.foodImageUrl,
+  );
   const [chips, setChips] = useState<string[]>(cat.suggestionChips ?? []);
   const [deleting, setDeleting] = useState(false);
 
-  // Save on blur or quantity change
+  const isTemp =
+    typeof cat.id === "string" && String(cat.id).startsWith("temp-");
+
+  // Save on blur or quantity change (persisted categories only)
   const saveCategory = useCallback(
-    async (patch: Partial<{ name: string; quantity: number; foodImageUrl: string | null; suggestionChips: string[] }>) => {
+    async (
+      patch: Partial<{
+        name: string;
+        quantity: number;
+        foodImageUrl: string | null;
+        suggestionChips: string[];
+      }>,
+    ) => {
+      // Guard: never call update API for temp (unsaved) categories
+      if (typeof cat.id === "string" && String(cat.id).startsWith("temp-"))
+        return;
+
       try {
-        const updated = await modulesApi.updatePotluckCategory(eventId, cat.id, patch);
+        const updated = await modulesApi.updatePotluckCategory(
+          eventId,
+          cat.id as number,
+          patch,
+        );
         onUpdate(updated);
       } catch {
         // Silent — user can retry
@@ -142,14 +181,37 @@ function CategoryCard({ cat, eventId, onUpdate, onDelete }: CategoryCardProps) {
     [eventId, cat.id, onUpdate],
   );
 
-  const handleNameBlur = () => {
-    saveCategory({ name, quantity, foodImageUrl, suggestionChips: chips });
+  const handleNameBlur = async () => {
+    if (isTemp) {
+      if (!name.trim()) {
+        onDelete(cat.id);
+        return;
+      }
+      try {
+        const created = await modulesApi.createPotluckCategory(eventId, {
+          name: name.trim(),
+          quantity,
+          foodImageUrl: foodImageUrl ?? undefined,
+          suggestionChips: chips,
+        });
+        onReplace(cat.id, created);
+      } catch {
+        showToast("Failed to save category. Please try again.");
+      }
+    } else {
+      saveCategory({ name, quantity, foodImageUrl, suggestionChips: chips });
+    }
   };
 
   const handleQuantityChange = (newQty: number) => {
     const clamped = Math.max(1, Math.min(50, newQty));
     setQuantity(clamped);
-    saveCategory({ name, quantity: clamped, foodImageUrl, suggestionChips: chips });
+    saveCategory({
+      name,
+      quantity: clamped,
+      foodImageUrl,
+      suggestionChips: chips,
+    });
   };
 
   const handleAddChip = (chip: string) => {
@@ -166,9 +228,13 @@ function CategoryCard({ cat, eventId, onUpdate, onDelete }: CategoryCardProps) {
 
   const pickFoodImage = useCallback(async () => {
     try {
-      const permResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const permResult =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permResult.granted) {
-        Alert.alert("Permission Required", "Please grant access to your photo library to add a food image.");
+        Alert.alert(
+          "Permission Required",
+          "Please grant access to your photo library to add a food image.",
+        );
         return;
       }
 
@@ -183,7 +249,12 @@ function CategoryCard({ cat, eventId, onUpdate, onDelete }: CategoryCardProps) {
       if (!result.canceled && result.assets[0]?.base64) {
         const dataUri = `data:image/jpeg;base64,${result.assets[0].base64}`;
         setFoodImageUrl(dataUri);
-        saveCategory({ name, quantity, foodImageUrl: dataUri, suggestionChips: chips });
+        saveCategory({
+          name,
+          quantity,
+          foodImageUrl: dataUri,
+          suggestionChips: chips,
+        });
       }
     } catch {
       // Silent
@@ -191,9 +262,15 @@ function CategoryCard({ cat, eventId, onUpdate, onDelete }: CategoryCardProps) {
   }, [name, quantity, chips, saveCategory]);
 
   const handleDelete = useCallback(async () => {
+    // Guard: temp categories are never in the DB — just remove locally
+    if (typeof cat.id === "string" && String(cat.id).startsWith("temp-")) {
+      onDelete(cat.id);
+      return;
+    }
+
     setDeleting(true);
     try {
-      await modulesApi.deletePotluckCategory(eventId, cat.id);
+      await modulesApi.deletePotluckCategory(eventId, cat.id as number);
       onDelete(cat.id);
     } catch {
       setDeleting(false);
@@ -218,7 +295,14 @@ function CategoryCard({ cat, eventId, onUpdate, onDelete }: CategoryCardProps) {
       }}
     >
       {/* Card header: CATEGORY label + delete */}
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 10,
+        }}
+      >
         <Text
           style={{
             fontSize: 10,
@@ -244,7 +328,14 @@ function CategoryCard({ cat, eventId, onUpdate, onDelete }: CategoryCardProps) {
       </View>
 
       {/* Food image + name row */}
-      <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 12, marginBottom: 14 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "flex-start",
+          gap: 12,
+          marginBottom: 14,
+        }}
+      >
         {/* Food image thumbnail */}
         <Pressable
           onPress={pickFoodImage}
@@ -270,14 +361,25 @@ function CategoryCard({ cat, eventId, onUpdate, onDelete }: CategoryCardProps) {
           ) : (
             <View style={{ alignItems: "center", gap: 4 }}>
               <Utensils size={20} color="#0d9488" />
-              <Text style={{ fontSize: 9, color: "#0d9488", fontWeight: "600" }}>Add photo</Text>
+              <Text
+                style={{ fontSize: 9, color: "#0d9488", fontWeight: "600" }}
+              >
+                Add photo
+              </Text>
             </View>
           )}
         </Pressable>
 
         {/* Category name input */}
         <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 12, fontWeight: "600", color: "#64748b", marginBottom: 6 }}>
+          <Text
+            style={{
+              fontSize: 12,
+              fontWeight: "600",
+              color: "#64748b",
+              marginBottom: 6,
+            }}
+          >
             Name
           </Text>
           <View
@@ -299,6 +401,7 @@ function CategoryCard({ cat, eventId, onUpdate, onDelete }: CategoryCardProps) {
               style={{ fontSize: 15, color: "#0f172a" }}
               autoCapitalize="words"
               returnKeyType="done"
+              autoFocus={isTemp}
             />
           </View>
         </View>
@@ -306,7 +409,14 @@ function CategoryCard({ cat, eventId, onUpdate, onDelete }: CategoryCardProps) {
 
       {/* Quantity stepper */}
       <View style={{ marginBottom: 14 }}>
-        <Text style={{ fontSize: 12, fontWeight: "600", color: "#64748b", marginBottom: 8 }}>
+        <Text
+          style={{
+            fontSize: 12,
+            fontWeight: "600",
+            color: "#64748b",
+            marginBottom: 8,
+          }}
+        >
           Quantity needed
         </Text>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
@@ -323,7 +433,15 @@ function CategoryCard({ cat, eventId, onUpdate, onDelete }: CategoryCardProps) {
           >
             <Minus size={18} color="#374151" />
           </Pressable>
-          <Text style={{ fontSize: 24, fontWeight: "700", color: "#0f172a", minWidth: 32, textAlign: "center" }}>
+          <Text
+            style={{
+              fontSize: 24,
+              fontWeight: "700",
+              color: "#0f172a",
+              minWidth: 32,
+              textAlign: "center",
+            }}
+          >
             {quantity}
           </Text>
           <Pressable
@@ -344,7 +462,14 @@ function CategoryCard({ cat, eventId, onUpdate, onDelete }: CategoryCardProps) {
 
       {/* Suggestion chips */}
       <View>
-        <Text style={{ fontSize: 12, fontWeight: "600", color: "#64748b", marginBottom: 8 }}>
+        <Text
+          style={{
+            fontSize: 12,
+            fontWeight: "600",
+            color: "#64748b",
+            marginBottom: 8,
+          }}
+        >
           Suggestions
         </Text>
         <ChipInput
@@ -369,7 +494,7 @@ export default function PotluckSetupScreen() {
 
   const scrollRef = useRef<ScrollView>(null);
 
-  const [categories, setCategories] = useState<TPotluckCategory[]>([]);
+  const [categories, setCategories] = useState<LocalCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -393,33 +518,58 @@ export default function PotluckSetupScreen() {
 
   // Update a category in local state
   const handleCategoryUpdate = useCallback((updated: TPotluckCategory) => {
-    setCategories((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+    setCategories((prev) =>
+      prev.map((c) => (c.id === updated.id ? updated : c)),
+    );
   }, []);
 
   // Remove a category from local state
-  const handleCategoryDelete = useCallback((catId: number) => {
+  const handleCategoryDelete = useCallback((catId: number | string) => {
     setCategories((prev) => prev.filter((c) => c.id !== catId));
   }, []);
 
-  // Add new category
-  const handleAddCategory = useCallback(async () => {
-    try {
-      const created = await modulesApi.createPotluckCategory(id, {
-        name: "",
-        quantity: 1,
-      });
-      setCategories((prev) => [...prev, created]);
-      // Scroll to bottom after adding
-      setTimeout(() => {
-        scrollRef.current?.scrollToEnd({ animated: true });
-      }, 100);
-    } catch {
-      showToast("Failed to add category. Please try again.");
-    }
-  }, [id]);
+  // Replace a temp category with the server-assigned one after creation
+  const handleCategoryReplace = useCallback(
+    (tempId: number | string, serverCat: TPotluckCategory) => {
+      setCategories((prev) =>
+        prev.map((c) => (c.id === tempId ? serverCat : c)),
+      );
+    },
+    [],
+  );
+
+  // Add new category — local-first, no API call yet
+  const handleAddCategory = useCallback(() => {
+    const tempId = `temp-${Date.now()}`;
+    const tempCat: LocalCategory = {
+      id: tempId,
+      eventId: parseInt(id, 10),
+      name: "",
+      quantity: 1,
+      foodImageUrl: null,
+      suggestionChips: [],
+      status: "draft",
+      sortOrder: categories.length,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setCategories((prev) => [...prev, tempCat]);
+    setTimeout(() => {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+  }, [id, categories.length]);
 
   // Publish potluck
   const handlePublish = useCallback(async () => {
+    // Guard: block publish if any category hasn't been named yet
+    const hasUnsavedTemp = categories.some(
+      (c) => typeof c.id === "string" && String(c.id).startsWith("temp-"),
+    );
+    if (hasUnsavedTemp) {
+      showToast("Please name all categories before publishing.");
+      return;
+    }
+
     if (categories.length === 0) {
       showToast("Add at least one category before publishing.");
       return;
@@ -430,7 +580,9 @@ export default function PotluckSetupScreen() {
       // 1. Update all categories to active status
       await Promise.all(
         categories.map((cat) =>
-          modulesApi.updatePotluckCategory(id, cat.id, { status: "active" }),
+          modulesApi.updatePotluckCategory(id, cat.id as number, {
+            status: "active",
+          }),
         ),
       );
 
@@ -440,7 +592,10 @@ export default function PotluckSetupScreen() {
         .filter((m) => m.moduleType !== "potluck" && m.status === "active")
         .map((m) => ({ type: m.moduleType, status: "active", config: {} }));
 
-      const merged = [...otherModules, { type: "potluck", status: "active", config: {} }];
+      const merged = [
+        ...otherModules,
+        { type: "potluck", status: "active", config: {} },
+      ];
       await modulesApi.setModules(id, merged);
 
       // 3. Refresh local categories to show active status
@@ -460,9 +615,19 @@ export default function PotluckSetupScreen() {
 
   if (!loading && isFree) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }} edges={["top", "bottom"]}>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: "#ffffff" }}
+        edges={["bottom"]}
+      >
         <AppHeader title="Setup Potluck" onBack={() => router.back()} />
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }}>
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 32,
+          }}
+        >
           <View
             style={{
               width: 64,
@@ -476,11 +641,28 @@ export default function PotluckSetupScreen() {
           >
             <Utensils size={28} color="#0d9488" />
           </View>
-          <Text style={{ fontSize: 20, fontWeight: "700", color: "#0f172a", marginBottom: 8, textAlign: "center" }}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: "700",
+              color: "#0f172a",
+              marginBottom: 8,
+              textAlign: "center",
+            }}
+          >
             Premium Feature
           </Text>
-          <Text style={{ fontSize: 14, color: "#64748b", textAlign: "center", lineHeight: 20, marginBottom: 24 }}>
-            Potluck coordination is available on the Standard plan. Upgrade your event to coordinate food and drink signups with your guests.
+          <Text
+            style={{
+              fontSize: 14,
+              color: "#64748b",
+              textAlign: "center",
+              lineHeight: 20,
+              marginBottom: 24,
+            }}
+          >
+            Potluck coordination is available on the Standard plan. Upgrade your
+            event to coordinate food and drink signups with your guests.
           </Text>
           <Pressable
             disabled
@@ -492,7 +674,9 @@ export default function PotluckSetupScreen() {
               opacity: 0.5,
             }}
           >
-            <Text style={{ color: "#ffffff", fontWeight: "700", fontSize: 15 }}>Upgrade Plan</Text>
+            <Text style={{ color: "#ffffff", fontWeight: "700", fontSize: 15 }}>
+              Upgrade Plan
+            </Text>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -503,9 +687,14 @@ export default function PotluckSetupScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }} edges={["top", "bottom"]}>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: "#ffffff" }}
+        edges={["bottom"]}
+      >
         <AppHeader title="Setup Potluck" onBack={() => router.back()} />
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <View
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
           <ActivityIndicator color="#0d9488" size="large" />
         </View>
       </SafeAreaView>
@@ -514,13 +703,17 @@ export default function PotluckSetupScreen() {
 
   // ── Check if already published ────────────────────────────────────────────
 
-  const allActive = categories.length > 0 && categories.every((c) => c.status === "active");
+  const allActive =
+    categories.length > 0 && categories.every((c) => c.status === "active");
   const publishLabel = allActive ? "Update & Save" : "Save and Publish";
 
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }} edges={["top", "bottom"]}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: "#ffffff" }}
+      edges={["bottom"]}
+    >
       <AppHeader
         title="Setup Potluck"
         onBack={() => router.back()}
@@ -542,11 +735,26 @@ export default function PotluckSetupScreen() {
           keyboardShouldPersistTaps="handled"
         >
           {/* Header text */}
-          <Text style={{ fontSize: 22, fontWeight: "700", color: "#0f172a", marginBottom: 4 }}>
+          <Text
+            style={{
+              fontSize: 22,
+              fontWeight: "700",
+              color: "#0f172a",
+              marginBottom: 4,
+            }}
+          >
             Configure Items
           </Text>
-          <Text style={{ fontSize: 14, color: "#64748b", marginBottom: 20, lineHeight: 20 }}>
-            Define what guests should bring and how many of each item you need for the party.
+          <Text
+            style={{
+              fontSize: 14,
+              color: "#64748b",
+              marginBottom: 20,
+              lineHeight: 20,
+            }}
+          >
+            Define what guests should bring and how many of each item you need
+            for the party.
           </Text>
 
           {/* Empty state */}
@@ -565,10 +773,25 @@ export default function PotluckSetupScreen() {
               }}
             >
               <Utensils size={32} color="#94a3b8" />
-              <Text style={{ fontSize: 15, fontWeight: "600", color: "#64748b", marginTop: 12, textAlign: "center" }}>
+              <Text
+                style={{
+                  fontSize: 15,
+                  fontWeight: "600",
+                  color: "#64748b",
+                  marginTop: 12,
+                  textAlign: "center",
+                }}
+              >
                 No categories yet
               </Text>
-              <Text style={{ fontSize: 13, color: "#94a3b8", marginTop: 4, textAlign: "center" }}>
+              <Text
+                style={{
+                  fontSize: 13,
+                  color: "#94a3b8",
+                  marginTop: 4,
+                  textAlign: "center",
+                }}
+              >
                 Tap below to add your first potluck category!
               </Text>
             </View>
@@ -582,6 +805,7 @@ export default function PotluckSetupScreen() {
               eventId={id}
               onUpdate={handleCategoryUpdate}
               onDelete={handleCategoryDelete}
+              onReplace={handleCategoryReplace}
             />
           ))}
 
@@ -625,12 +849,16 @@ export default function PotluckSetupScreen() {
             {saving ? (
               <>
                 <ActivityIndicator size="small" color="#ffffff" />
-                <Text style={{ color: "#ffffff", fontWeight: "700", fontSize: 16 }}>
+                <Text
+                  style={{ color: "#ffffff", fontWeight: "700", fontSize: 16 }}
+                >
                   Publishing...
                 </Text>
               </>
             ) : (
-              <Text style={{ color: "#ffffff", fontWeight: "700", fontSize: 16 }}>
+              <Text
+                style={{ color: "#ffffff", fontWeight: "700", fontSize: 16 }}
+              >
                 {publishLabel}
               </Text>
             )}
