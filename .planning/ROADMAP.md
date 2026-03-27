@@ -4,7 +4,8 @@
 
 - ✅ **v2.0 Gift Exchange Platform** — Phases 1–10 (shipped 2026-02-22)
 - ✅ **v2.1 Gatherly Mobile** — Phases 11–21 + 22–24, 27–29 (shipped 2026-03-16)
-- 🚧 **v2.2 UI Rehaul** — Phases 30–33 (in progress)
+- ✅ **v2.2 UI Rehaul** — Phases 30–33 (shipped 2026-03-25)
+- 🚧 **v2.3 Pricing Plans** — Phases 34–36 (in progress)
 
 ## Phases
 
@@ -26,11 +27,8 @@ See `.planning/milestones/v2.1-ROADMAP.md` for full phase details.
 
 </details>
 
----
-
-### 🚧 v2.2 UI Rehaul (In Progress)
-
-**Milestone Goal:** Implement new screen designs from screen templates, add a Welcoming onboarding flow for new users, and ship the Potluck collaboration module — backed by new API fields for location, cover photo, guest settings, user interests, and the full potluck data model.
+<details>
+<summary>✅ v2.2 UI Rehaul (Phases 30–33) — SHIPPED 2026-03-25</summary>
 
 #### Phase 30: Infrastructure — Migration and API
 **Goal**: API and database schema contracts are locked so all mobile phases can build against real endpoints and real types.
@@ -102,6 +100,61 @@ Plans:
 - [x] 33-02-PLAN.md — Potluck List screen (grouped view, progress bar, signup sheet, un-signup)
 - [x] 33-03-PLAN.md — Gap closure: local-first optimistic category creation (fix "name is required" on Add New)
 
+</details>
+
+---
+
+### 🚧 v2.3 Pricing Plans (In Progress)
+
+**Milestone Goal:** Implement a per-event upgrade model with full paywall UX — locked feature screens, trial limits, pricing/plans page, and a stub payment CTA — without real billing integration. Free events get trial access to premium modules with defined limits; paid events unlock everything.
+
+#### Phase 34: Infrastructure
+**Goal**: The API correctly enforces tier limits across all insertion paths and the mobile type system is unified, so every subsequent paywall screen can trust the error contracts it handles.
+**Depends on**: Phase 33 (v2.2 complete)
+**Requirements**: INFRA-01, INFRA-02, INFRA-03, INFRA-04, INFRA-05
+**Success Criteria** (what must be TRUE):
+  1. `TEvent.planTier` type is `'free' | 'premium'` everywhere in the mobile codebase — no `'standard'` references remain
+  2. Adding a 21st participant to a free event via any insertion path (direct POST, PUT sync, magic-link redemption) returns `{ error: 'participant_cap_reached', limit: 20 }` with HTTP 403
+  3. Creating a 4th potluck category on a free event returns `{ error: 'trial_limit_reached', limit: 3, resource: 'potluck_categories' }` with HTTP 403; creating a 2nd poll returns the same shape with `limit: 1, resource: 'polls'`
+  4. A free-tier event with the RSVP module enabled responds to all RSVP endpoints without a 403 — RSVP is no longer gated by plan tier
+  5. `PATCH /api/events/:id/upgrade` called by the event organizer sets `plan_tier = 'premium'` and returns the updated event; repeated calls are idempotent
+**Plans:** 2 plans
+
+Plans:
+- [ ] 34-01-PLAN.md — Type fix (planTier union) + RSVP tier removal + stub upgrade route
+- [ ] 34-02-PLAN.md — Participant cap enforcement (3 insertion paths) + trial limits (potluck categories, polls)
+
+#### Phase 35: Paywall Components
+**Goal**: The shared PaywallBanner component and pricing screen exist as the canonical upgrade UX, so no individual screen ever invents its own upgrade flow.
+**Depends on**: Phase 34
+**Requirements**: UPGRADE-01, UPGRADE-02, PAYWALL-01, PAYWALL-02
+**Success Criteria** (what must be TRUE):
+  1. Any `upgrade_required` 403 from the API — regardless of which screen triggered it — routes the user to the PaywallBanner instead of showing a raw error or crashing
+  2. An organizer sees "Request Access" copy and a working CTA that opens the external upgrade form URL; a magic-link participant sees "Ask your organiser to upgrade this event" with no upgrade CTA
+  3. The PaywallBanner headline is contextual — the copy differs between `participant_cap`, `potluck`, `polls`, `gift_exchange`, and `white_elephant` features
+  4. The pricing screen shows a Free vs Premium two-column feature comparison with no price point displayed, and is only reachable via upgrade CTAs (not from main navigation)
+**Plans:** 2 plans
+
+Plans:
+- [ ] 35-01-PLAN.md — PaywallBanner component + upgrade error handling + plansApi client + _layout registration
+- [ ] 35-02-PLAN.md — Pricing screen (app/pricing.tsx) with feature comparison + external CTA
+
+#### Phase 36: Paywall Wiring
+**Goal**: Every feature that has a tier limit shows a consistent locked state and routes through the shared PaywallBanner — replacing all bespoke upgrade implementations in the codebase.
+**Depends on**: Phase 35
+**Requirements**: WIRE-01, WIRE-02, WIRE-03, WIRE-04, WIRE-05
+**Success Criteria** (what must be TRUE):
+  1. In Module Config, premium modules display a lock icon and disabled toggle; tapping a locked module opens PaywallBanner — the old inline upgrade modal is gone
+  2. In the Potluck Setup screen, a free-tier organizer sees PaywallBanner for the plan block and a "X of 3 categories · Upgrade for unlimited" counter once 2 or more categories exist — the old bespoke locked view is gone
+  3. In Event Details, module cards for premium modules on free events show a lock icon and grey overlay; tapping any locked card opens PaywallBanner
+  4. In Edit Event, the guest list section always shows an "X/20 participants" badge; the Add Participant control is disabled and opens PaywallBanner when the cap is reached
+  5. In the Polls screen, a "1 of 1 polls used · Upgrade for unlimited" counter is visible when the limit is reached, and attempting to create another poll opens PaywallBanner
+**Plans:** 2 plans
+
+Plans:
+- [ ] 36-01-PLAN.md — Module Config + Event Details wiring (lock icons, PaywallBanner routing)
+- [ ] 36-02-PLAN.md — Potluck Setup + Edit Event + Polls wiring (counters, cap badge, PaywallBanner)
+
 ---
 
 ## Progress
@@ -128,3 +181,6 @@ Plans:
 | 31. Onboarding Screens | v2.2 | 2/2 | Complete | 2026-03-24 |
 | 32. Screen Redesigns | v2.2 | 6/6 | Complete | 2026-03-22 |
 | 33. Potluck Screens | v2.2 | 3/3 | Complete | 2026-03-25 |
+| 34. Infrastructure | v2.3 | 0/2 | Not started | — |
+| 35. Paywall Components | v2.3 | 0/2 | Not started | — |
+| 36. Paywall Wiring | v2.3 | 0/2 | Not started | — |

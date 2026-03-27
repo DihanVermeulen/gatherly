@@ -2,19 +2,19 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-18)
+See: .planning/PROJECT.md (updated 2026-03-27)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** v2.3 Pricing Plans — Defining requirements
+**Current focus:** v2.3 Pricing Plans — Phase 34 Infrastructure
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-27 — Milestone v2.3 started
+Phase: 34 — Infrastructure
+Plan: Not started
+Status: Not started
+Last activity: 2026-03-27 — v2.3 roadmap created (3 phases: 34–36)
 
-Progress: [██████████████████████████] v2.1 complete, v2.2 Phases 30-33 done
+Progress: [████████████████████████████] v2.1 complete, v2.2 Phases 30-33 done, v2.3 starting
 
 ## Performance Metrics
 
@@ -30,7 +30,15 @@ Progress: [███████████████████████
 | 30. Infrastructure | 4 | — | — |
 | 31. Onboarding Screens | 2/2 done | ~32m | ~16m |
 | 32. Screen Redesigns | 6/6 done | ~55m | ~9m |
-| 33. Potluck Screens | TBD | — | — |
+| 33. Potluck Screens | 3/3 done | — | — |
+
+**By Phase (v2.3):**
+
+| Phase | Plans | Total | Avg/Plan |
+|-------|-------|-------|----------|
+| 34. Infrastructure | 0/2 | — | — |
+| 35. Paywall Components | 0/2 | — | — |
+| 36. Paywall Wiring | 0/2 | — | — |
 
 *Updated after each plan completion*
 
@@ -75,6 +83,12 @@ Progress: [███████████████████████
 - showToast() helper: ToastAndroid.show() on Android, Alert.alert() on iOS — use for cross-platform toast
 - Potluck API (30-04): participantName sourced from request body for both token types; slot_taken (409) covers both full-slot and duplicate-participant cases; SELECT FOR UPDATE race guard pattern for slot booking
 - getById-on-mount pattern: screens needing detail fields (coverPhotoUrl, organizerName) call eventsApi.getById(id) in a useEffect and store in local state — list endpoint does not carry these fields; do NOT read detail fields from EventsContext
+- v2.3 tier model: planTier is 'free' | 'premium' — 'standard' is incorrect and must not appear in code; free events cap at 20 participants, 3 potluck categories, 1 poll
+- v2.3 error codes: participant_cap_reached (limit: 20), trial_limit_reached (limit: N, resource: string) — distinct from upgrade_required; mobile handles each differently
+- v2.3 demand capture: external Typeform/Tally URL via expo-web-browser — no in-app upgrade_requests table; URL stored as app constant
+- v2.3 PaywallBanner: single shared component for all upgrade UX; accepts feature + eventId props; organiser sees CTA, magic-link participant sees "Ask your organiser" copy
+- v2.3 pricing screen: no price points shown — stub CTA only; only reachable via upgrade CTAs, not main nav
+- v2.3 upgrade flow: PATCH /api/events/:id/upgrade -> refreshEvents() -> navigate back — always refresh before nav to clear stale planTier cache
 
 ### Quick Tasks Completed
 
@@ -104,8 +118,8 @@ Progress: [███████████████████████
 
 ## Session Continuity
 
-Last session: 2026-03-25
-Stopped at: Phase 33 plan 03 complete — potluck-setup.tsx fixed (local-first category creation, no more 400 on Add New Category)
+Last session: 2026-03-27
+Stopped at: v2.3 roadmap created — phases 34–36 defined, files written
 Resume file: None
 
-Next step: Phase 33 gap closure complete. Re-run UAT or plan next phase.
+Next step: Plan Phase 34 — `/gsd:plan-phase 34`
