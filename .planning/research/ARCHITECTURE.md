@@ -1,554 +1,382 @@
 # Architecture Patterns
 
-**Domain:** Gatherly Mobile — v2.2 UI Rehaul (Potluck Module, Onboarding, Event/User Schema Additions)
-**Researched:** 2026-03-17
+**Domain:** Gatherly Mobile — Tier Enforcement + Paywall UX Milestone
+**Researched:** 2026-03-27
 **Confidence:** HIGH — sourced entirely from live codebase inspection
+**Supersedes:** Previous v2.2 entry (potluck/onboarding questions answered; this file focuses on pricing/paywall integration)
 
 ---
 
 ## Current System Snapshot
 
+### Relevant existing files
+
 ```
 apps/api/src/
   routes/
-    events.ts        — event CRUD, participants, couples, assignments
-    modules.ts       — event_modules CRUD, polls CRUD+vote, rsvp submit
-    wishlists.ts     — participant wishlist items + claiming
-    invites.ts       — invite creation, resend, revoke, magic-link
-    users.ts         — GET/PUT /api/users/me
-    auth.ts          — login, register, refresh, logout
+    events.ts        — event CRUD; plan_tier in SELECT + response for GET / and /:id
+    modules.ts       — PUT /:id/modules enforces upgrade_required 403 on free + premium
   db/
-    schema.sql       — canonical schema + ADD COLUMN IF NOT EXISTS migrations
-    migrations/      — numbered SQL migration files
-  middleware/
-    auth.ts          — authenticateJWT, optionalAuth
-    requireOrganizer.ts — blocks participant-scoped JWT tokens
+    schema.sql       — plan_tier VARCHAR(50) DEFAULT 'free' on events table (line 217)
 
 apps/gatherly-mobile/app/
-  _layout.tsx        — root Stack with Stack.Protected auth guards
-  (tabs)/
-    _layout.tsx      — two-tab bar: Events, Profile
-    index.tsx        — events list
-    profile.tsx      — user profile + edit name
-  event-details.tsx  — event detail hub (modules, participants, assignments)
-  edit-event.tsx     — organizer event editor
-  modules-config.tsx — module toggle screen
-  polls.tsx          — polls module screen
-  rsvp.tsx           — RSVP module screen
-  sign-in.tsx        — login
-  register.tsx       — registration
-  join.tsx           — magic-link / invite code join
-  magic-link/[token].tsx — magic-link redemption
   api/
-    events.ts        — eventsApi + TEvent + TEventModule types
-    modules.ts       — modulesApi (polls, rsvp stubs)
-    users.ts         — usersApi
-    invites.ts       — invitesApi
-    client.ts        — axios instance
-  contexts/
-    AuthContext.tsx  — SessionProvider, useSession()
-    EventsContext.tsx — EventsProvider, useEvents()
+    events.ts        — TEvent.planTier: 'free' | 'standard' (line 44)
+  modules-config.tsx — reads planTier from EventsContext; shows upgrade modal on 403
+  potluck-setup.tsx  — screen-level free-tier gate: renders PaywallScreen if isFree
+  event-details.tsx  — renders module cards; no tier-aware logic currently
+  edit-event.tsx     — participant management UI; no cap enforcement currently
 ```
 
-### JWT Token Shape (critical constraint)
+### What is already built (do not redesign)
 
-Two distinct token shapes flow through the system:
-
-| Token type | Claims | Issued by |
+| Mechanism | Where | Behavior |
 |---|---|---|
-| Organizer JWT | `{ userId, email, name }` | `POST /api/auth/login` or `/register` |
-| Participant JWT | `{ participantId, eventId, email }` | `/api/invites/redeem` magic-link |
+| `plan_tier` column | `events` DB table | `'free'` default; `'premium'` unlocks modules |
+| Module 403 on free | `PUT /api/events/:id/modules` | Returns `{ error: "upgrade_required" }` |
+| `planTier` in TEvent | `app/api/events.ts` | Flows from API → EventsContext → any screen |
+| Upgrade modal stub | `modules-config.tsx` | `showUpgradeModal` state; "Coming Soon" button |
+| Screen-level paywall gate | `potluck-setup.tsx` | Renders locked screen if `isFree` before content |
 
-`requireOrganizer` middleware blocks participant-scoped tokens. Any new route that should be organizer-only must use both `authenticateJWT` and `requireOrganizer`.
+### What is missing (this milestone's work)
 
----
-
-## Question 1: Potluck Module Integration
-
-### Current state
-
-Phase 25 added `event_modules` with `module_type = 'potluck'` as a valid value and the paywall toggle in `modules-config.tsx`. The `event-details.tsx` screen renders a Potluck row in the modules list but the `route` variable is an empty string — pressing it does nothing. No potluck-specific tables or API routes exist.
-
-### Recommended integration pattern
-
-Follow the identical structure used for polls: module-gated tables + routes under `/api/events/:id/potluck*`.
-
-**Module gate check** (copy from polls pattern):
-
-```typescript
-// In every potluck route handler, verify the module is active:
-const moduleResult = await query(
-  "SELECT id FROM event_modules WHERE event_id = $1 AND module_type = 'potluck' AND status = 'active'",
-  [id],
-);
-if (moduleResult.rows.length === 0) {
-  return res.status(400).json({ error: "potluck module not enabled" });
-}
-```
-
-**Plan-tier gate** is already enforced by the existing `PUT /api/events/:id/modules` route — no additional check needed in potluck routes, because a potluck module row can only exist if the event was upgraded.
-
-### Potluck screen routing
-
-Add a route entry in `_layout.tsx` and wire `event-details.tsx`:
-
-```
-_layout.tsx     →   <Stack.Screen name="potluck" options={{ headerShown: false }} />
-event-details.tsx route variable for potluck:  `/potluck?id=${id}`
-```
-
-New file: `apps/gatherly-mobile/app/potluck.tsx`
+1. Participant cap enforcement (API + mobile UI)
+2. Trial limit counters on free-tier modules (e.g., "3 of 10 categories used")
+3. Dedicated paywall/pricing screen (navigable, not just a modal)
+4. Upgrade CTA routing — where does "Upgrade" go without real payment?
+5. Consistent paywall component reused across screens (currently each screen rolls its own)
+6. Photo gallery module — UI placeholder decision
 
 ---
 
-## Question 2: Potluck Database Schema
-
-### Design analysis (from screen templates)
-
-Potluck-Setup.png shows: organizer creates **categories** (Main Dish, Sides, Drinks) each with a **quantity needed** and optional **suggestions** (chip tags). Potluck-List.png shows items within categories with avatar of who signed up or a "Signup" button. Potluck-Signup.png shows a confirmation screen with optional note field.
-
-The design is a **category → items → signups** three-level hierarchy. Each category has a quantity needed; each item slot can be claimed by one participant.
-
-### Recommended schema (new migration 012)
-
-```sql
--- Potluck categories (defined by organizer per event)
-CREATE TABLE IF NOT EXISTS module_potluck_categories (
-  id           SERIAL PRIMARY KEY,
-  event_id     INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
-  module_id    INTEGER NOT NULL REFERENCES event_modules(id) ON DELETE CASCADE,
-  name         VARCHAR(100) NOT NULL,        -- "Main Dish", "Sides", "Drinks"
-  quantity      INTEGER NOT NULL DEFAULT 1,  -- how many slots needed
-  suggestions  TEXT[],                       -- ["Lasagna", "Tacos", "Roast Chicken"]
-  image_url    TEXT,                         -- optional category image
-  sort_order   INTEGER DEFAULT 0,
-  created_at   TIMESTAMP DEFAULT NOW(),
-  updated_at   TIMESTAMP DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_potluck_categories_event_id
-  ON module_potluck_categories(event_id);
-
--- Potluck slots (one row per quantity unit — a category with qty=4 has 4 rows)
--- Rationale: individual rows allow individual participant claims with notes.
-CREATE TABLE IF NOT EXISTS module_potluck_signups (
-  id              SERIAL PRIMARY KEY,
-  category_id     INTEGER NOT NULL REFERENCES module_potluck_categories(id) ON DELETE CASCADE,
-  event_id        INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
-  participant_id  INTEGER REFERENCES participants(id) ON DELETE SET NULL,  -- NULL = unclaimed
-  item_name       VARCHAR(255),   -- participant's specific item (e.g. "Potato Salad")
-  note            TEXT,           -- optional detail ("store-bought, gluten-free")
-  created_at      TIMESTAMP DEFAULT NOW(),
-  updated_at      TIMESTAMP DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_potluck_signups_category_id
-  ON module_potluck_signups(category_id);
-CREATE INDEX IF NOT EXISTS idx_potluck_signups_event_id
-  ON module_potluck_signups(event_id);
-CREATE INDEX IF NOT EXISTS idx_potluck_signups_participant_id
-  ON module_potluck_signups(participant_id);
-```
-
-**Why slot rows instead of a quantity column on signups:**
-
-The Potluck-List.png shows Spring Rolls (unclaimed) and Chips & Salsa (claimed by Sarah) as separate rows within Appetizers. Each slot is a discrete unit that a participant claims. If quantity = 4, the organizer creates 4 `module_potluck_signups` rows with `participant_id = NULL` at setup time. A participant claims one by updating `participant_id`, `item_name`, and `note`.
-
-**Slot pre-population on category create:**
-
-When the organizer saves a category with `quantity = N`, the API inserts N slot rows with `participant_id = NULL`. Changing quantity later adds or deletes unclaimed rows (never delete claimed rows — return 409 instead).
-
-### API endpoints for potluck (added to modules.ts)
+## Tier Data Flow
 
 ```
-GET    /api/events/:id/potluck/categories
-  → list categories with their slots + who claimed each
-
-POST   /api/events/:id/potluck/categories         (organizer only)
-  → create category, pre-populate slots
-
-PUT    /api/events/:id/potluck/categories/:catId  (organizer only)
-  → update name/quantity/suggestions (adjust unclaimed slot count)
-
-DELETE /api/events/:id/potluck/categories/:catId  (organizer only)
-  → only if all slots unclaimed; else 409
-
-POST   /api/events/:id/potluck/signups/:slotId    (participant — requires participantId)
-  → claim a slot; body: { itemName, note }
-
-DELETE /api/events/:id/potluck/signups/:slotId    (participant — own slot only)
-  → release a claimed slot
+PostgreSQL events.plan_tier
+  ↓  GET /api/events (list) + GET /api/events/:id
+  ↓  eventsApi.getAll() / eventsApi.getById()
+  ↓  EventsContext.state.events[n].planTier
+  ↓  Any screen: const event = events.find(e => e.id === id); const isFree = event.planTier === 'free'
 ```
 
-### Mobile API client additions (app/api/modules.ts)
+**Key property:** `planTier` is already present on every event object in `EventsContext` after the initial events fetch. No additional API call is needed to read the tier in any screen. Screens read it synchronously from `useEvents()`.
+
+**Tier value discrepancy (important):** The DB column stores `'free'` and (intended future) `'premium'`. The `TEvent` type in `app/api/events.ts` line 44 declares `planTier?: 'free' | 'standard'`. These two values (`'premium'` vs `'standard'`) are mismatched. The API response from `events.ts` coalesces to `plan_tier || 'free'` but any non-free value comes from the DB column directly. Before building upgrade flows, **pick one string and use it consistently** — the DB column, the API response, and the TypeScript type must agree. Recommendation: use `'premium'` to match the DB default and the modules.ts route constant (line 9: `const PREMIUM_MODULES`).
+
+---
+
+## New Components Needed
+
+### 1. `<PaywallBanner>` component (new)
+
+**File:** `apps/gatherly-mobile/components/PaywallBanner.tsx`
+
+A reusable inline banner shown at the top of premium screens when the event is free-tier. Replaces the three currently divergent implementations (upgrade modal in modules-config, inline disabled button in potluck-setup, and the free-tier banner in modules-config).
+
+```
+Props:
+  featureName: string        — "Potluck", "Polls", "RSVP"
+  onUpgradePress: () => void — called when "Upgrade" tapped
+```
+
+Renders a teal card with feature name, short copy, and an "Upgrade Plan" pressable that calls `onUpgradePress`. `onUpgradePress` routes to the pricing screen.
+
+### 2. `app/pricing.tsx` screen (new)
+
+**Route:** `/pricing?eventId=X`
+
+The upgrade destination. Since no payment processing exists, this is a stub screen showing:
+- Current plan badge ("Free Plan")
+- Premium plan features list
+- "Upgrade" button that calls `PUT /api/events/:id/plan` (a new API endpoint that sets `plan_tier = 'premium'`) — developer/demo mode only, no payment
+- After successful upgrade, invalidates the event in EventsContext and navigates back
+
+This is the single destination for all "Upgrade" CTAs across the app. Every paywall should route here.
+
+### 3. `app/api/plans.ts` client file (new)
 
 ```typescript
-export type TPotluckSlot = {
-  id: number;
-  participantId: number | null;
-  participantName: string | null;
-  itemName: string | null;
-  note: string | null;
-};
-
-export type TPotluckCategory = {
-  id: number;
-  name: string;
-  quantity: number;
-  suggestions: string[];
-  imageUrl?: string | null;
-  sortOrder: number;
-  slots: TPotluckSlot[];
+export const plansApi = {
+  upgrade: async (eventId: string): Promise<void> => {
+    await apiClient.post(`/api/events/${eventId}/upgrade`);
+  },
 };
 ```
 
 ---
 
-## Question 3: Welcoming Onboarding Navigation
+## Modified Components
 
-### Current auth navigation flow
+### `apps/api/src/routes/events.ts`
 
-```
-_layout.tsx: Stack
-  Stack.Protected guard={!!session}     — authenticated screens
-    (tabs)
-    edit-event
-    event-details
-    ...
-  Stack.Protected guard={!session}      — unauthenticated screens
-    sign-in
-    register
-  Public (no guard)
-    join
-    magic-link/[token]
-```
+**Additions required:**
 
-After `register.tsx` calls `signIn()`, `session` becomes truthy and `Stack.Protected guard={!session}` hides the unauthenticated screens. Control returns to the authenticated tree at `(tabs)` (events list).
+1. **Participant cap enforcement on `POST /:id/participants`**
 
-### Onboarding must inject between register and (tabs)
+   Free events: cap at 10 participants. Check count before insert:
 
-The Welcoming templates show a 3-screen flow:
+   ```typescript
+   // After ownership check, before INSERT:
+   const event = await query("SELECT plan_tier FROM events WHERE id = $1", [id]);
+   const planTier = event.rows[0]?.plan_tier || 'free';
+   if (planTier === 'free') {
+     const countResult = await query(
+       "SELECT COUNT(*)::int AS count FROM participants WHERE event_id = $1", [id]
+     );
+     if (countResult.rows[0].count >= 10) {
+       return res.status(403).json({ error: "participant_cap_reached", limit: 10 });
+     }
+   }
+   ```
 
-1. Getting-Started (splash carousel, 3 dots, "Get Started" button) — shown before auth
-2. Profile-Setup (Step 1 of 3: name, short bio, gift preferences)
-3. Preferences (Step 2 of 3: interest selection — "What are you into?")
+   The cap check lives here (API-side) not only client-side. Client-side enforcement is UX sugar; API enforcement is correctness.
 
-Getting-Started is a pre-auth landing, so it lives in the unauthenticated stack. Profile-Setup and Preferences are post-registration steps within the authenticated stack.
+2. **New route: `POST /api/events/:id/upgrade`**
 
-### Recommended approach: onboarding_complete flag in SecureStore
+   Sets `plan_tier = 'premium'` for the event. Organizer-only. No payment logic — stub for demo:
 
-```
-AuthContext: add field  onboardingComplete: boolean
-SecureStore key:        "gatherly_onboarding_complete"
-```
+   ```typescript
+   router.post("/:id/upgrade", authenticateJWT, requireOrganizer, asyncHandler(...));
+   // UPDATE events SET plan_tier = 'premium' WHERE id = $1 AND organizer_id = $2
+   // Returns updated event
+   ```
 
-**Flow after register:**
+### `apps/gatherly-mobile/app/api/events.ts`
 
-1. `register.tsx` calls `authApi.register()` → `signIn(token, user)`
-2. `signIn()` checks `SecureStore.getItem("gatherly_onboarding_complete")`
-3. If absent: sets `onboardingComplete = false`
-4. `_layout.tsx` reads `onboardingComplete` from `useSession()`
-5. Renders onboarding screens instead of `(tabs)` when session exists but onboarding incomplete
+**Changes required:**
 
-**_layout.tsx guard logic:**
+1. Fix `TEvent.planTier` union type to `'free' | 'premium'` (align with DB and modules.ts)
+2. Add `participantCount?: number` to `TEvent` — needed to show "8 of 10 participants" in UI. The API already returns `people: string[]`, so `participantCount` can be derived on the client as `event.people.length`, but an explicit field avoids confusion.
 
-```typescript
-// Within Stack.Protected guard={!!session}:
-<Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false }} />
-<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-// ... other authenticated screens
-```
+### `apps/gatherly-mobile/app/modules-config.tsx`
 
-The `onboarding` route renders the multi-step flow. On completion it calls `markOnboardingComplete()` (sets SecureStore key + context state) then `router.replace('/(tabs)')`.
+**Changes required:**
 
-**Why not a separate Stack.Protected block for onboarding:**
+1. Replace the inline upgrade modal with `<PaywallBanner>` + navigation to `/pricing?eventId=${id}`
+2. The `showUpgradeModal` state and its Modal JSX (lines 131, 367–422) can be removed once `PaywallBanner` navigates to the pricing screen
+3. The existing `handleToggle` 403 catch block (`err?.response?.data?.error === "upgrade_required"`) should call `router.push('/pricing?eventId=${id}')` instead of `setShowUpgradeModal(true)`
 
-`Stack.Protected guard={!session}` hides unauthenticated routes once session exists. Onboarding is post-registration so it belongs inside the authenticated guard. The `onboardingComplete` flag acts as a soft gate within the authenticated tree, handled by the `onboarding.tsx` screen itself (redirect to tabs if already complete) — not by the layout guard. This is simpler than adding a third `Stack.Protected` block.
+### `apps/gatherly-mobile/app/potluck-setup.tsx`
 
-### New files
+**Changes required:**
 
-```
-app/onboarding.tsx          — multi-step onboarding container (progress bar, step renderer)
-app/onboarding/             — (optional) split into step files if complex
-```
+1. The screen-level free-tier gate (lines 616–684) renders a custom locked view with a disabled "Upgrade Plan" button. Replace with `<PaywallBanner>` routed to `/pricing?eventId=${id}` and remove the bespoke locked-view JSX.
 
-**Register.tsx change:** After `signIn()` succeeds, push to `/onboarding` instead of letting the Stack.Protected redirect to tabs automatically. Use `router.replace('/onboarding')` to prevent back-navigation to register.
+### `apps/gatherly-mobile/app/edit-event.tsx`
 
-**Sign-in.tsx change:** After `signIn()` succeeds, check `onboardingComplete`; if false, `router.replace('/onboarding')`.
+**Changes required:**
 
-**Getting-Started (pre-auth landing):**
+1. **Client-side participant cap indicator:** When `isFree && event.people.length >= 10`, show an inline notice below the participant list: "Free plan: 10 participant limit. Upgrade to add more." The add-participant button should be disabled or trigger the `<PaywallBanner>` / pricing navigation.
+2. **Error handling for `participant_cap_reached` (403):** `eventsApi.addParticipant()` must catch this response code and surface it to the user as a paywall prompt rather than a generic error toast.
 
-The screen templates show this as a standalone splash before the user taps "Get Started" (which navigates to register). This belongs in the unauthenticated stack as `app/welcome.tsx`. The current sign-in screen already renders a Gatherly logo + "Welcome Back" heading. The Getting-Started screen replaces the direct `/sign-in` entry as the first unauthenticated screen shown to first-time users.
+### `apps/gatherly-mobile/app/event-details.tsx`
 
-```
-_layout.tsx unauthenticated block:
-  Stack.Screen name="welcome"   — new getting-started screen
-  Stack.Screen name="sign-in"
-  Stack.Screen name="register"
-```
+**Changes required:**
 
-Default route when no session: navigate to `welcome` (not `sign-in`) if `gatherly_has_launched` SecureStore key is absent, else go to `sign-in`.
+1. The `handleModuleTap` function (lines 236–274) should check `isFree && entry.premium` before routing. If a premium module is tapped and the event is free, route to `/pricing?eventId=${id}` instead of showing the "Enable this module" toast. Currently the tap behavior assumes the module is either active or inactive, not gated by tier.
+2. Add a free-tier "Upgrade" badge or indicator in the Event Hub section header for free events, consistent with the modules-config banner.
 
 ---
 
-## Question 4: New Event Fields
+## Participant Cap Enforcement
 
-### Fields needed (from Edit.png template)
+### Decision: API-side + client-side both
 
-The Manage Event screen shows: cover photo (thumbnail), event date+time, location ("Central Park, NY"), "Allow guests to invite others" toggle, "Public event" toggle.
+**API-side (authoritative):** `POST /api/events/:id/participants` returns `403 { error: "participant_cap_reached", limit: 10 }` when a free event already has 10 participants.
 
-### DB additions
+**Client-side (UX):** The add-participant UI in `edit-event.tsx` counts `event.people.length` from EventsContext (already available, no extra fetch). If at cap, disable the add button and show an inline upgrade CTA before the user even taps.
 
-```sql
--- Migration 012 (same migration as potluck schema above)
-ALTER TABLE events ADD COLUMN IF NOT EXISTS location         VARCHAR(500) DEFAULT NULL;
-ALTER TABLE events ADD COLUMN IF NOT EXISTS cover_photo_url  TEXT         DEFAULT NULL;
-ALTER TABLE events ADD COLUMN IF NOT EXISTS allow_guest_invites BOOLEAN   DEFAULT FALSE;
-ALTER TABLE events ADD COLUMN IF NOT EXISTS is_public        BOOLEAN      DEFAULT FALSE;
+**Why both:** API enforcement prevents circumvention. Client enforcement avoids a round-trip to discover the cap, improving perceived responsiveness.
 
-CREATE INDEX IF NOT EXISTS idx_events_is_public ON events(is_public);
-```
-
-**Why cover_photo_url as TEXT (not base64 in column):**
-
-The current codebase stores images as base64 in `image_url` columns (wishlists, gifts). The events table is included in the large `GET /api/events` aggregate query that already returns full event rows. Adding a base64 blob to every event in the list response would significantly inflate payload size. `cover_photo_url` should store a URL string pointing to an uploaded asset. For the initial implementation, this can still be a base64 data URL stored client-side and uploaded as-is — but name the column `_url` to leave the door open for a CDN migration without a rename.
-
-**Existing `feature_flags JSONB` could absorb `allow_guest_invites` and `is_public`:**
-
-This is a valid alternative. The trade-off: JSONB flags are not individually indexable without expression indexes, and the column semantics become implicit. For boolean fields used in routing logic (e.g., future public event discovery), explicit columns with their own indexes are safer. Use explicit columns.
-
-### API changes
-
-`GET /api/events` and `GET /api/events/:id` must include the four new columns in SELECT and response mapping. `PUT /api/events/:id` must accept them in the body (organizer-only, enforced by `requireOrganizer`).
-
-**Response shape addition to TEvent:**
+**Cap value:** 10 participants on free tier. This is a business decision not currently in the code — define it as a constant in the API:
 
 ```typescript
-// apps/gatherly-mobile/app/api/events.ts
-export type TEvent = {
-  // ... existing fields ...
-  // v2.2 additions
-  location?: string | null;
-  coverPhotoUrl?: string | null;
-  allowGuestInvites?: boolean;
-  isPublic?: boolean;
-};
+// apps/api/src/routes/events.ts (top of file, near imports)
+const FREE_PARTICIPANT_LIMIT = 10;
+```
+
+And in mobile:
+
+```typescript
+// apps/gatherly-mobile/app/constants/tiers.ts (new file)
+export const FREE_PARTICIPANT_LIMIT = 10;
+export const FREE_POTLUCK_CATEGORY_LIMIT = 10; // for trial limits
 ```
 
 ---
 
-## Question 5: User Interests / Preferences
+## Trial Limits (Usage Counters on Free Tier)
 
-### Fields needed (from Preferences.png template)
+Trial limits are different from hard blocks. A hard block says "you cannot use this feature." A trial limit says "you have used X of Y — upgrade to go further." The potluck category count is the primary candidate.
 
-The screen shows interest tags (Music & Concerts, Tech & AI, Social Mixers, etc.) — multi-select, minimum 3. The Profile-Setup screen shows a "Gift Preferences" free-text field and "Short Bio".
+### Potluck category counter
 
-### DB additions
+The `GET /api/events/:id/potluck/categories` response already returns all categories. The mobile client counts `categories.length`. On free tier, if `categories.length >= FREE_POTLUCK_CATEGORY_LIMIT`, show a banner in `potluck-setup.tsx`: "10 of 10 categories used on free plan. Upgrade for unlimited."
 
-```sql
--- Migration 012 (continued)
-ALTER TABLE users ADD COLUMN IF NOT EXISTS bio              TEXT     DEFAULT NULL;
-ALTER TABLE users ADD COLUMN IF NOT EXISTS gift_preferences TEXT     DEFAULT NULL;
-ALTER TABLE users ADD COLUMN IF NOT EXISTS interests        TEXT[]   DEFAULT '{}';
-ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url       TEXT     DEFAULT NULL;
-ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_complete BOOLEAN DEFAULT FALSE;
-```
+No API change needed — count is derived client-side from the existing response.
 
-**Why `interests TEXT[]` (array) not a junction table:**
+### Pattern for other trial limits
 
-A junction table (`user_interests`) is appropriate when interests are foreign-keyed to a canonical list used for querying (e.g., "find events matching user interests"). In this milestone, interests inform personalization UI only — they are not used in server-side queries or matching. A `TEXT[]` column is sufficient and avoids the overhead of a new table. If a canonical interest taxonomy is needed later, migrate to a junction table at that point.
+The same pattern applies to future limits:
+1. API returns the resource list
+2. Client counts items
+3. Client compares against a constant from `tiers.ts`
+4. UI shows counter + upgrade CTA at the limit
 
-**Why `onboarding_complete` in DB (not only in SecureStore):**
-
-`SecureStore` is device-local. If a user reinstalls the app or logs in on a new device, the onboarding flow would re-trigger. Storing `onboarding_complete` server-side allows the `GET /api/users/me` endpoint to return it, letting `AuthContext` skip the onboarding screen on second devices.
-
-**`GET /api/users/me` response addition:**
-
-```typescript
-// Current UserProfile type
-export interface UserProfile {
-  id: number;
-  email: string;
-  name: string;
-  createdAt: string;
-  eventsOrganized: number;
-  // v2.2 additions
-  bio?: string | null;
-  giftPreferences?: string | null;
-  interests?: string[];
-  avatarUrl?: string | null;
-  onboardingComplete?: boolean;
-}
-```
-
-**`PUT /api/users/me` body additions:**
-
-```typescript
-{
-  name?: string;
-  bio?: string;
-  giftPreferences?: string;
-  interests?: string[];
-  avatarUrl?: string;
-  onboardingComplete?: boolean;
-}
-```
-
-The `users.ts` route currently only accepts `name`. Extend the UPDATE SET clause to accept these fields selectively (patch semantics: only update keys present in body).
+Do not add a `usageCount` field to the API response for this milestone. Derive it from existing data.
 
 ---
 
-## Component Boundaries
+## Upgrade CTA Routing
 
-### New screens and their ownership
+### The "Upgrade" action
 
-| Screen file | Route | Auth guard | Who uses it |
-|---|---|---|---|
-| `app/welcome.tsx` | `/welcome` | unauthenticated | First-time users, shown before sign-in |
-| `app/onboarding.tsx` | `/onboarding` | authenticated | New registrants, post-register |
-| `app/potluck.tsx` | `/potluck?id=X` | authenticated | Participants + organizer |
-| `app/potluck-setup.tsx` | `/potluck-setup?id=X` | authenticated (organizer) | Organizer configures categories |
+All upgrade CTAs across the app route to a single destination: `router.push('/pricing?eventId=${eventId}')`.
 
-### Modified screens
+**Why a full screen, not a modal:** Modals are appropriate for quick confirmations. A pricing screen needs to show plan comparison, feature lists, and a clear CTA. `modules-config.tsx` currently uses a modal (`showUpgradeModal`) — this was reasonable as a placeholder but becomes fragile as the feature count grows.
 
-| Screen file | What changes |
-|---|---|
-| `app/_layout.tsx` | Add `welcome`, `onboarding`, `potluck`, `potluck-setup` Stack.Screen entries |
-| `app/register.tsx` | `router.replace('/onboarding')` after successful `signIn()` |
-| `app/sign-in.tsx` | Check `onboardingComplete`; redirect to `/onboarding` if false |
-| `app/event-details.tsx` | Wire potluck route; render location/cover photo fields |
-| `app/edit-event.tsx` | Add location, cover photo, allow_guest_invites, is_public fields |
-| `app/api/events.ts` | Add new TEvent fields |
-| `app/api/modules.ts` | Add potluck types and API methods |
-| `app/api/users.ts` | Add new UserProfile fields and updateMe payload |
-| `app/contexts/AuthContext.tsx` | Add `onboardingComplete` state + `markOnboardingComplete()` |
-| `app/(tabs)/_layout.tsx` | Potentially add tabs if design calls for it |
+**Why event-scoped:** Upgrade is per-event (`plan_tier` is on the events table, not the users table). The pricing screen needs `eventId` to call `POST /api/events/:id/upgrade`.
+
+### Upgrade flow (stub, no payment)
+
+```
+User taps "Upgrade" anywhere
+  → router.push('/pricing?eventId=X')
+  → pricing.tsx renders plan comparison
+  → User taps "Upgrade to Premium"
+  → plansApi.upgrade(eventId)  →  POST /api/events/:id/upgrade
+  → API sets plan_tier = 'premium'
+  → pricing.tsx calls eventsApi.getById(eventId) to refresh event
+  → EventsContext is updated (existing refreshEvents() pattern or direct state mutation)
+  → router.back() or router.replace('/modules-config?id=X')
+  → modules-config.tsx re-reads planTier === 'premium', unlocks toggles
+```
+
+### EventsContext refresh after upgrade
+
+`EventsContext` currently loads events on mount. After an upgrade, the cached event in context still shows `planTier: 'free'`. Two options:
+
+1. **Call `refreshEvents()` from pricing.tsx after upgrade** — re-fetches all events, guaranteed consistent. Simple but fetches more than needed.
+2. **Dispatch a local update** — `dispatch({ type: 'UPDATE_EVENT', payload: { id, planTier: 'premium' } })` — avoids a full refetch but requires a new action type in the EventsContext reducer.
+
+Recommendation: use option 1 (`refreshEvents()`) for this milestone. The events list is small; a full refresh is acceptable. Option 2 is an optimization for later.
 
 ---
 
-## Data Flow: Potluck Setup → Signup
+## Photo Gallery Module
 
-```
-Organizer flow:
-  edit-event.tsx → router.push('/potluck-setup?id=X')
-  potluck-setup.tsx → POST /api/events/:id/potluck/categories (per category)
-    → API inserts category + N slot rows (participant_id = NULL)
-  → router.back()
+### Decision: UI placeholder only, no DB schema this milestone
 
-Participant flow:
-  event-details.tsx → router.push('/potluck?id=X')
-  potluck.tsx → GET /api/events/:id/potluck/categories (returns categories + slots with participant info)
-  → participant taps "Signup" on unclaimed slot
-  → confirmation sheet (Potluck-Signup.png): item name + optional note
-  → POST /api/events/:id/potluck/signups/:slotId { itemName, note }
-    → API: UPDATE module_potluck_signups SET participant_id=$1, item_name=$2, note=$3
-  → potluck.tsx refetches categories
-```
+`photo_gallery` is already present in `MODULE_CATALOG` in `event-details.tsx` (line 97) and `MODULE_DEFS` in `modules-config.tsx` (line 101) with `comingSoon: true`. Both screens already render it with a lock icon and "Coming soon" label.
 
-### Auth on potluck signup
+**No DB schema change needed this milestone.** The gallery requires:
+- Storage for uploaded images (S3, Cloudinary, or similar) — not yet decided
+- A `module_photo_gallery_items` table
+- A photo upload API
 
-The signup route must handle both organizer JWT (`userId`) and participant JWT (`participantId`). Pattern from `modules.ts` polls vote:
+These are non-trivial infrastructure decisions. Treat the gallery as a placeholder in the module catalog until the storage strategy is resolved. The `comingSoon: true` flag in both catalog arrays is the correct current state.
 
-```typescript
-if (!user.participantId && !user.userId) {
-  return res.status(403).json({ error: "authentication required" });
-}
-// resolve participant: prefer participantId from token, else look up by userId+eventId
-```
+**If the milestone scope requires removing "comingSoon" from gallery:** flip `comingSoon` to `false` and add a premium tier check (`premium: true` is already set in `modules-config.tsx`). The module toggle will show it as locked-for-free and no-op for premium (no route yet). A stub message screen can be added as `app/photo-gallery.tsx` with "Photo Gallery coming soon" copy.
 
 ---
 
 ## Build Order
 
-The features have these dependencies:
+Dependencies between components determine the sequence. The tier data flow already exists end-to-end; what's missing is consistent UX and the participant cap.
 
 ```
-DB migration 012 (schema changes)
-  ├── Potluck tables → Potluck API routes → Potluck mobile screens
-  ├── events columns → events API changes → TEvent type → edit-event.tsx UI
-  └── users columns → users API changes → UserProfile type → onboarding screens
-        └── onboarding screens → welcome screen (both needed together)
+Step 1 — Fix tier constant mismatch (unblocks everything else)
+  - Align plan_tier DB value, API response, and TEvent type to 'free' | 'premium'
+  - Add FREE_PARTICIPANT_LIMIT and FREE_POTLUCK_CATEGORY_LIMIT to tiers.ts
+
+Step 2 — API: participant cap + upgrade endpoint
+  - events.ts: add cap check in POST /:id/participants
+  - events.ts: add POST /:id/upgrade route
+  - New app/api/plans.ts client
+
+Step 3 — Shared PaywallBanner component
+  - components/PaywallBanner.tsx
+  - Must exist before screens use it
+
+Step 4 — Pricing screen
+  - app/pricing.tsx
+  - Add Stack.Screen in _layout.tsx
+  - Connects PaywallBanner destinations to an actual route
+
+Step 5 — Update existing screens to use PaywallBanner + pricing route
+  - modules-config.tsx: replace modal with PaywallBanner + router.push('/pricing')
+  - potluck-setup.tsx: replace bespoke locked view with PaywallBanner
+  - edit-event.tsx: add participant cap UI and 403 error handling
+  - event-details.tsx: add premium module tap → pricing route
+
+Step 6 — Trial limit counters (depends on Step 1 constants)
+  - potluck-setup.tsx: add category count banner at limit
+  - No API changes needed
 ```
 
-### Recommended sequence
+Steps 3 and 4 can be built in parallel by the same developer in the same session. Step 2 can be done before or during step 3 without blocking.
 
-**Step 1 — DB migration (unblocks everything)**
+---
 
-Write `apps/api/src/db/migrations/012-phase-v22.sql`:
-- Potluck tables
-- Four event columns
-- Five user columns
+## Component Boundaries Summary
 
-**Step 2 — API layer (must come before mobile)**
+### New files
 
-- Extend `events.ts` routes: include new columns in SELECT + response + PUT body
-- Extend `users.ts` routes: patch-style PUT accepting new fields; GET returns new fields
-- Add potluck routes to `modules.ts`: categories CRUD + signups CRUD
+| File | Type | Purpose |
+|---|---|---|
+| `apps/gatherly-mobile/components/PaywallBanner.tsx` | Component | Reusable locked-feature banner with upgrade CTA |
+| `apps/gatherly-mobile/app/pricing.tsx` | Screen | Upgrade destination; shows plan comparison and upgrade button |
+| `apps/gatherly-mobile/app/api/plans.ts` | API client | `plansApi.upgrade(eventId)` |
+| `apps/gatherly-mobile/app/constants/tiers.ts` | Constants | `FREE_PARTICIPANT_LIMIT`, `FREE_POTLUCK_CATEGORY_LIMIT` |
 
-**Step 3 — Type layer (unblocks mobile)**
+### Modified files
 
-- Update `TEvent` in `app/api/events.ts`
-- Update `UserProfile` and `usersApi` in `app/api/users.ts`
-- Add potluck types to `app/api/modules.ts`
-
-**Step 4 — AuthContext onboarding state**
-
-- Add `onboardingComplete` + `markOnboardingComplete()` to `AuthContext`
-- Read `onboardingComplete` from `GET /api/users/me` during `restoreSession()`
-
-**Step 5 — Onboarding + welcome screens (can parallel with step 6)**
-
-- `app/welcome.tsx` — pre-auth splash carousel
-- `app/onboarding.tsx` — post-register 3-step flow (Profile Setup + Preferences)
-- Wire `_layout.tsx` entries
-- Update `register.tsx` and `sign-in.tsx` redirects
-
-**Step 6 — Event fields UI (can parallel with step 5)**
-
-- `edit-event.tsx`: location field, cover photo picker, two boolean toggles
-- `event-details.tsx`: render location and cover photo in hero block
-
-**Step 7 — Potluck screens (depends on steps 2+3)**
-
-- `app/potluck-setup.tsx` — organizer category builder
-- `app/potluck.tsx` — participant list + signup
-- Wire route in `event-details.tsx` (remove `disabled` on potluck row, set route)
+| File | Change |
+|---|---|
+| `apps/api/src/routes/events.ts` | Add cap check in POST participants; add POST /:id/upgrade |
+| `apps/gatherly-mobile/app/api/events.ts` | Fix TEvent.planTier union to `'free' \| 'premium'` |
+| `apps/gatherly-mobile/app/_layout.tsx` | Add Stack.Screen for `pricing` |
+| `apps/gatherly-mobile/app/modules-config.tsx` | Replace upgrade modal with PaywallBanner + pricing route |
+| `apps/gatherly-mobile/app/potluck-setup.tsx` | Replace bespoke locked view with PaywallBanner |
+| `apps/gatherly-mobile/app/edit-event.tsx` | Add participant cap UI; handle participant_cap_reached 403 |
+| `apps/gatherly-mobile/app/event-details.tsx` | Route premium module taps to pricing on free events |
 
 ---
 
 ## Anti-Patterns to Avoid
 
-### Storing potluck signups as a quantity column on categories
+### Putting upgrade state on the user, not the event
 
-The quantity represents how many are needed, not how many signed up. Using `COUNT(signups)` to derive fulfillment preserves each individual claim as a distinct row with its own participant, item name, and note. Collapsing this into a counter loses that granularity.
+`plan_tier` is on `events`, not `users`. Do not add a `userTier` concept. One user can have a free event and a premium event simultaneously. All tier checks must be event-scoped.
 
-### Gating onboarding inside _layout.tsx Stack.Protected with a third guard block
+### Client-only participant cap enforcement
 
-A third `Stack.Protected guard={!!session && !onboardingComplete}` sounds clean but creates navigation ordering issues: when `onboardingComplete` flips to true, the stack transitions simultaneously to the authenticated guard, causing a double-navigation flash. Better: let the onboarding screen handle its own guard (redirect to tabs if already complete) and let `_layout.tsx` stay simple.
+If the mobile app is the only thing checking the cap, a determined user (or a bug, or a future API consumer) can bypass it. The API must be the authoritative gate. Client enforcement is additive UX, not a replacement.
 
-### Adding cover photo as a base64 column on events
+### Multiple upgrade modals per screen
 
-The `GET /api/events` list query already aggregates participants, couples, and assignments via multiple JOINs. Adding a base64 image blob (potentially 200KB+) to every row in that list response would make the list payload enormous. Store a URL string; upload separately.
+`modules-config.tsx` has an inline Modal, `potluck-setup.tsx` has a bespoke locked view, and future screens would each add their own. This creates maintenance drift. `PaywallBanner` + a single pricing screen is the single pattern — enforce it from step 3 onward.
 
-### One signup row per category (instead of one per slot)
+### Deep-linking upgrade to a payment provider directly
 
-If signups are stored as `(category_id, participant_id, quantity_claimed)`, you cannot display which specific named item each participant is bringing, nor can two participants both claim slots in the same category independently. The slot-per-row design matches the template UI.
+There is no payment processor yet. Do not add a deep-link or external URL to a payment page. Route to `pricing.tsx` internally. When payment is eventually added, only `pricing.tsx` needs to change.
+
+### Caching stale planTier after upgrade
+
+After `POST /api/events/:id/upgrade` succeeds, the EventsContext cache still holds `planTier: 'free'`. Any screen that reads tier from context will remain in the gated state until the cache is invalidated. Call `refreshEvents()` immediately after a successful upgrade before navigating back.
 
 ---
 
 ## Sources
 
-All findings are based on direct codebase inspection:
+All findings are from direct inspection of the following files (no external sources):
 
-- `apps/api/src/db/schema.sql` — current DB schema
-- `apps/api/src/db/migrations/011-phase25-modules-polls-rsvp.sql` — Phase 25 migration pattern
-- `apps/api/src/routes/modules.ts` — polls/rsvp route patterns
-- `apps/gatherly-mobile/app/_layout.tsx` — navigation guard structure
-- `apps/gatherly-mobile/app/contexts/AuthContext.tsx` — session state shape
-- `apps/gatherly-mobile/app/modules-config.tsx` — module toggle pattern
-- `apps/gatherly-mobile/app/event-details.tsx` — module routing stubs
-- `apps/gatherly-mobile/app/api/events.ts` — TEvent type
-- `apps/gatherly-mobile/app/api/modules.ts` — modulesApi type pattern
-- `apps/gatherly-mobile/screen-templates/Potluck/` — UI design templates
-- `apps/gatherly-mobile/screen-templates/Welcoming/` — onboarding design templates
-- `apps/gatherly-mobile/screen-templates/Edit.png` — event edit UI
+- `apps/api/src/routes/events.ts` — participant management, plan_tier in queries
+- `apps/api/src/routes/modules.ts` — upgrade_required 403 pattern, PREMIUM_MODULES constant
+- `apps/gatherly-mobile/app/api/events.ts` — TEvent type, planTier field (line 44)
+- `apps/gatherly-mobile/app/event-details.tsx` — module card rendering, handleModuleTap
+- `apps/gatherly-mobile/app/modules-config.tsx` — upgrade modal, handleToggle 403 catch
+- `apps/gatherly-mobile/app/potluck-setup.tsx` — screen-level free-tier gate pattern
+- `apps/gatherly-mobile/app/edit-event.tsx` — participant management UI structure
+- `apps/gatherly-mobile/app/api/modules.ts` — modulesApi shape
+- `apps/api/src/db/schema.sql` — plan_tier column definition (line 217)
