@@ -116,7 +116,6 @@ router.post(
       participantName: clientParticipantName,
       email: clientEmail,
     } = req.body;
-    console.log("[redeem] received token:", token);
 
     // Validate token exists and is a non-empty string
     if (!token || typeof token !== "string" || token.trim().length === 0) {
@@ -125,7 +124,6 @@ router.post(
 
     // Hash the raw token to look up the stored hash
     const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
-    console.log("[redeem] computed hash:", tokenHash);
 
     // Look up the token non-destructively — token persists for reuse within 7-day window
     const lookupResult = await query(
@@ -177,6 +175,22 @@ router.post(
       try {
         await client.query("BEGIN");
 
+        const eventTierCheck = await client.query(
+          "SELECT plan_tier FROM events WHERE id = $1",
+          [invite.event_id],
+        );
+        const tierForCap = eventTierCheck.rows[0]?.plan_tier || 'free';
+        if (tierForCap === 'free') {
+          const capCheck = await client.query(
+            "SELECT COUNT(*)::int AS count FROM participants WHERE event_id = $1",
+            [invite.event_id],
+          );
+          if (capCheck.rows[0].count >= 20) {
+            await client.query("ROLLBACK");
+            return res.status(403).json({ error: 'participant_cap_reached', limit: 20 });
+          }
+        }
+
         // Use client-supplied name if provided; fall back to email prefix or "Participant"
         const resolvedName = clientParticipantName?.trim()
           ? clientParticipantName.trim()
@@ -218,11 +232,14 @@ router.post(
     // check if a registered user account exists. If so, link the participant to that user
     // and return a user-scoped JWT instead.
     // Use stored invite email; fall back to client-supplied email for QR/link invites
+    // Prefer the client-supplied email (who is actually redeeming) over the invite email.
+    // This prevents session confusion where a logged-in user could receive another
+    // user's JWT if the invite was targeted at a different email address.
     const effectiveEmail =
-      invite.invite_email?.trim().length > 0
-        ? invite.invite_email
-        : clientEmail?.trim().length > 0
-          ? clientEmail.trim()
+      clientEmail?.trim().length > 0
+        ? clientEmail.trim()
+        : invite.invite_email?.trim().length > 0
+          ? invite.invite_email
           : null;
 
     if (effectiveEmail) {

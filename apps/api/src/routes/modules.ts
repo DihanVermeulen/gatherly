@@ -192,6 +192,20 @@ router.post(
     }
     const moduleId = moduleResult.rows[0].id;
 
+    const eventTierResult = await query(
+      "SELECT plan_tier FROM events WHERE id = $1",
+      [id],
+    );
+    if ((eventTierResult.rows[0]?.plan_tier || 'free') === 'free') {
+      const pollCountResult = await query(
+        "SELECT COUNT(*)::int AS count FROM module_polls WHERE event_id = $1",
+        [id],
+      );
+      if (pollCountResult.rows[0].count >= 1) {
+        return res.status(403).json({ error: 'trial_limit_reached', limit: 1, resource: 'polls' });
+      }
+    }
+
     const client = await getClient();
     try {
       await client.query("BEGIN");
@@ -441,6 +455,20 @@ router.post(
     const qty = parseInt(quantity, 10);
     if (isNaN(qty) || qty < 1) {
       return res.status(400).json({ error: "quantity must be a positive integer" });
+    }
+
+    const eventTierResult = await query(
+      "SELECT plan_tier FROM events WHERE id = $1",
+      [id],
+    );
+    if ((eventTierResult.rows[0]?.plan_tier || 'free') === 'free') {
+      const catCountResult = await query(
+        "SELECT COUNT(*)::int AS count FROM module_potluck_categories WHERE event_id = $1",
+        [id],
+      );
+      if (catCountResult.rows[0].count >= 3) {
+        return res.status(403).json({ error: 'trial_limit_reached', limit: 3, resource: 'potluck_categories' });
+      }
     }
 
     const sortResult = await query(
