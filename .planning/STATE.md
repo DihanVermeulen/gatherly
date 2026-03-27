@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-27)
 ## Current Position
 
 Phase: 34 — Infrastructure
-Plan: Not started
-Status: Not started
-Last activity: 2026-03-27 — v2.3 roadmap created (3 phases: 34–36)
+Plan: 34-02 complete
+Status: Wave 1 complete
+Last activity: 2026-03-27 — Completed 34-02-PLAN.md (participant caps and trial limits)
 
 Progress: [████████████████████████████] v2.1 complete, v2.2 Phases 30-33 done, v2.3 starting
 
