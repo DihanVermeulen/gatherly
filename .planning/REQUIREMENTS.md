@@ -61,11 +61,11 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | Phase 34 | Pending |
-| INFRA-02 | Phase 34 | Pending |
-| INFRA-03 | Phase 34 | Pending |
-| INFRA-04 | Phase 34 | Pending |
-| INFRA-05 | Phase 34 | Pending |
+| INFRA-01 | Phase 34 | Complete |
+| INFRA-02 | Phase 34 | Complete |
+| INFRA-03 | Phase 34 | Complete |
+| INFRA-04 | Phase 34 | Complete |
+| INFRA-05 | Phase 34 | Complete |
 | UPGRADE-01 | Phase 35 | Pending |
 | UPGRADE-02 | Phase 35 | Pending |
 | PAYWALL-01 | Phase 35 | Pending |
