@@ -316,6 +316,19 @@ router.put(
         );
         const currentNames = currentParticipants.rows.map((p) => p.name);
 
+        const eventTierResult = await client.query(
+          "SELECT plan_tier FROM events WHERE id = $1",
+          [id],
+        );
+        const eventPlanTier = eventTierResult.rows[0]?.plan_tier || 'free';
+        if (eventPlanTier === 'free') {
+          const newPeopleCount = people.filter((p: string) => !currentNames.includes(p)).length;
+          if (currentNames.length + newPeopleCount > 20) {
+            await client.query("ROLLBACK");
+            return res.status(403).json({ error: 'participant_cap_reached', limit: 20 });
+          }
+        }
+
         // Add new participants
         for (const person of people) {
           if (!currentNames.includes(person)) {
@@ -457,16 +470,41 @@ router.post("/:id/participants", authenticateJWT, requireOrganizer, async (req: 
       return res.status(400).json({ error: "Participant name is required" });
     }
 
-    // Verify ownership before modifying
-    const ownerCheck = await query("SELECT id FROM events WHERE id = $1 AND organizer_id = $2", [id, (req as any).user.userId]);
-    if (ownerCheck.rows.length === 0) return res.status(403).json({ error: "Forbidden" });
-
-    await query(
-      "INSERT INTO participants (event_id, name) VALUES ($1, $2) ON CONFLICT (event_id, name) DO NOTHING",
-      [id, name.trim()],
+    const ownerCheck = await query(
+      "SELECT id, plan_tier FROM events WHERE id = $1 AND organizer_id = $2",
+      [id, (req as any).user.userId],
     );
+    if (ownerCheck.rows.length === 0) return res.status(403).json({ error: "Forbidden" });
+    const planTier = ownerCheck.rows[0].plan_tier || 'free';
 
-    res.status(201).json({ success: true });
+    // Wrap count check + INSERT in a transaction to prevent race-window bypass
+    const client = await getClient();
+    try {
+      await client.query("BEGIN");
+
+      if (planTier === 'free') {
+        const countResult = await client.query(
+          "SELECT COUNT(*)::int AS count FROM participants WHERE event_id = $1",
+          [id],
+        );
+        if (countResult.rows[0].count >= 20) {
+          await client.query("ROLLBACK");
+          return res.status(403).json({ error: 'participant_cap_reached', limit: 20 });
+        }
+      }
+
+      const insertResult = await client.query(
+        "INSERT INTO participants (event_id, name) VALUES ($1, $2) RETURNING *",
+        [id, name.trim()],
+      );
+      await client.query("COMMIT");
+      res.status(201).json(insertResult.rows[0]);
+    } catch (err) {
+      await client.query("ROLLBACK");
+      throw err;
+    } finally {
+      client.release();
+    }
   } catch (error) {
     console.error("Error adding participant:", error);
     res.status(500).json({ error: "Failed to add participant" });
