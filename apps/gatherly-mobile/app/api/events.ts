@@ -41,7 +41,7 @@ export type TEvent = {
   // Phase 24 additions
   featureFlags?: Record<string, any>;
   // Phase 25 additions
-  planTier?: 'free' | 'standard';
+  planTier?: 'free' | 'premium';
   // Phase 30 additions
   hasCoverPhoto?: boolean;
   // Phase 32 additions
