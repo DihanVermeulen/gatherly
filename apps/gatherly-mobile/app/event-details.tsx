@@ -1,10 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import {
-  ScrollView,
-  View,
-  Image,
-  Dimensions,
-} from "react-native";
+import { ScrollView, View, Image, Dimensions } from "react-native";
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import {
   Gift,
@@ -105,7 +100,11 @@ const MODULE_CATALOG: ModuleCatalogEntry[] = [
   },
 ];
 
-const CATEGORY_ORDER: ModuleCategory[] = ["ACTIVITY", "COLLABORATION", "MEMORIES"];
+const CATEGORY_ORDER: ModuleCategory[] = [
+  "ACTIVITY",
+  "COLLABORATION",
+  "MEMORIES",
+];
 
 // ─── Date badge helpers ────────────────────────────────────────────────────────
 
@@ -118,14 +117,21 @@ function getDateBadge(eventDate: string | null | undefined): {
   const now = new Date();
   const date = new Date(eventDate);
   const nowDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const eventDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const eventDay = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  );
   const diff = eventDay.getTime() - nowDay.getTime();
   if (diff === 0) return { label: "TODAY", bg: "#f59e0b", text: "#ffffff" };
   if (diff > 0) return { label: "UPCOMING", bg: "#14b8a6", text: "#ffffff" };
   return { label: "PAST", bg: "#64748b", text: "#ffffff" };
 }
 
-function formatEventDate(eventDate: string | null | undefined, location: string | null | undefined): string {
+function formatEventDate(
+  eventDate: string | null | undefined,
+  location: string | null | undefined,
+): string {
   const parts: string[] = [];
   if (eventDate) {
     parts.push(
@@ -133,7 +139,7 @@ function formatEventDate(eventDate: string | null | undefined, location: string 
         month: "short",
         day: "numeric",
         year: "numeric",
-      })
+      }),
     );
   }
   if (location) parts.push(location);
@@ -152,21 +158,31 @@ export default function EventDetailsScreen() {
   const toast = useToast();
 
   const [activeModules, setActiveModules] = useState<TEventModule[]>([]);
-  const [detailCoverPhotoUrl, setDetailCoverPhotoUrl] = useState<string | null>(null);
-  const [detailOrganizerName, setDetailOrganizerName] = useState<string | null>(null);
+  const [detailCoverPhotoUrl, setDetailCoverPhotoUrl] = useState<string | null>(
+    null,
+  );
+  const [detailOrganizerName, setDetailOrganizerName] = useState<string | null>(
+    null,
+  );
 
   useFocusEffect(
     useCallback(() => {
-      modulesApi.getModules(id).then(setActiveModules).catch(() => {});
-    }, [id])
+      modulesApi
+        .getModules(id)
+        .then(setActiveModules)
+        .catch(() => {});
+    }, [id]),
   );
 
   useEffect(() => {
-    eventsApi.getById(id).then((detail) => {
-      const url = detail.coverPhotoUrl ?? null;
-      setDetailCoverPhotoUrl(isSafeImageUri(url) ? url : null);
-      setDetailOrganizerName(detail.organizerName ?? null);
-    }).catch(() => {});
+    eventsApi
+      .getById(id)
+      .then((detail) => {
+        const url = detail.coverPhotoUrl ?? null;
+        setDetailCoverPhotoUrl(isSafeImageUri(url) ? url : null);
+        setDetailOrganizerName(detail.organizerName ?? null);
+      })
+      .catch(() => {});
   }, [id]);
 
   // Find the event
@@ -175,13 +191,27 @@ export default function EventDetailsScreen() {
   // Edge case: event not found
   if (!event) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff", paddingHorizontal: 32 }}>
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#ffffff",
+          paddingHorizontal: 32,
+        }}
+      >
         <Text className="text-typography-500 text-base text-center">
           Event not found.
         </Text>
         <Pressable
           onPress={() => router.back()}
-          style={{ marginTop: 16, borderRadius: 12, backgroundColor: "#0d9488", paddingHorizontal: 24, paddingVertical: 12 }}
+          style={{
+            marginTop: 16,
+            borderRadius: 12,
+            backgroundColor: "#0d9488",
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+          }}
         >
           <Text style={{ color: "#ffffff", fontWeight: "600" }}>Go Back</Text>
         </Pressable>
@@ -190,7 +220,8 @@ export default function EventDetailsScreen() {
   }
 
   // Derived values
-  const hasAssignments = event.assignments !== null && event.assignments !== undefined;
+  const hasAssignments =
+    event.assignments !== null && event.assignments !== undefined;
   const myAssignment: string[] = event.assignments?.[user?.name ?? ""] ?? [];
   const isOrganizer = user?.participantId === undefined;
   const dateBadge = getDateBadge(event.eventDate);
@@ -198,7 +229,7 @@ export default function EventDetailsScreen() {
 
   // Active module types set for fast lookup
   const activeModuleTypes = new Set(
-    activeModules.filter((m) => m.status === "active").map((m) => m.moduleType)
+    activeModules.filter((m) => m.status === "active").map((m) => m.moduleType),
   );
 
   // Module card tap handler
@@ -211,7 +242,9 @@ export default function EventDetailsScreen() {
         duration: 3000,
         render: ({ id: toastId }) => (
           <Toast nativeID={`toast-${toastId}`} action="info" variant="solid">
-            <ToastTitle>Enable this module in Module Config to use it</ToastTitle>
+            <ToastTitle>
+              Enable this module in Module Config to use it
+            </ToastTitle>
           </Toast>
         ),
       });
@@ -255,7 +288,10 @@ export default function EventDetailsScreen() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }} edges={["top", "bottom"]}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: "#ffffff" }}
+      edges={["bottom"]}
+    >
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <AppHeader
         title={event.name}
@@ -272,7 +308,14 @@ export default function EventDetailsScreen() {
                 flexShrink: 0,
               }}
             >
-              <Text style={{ color: dateBadge.text, fontSize: 11, fontWeight: "700", letterSpacing: 0.5 }}>
+              <Text
+                style={{
+                  color: dateBadge.text,
+                  fontSize: 11,
+                  fontWeight: "700",
+                  letterSpacing: 0.5,
+                }}
+              >
                 {dateBadge.label}
               </Text>
             </View>
@@ -291,13 +334,27 @@ export default function EventDetailsScreen() {
             {isSafeImageUri(detailCoverPhotoUrl) ? (
               <Image
                 source={{ uri: detailCoverPhotoUrl }}
-                style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" }}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  width: "100%",
+                  height: "100%",
+                }}
                 resizeMode="cover"
               />
             ) : (
               <LinearGradient
                 colors={["#14b8a6", "#0f766e", "#134e4a"]}
-                style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               />
@@ -306,7 +363,13 @@ export default function EventDetailsScreen() {
 
           {/* ── Organized by line ──────────────────────────────────────── */}
           {detailOrganizerName ? (
-            <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 4 }}>
+            <View
+              style={{
+                paddingHorizontal: 16,
+                paddingTop: 12,
+                paddingBottom: 4,
+              }}
+            >
               <Text style={{ fontSize: 13, color: "#64748b" }}>
                 Organized by {detailOrganizerName}
               </Text>
@@ -316,17 +379,36 @@ export default function EventDetailsScreen() {
           {/* ── Create account banner (participant-only sessions) ────── */}
           {user?.participantId !== undefined ? (
             <View
-              style={{ marginHorizontal: 16, marginTop: 12, borderRadius: 12, padding: 16, backgroundColor: "#f0fdfa" }}
+              style={{
+                marginHorizontal: 16,
+                marginTop: 12,
+                borderRadius: 12,
+                padding: 16,
+                backgroundColor: "#f0fdfa",
+              }}
             >
-              <Text style={{ fontSize: 14, fontWeight: "600", color: "#0f172a", marginBottom: 4 }}>
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontWeight: "600",
+                  color: "#0f172a",
+                  marginBottom: 4,
+                }}
+              >
                 Create an account
               </Text>
-              <Text style={{ fontSize: 14, color: "#64748b", marginBottom: 12 }}>
+              <Text
+                style={{ fontSize: 14, color: "#64748b", marginBottom: 12 }}
+              >
                 Sign up to manage your events and wishlists across devices
               </Text>
               <Button
                 size="sm"
-                style={{ alignSelf: "flex-start", borderRadius: 8, backgroundColor: "#0d9488" }}
+                style={{
+                  alignSelf: "flex-start",
+                  borderRadius: 8,
+                  backgroundColor: "#0d9488",
+                }}
                 onPress={() => router.push("/register" as never)}
               >
                 <ButtonText style={{ color: "#ffffff", fontWeight: "600" }}>
@@ -339,14 +421,52 @@ export default function EventDetailsScreen() {
           <View style={{ paddingHorizontal: 16, marginTop: 16 }}>
             {/* ── Wishlist progress ──────────────────────────────────── */}
             {(event.totalWishlistCount ?? 0) > 0 ? (
-              <View style={{ borderRadius: 16, borderWidth: 1, borderColor: "#e2e8f0", backgroundColor: "#ffffff", padding: 16, marginBottom: 16 }}>
-                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                  <Text style={{ fontSize: 14, fontWeight: "700", color: "#334155" }}>Wishlists Progress</Text>
-                  <Text style={{ fontSize: 14, fontWeight: "700", color: "#0f766e" }}>
-                    {event.claimedCount ?? 0}/{event.totalWishlistCount ?? 0} claimed
+              <View
+                style={{
+                  borderRadius: 16,
+                  borderWidth: 1,
+                  borderColor: "#e2e8f0",
+                  backgroundColor: "#ffffff",
+                  padding: 16,
+                  marginBottom: 16,
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 8,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      fontWeight: "700",
+                      color: "#334155",
+                    }}
+                  >
+                    Wishlists Progress
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      fontWeight: "700",
+                      color: "#0f766e",
+                    }}
+                  >
+                    {event.claimedCount ?? 0}/{event.totalWishlistCount ?? 0}{" "}
+                    claimed
                   </Text>
                 </View>
-                <View style={{ height: 8, borderRadius: 4, backgroundColor: "#f1f5f9", overflow: "hidden" }}>
+                <View
+                  style={{
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: "#f1f5f9",
+                    overflow: "hidden",
+                  }}
+                >
                   <View
                     style={{
                       height: "100%",
@@ -360,32 +480,69 @@ export default function EventDetailsScreen() {
             ) : null}
 
             {/* ── Countdown banner ───────────────────────────────────── */}
-            {event.eventDate ? (() => {
-              const now = new Date();
-              const eventDate = new Date(event.eventDate!);
-              const diffMs = eventDate.getTime() - now.getTime();
-              const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-              if (diffDays <= 0) return null;
-              return (
-                <View style={{ borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12, marginBottom: 16, flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#fef3c7" }}>
-                  <Text style={{ fontSize: 22 }}>🎁</Text>
-                  <Text style={{ fontSize: 14, fontWeight: "600", color: "#92400e" }}>
-                    {diffDays === 1 ? "Tomorrow is the day!" : `${diffDays} days to go!`}
-                  </Text>
-                </View>
-              );
-            })() : null}
-
+            {/* {event.eventDate
+              ? (() => {
+                  const now = new Date();
+                  const eventDate = new Date(event.eventDate!);
+                  const diffMs = eventDate.getTime() - now.getTime();
+                  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+                  if (diffDays <= 0) return null;
+                  return (
+                    <View
+                      style={{
+                        borderRadius: 16,
+                        paddingHorizontal: 16,
+                        paddingVertical: 12,
+                        marginBottom: 16,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 8,
+                        backgroundColor: "#fef3c7",
+                      }}
+                    >
+                      <Text style={{ fontSize: 22 }}>🎁</Text>
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          fontWeight: "600",
+                          color: "#92400e",
+                        }}
+                      >
+                        {diffDays === 1
+                          ? "Tomorrow is the day!"
+                          : `${diffDays} days to go!`}
+                      </Text>
+                    </View>
+                  );
+                })()
+              : null} */}
 
             {/* ── Event Hub section ─────────────────────────────────── */}
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-              <Text style={{ fontSize: 20, fontWeight: "700", color: "#0f172a" }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 16,
+              }}
+            >
+              <Text
+                style={{ fontSize: 20, fontWeight: "700", color: "#0f172a" }}
+              >
                 Event Hub
               </Text>
               {isOrganizer ? (
-                <Pressable onPress={() => router.push(`/edit-event?id=${id}` as any)}>
-                  <Text style={{ fontSize: 14, color: "#0d9488", fontWeight: "600" }}>
-                    Manage All
+                <Pressable
+                  onPress={() => router.push(`/edit-event?id=${id}` as any)}
+                >
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      color: "#0d9488",
+                      fontWeight: "600",
+                    }}
+                  >
+                    Manage
                   </Text>
                 </Pressable>
               ) : null}
@@ -393,18 +550,31 @@ export default function EventDetailsScreen() {
 
             {/* ── Module cards grouped by category ─────────────────── */}
             {CATEGORY_ORDER.map((category) => {
-              const entries = MODULE_CATALOG.filter((m) => m.category === category);
+              const entries = MODULE_CATALOG.filter(
+                (m) => m.category === category,
+              );
 
               // Category-level badge: ACTIVITY shows "Setup Complete" when gift_exchange is active + has assignments
               let categoryBadge: { label: string } | null = null;
-              if (category === "ACTIVITY" && activeModuleTypes.has("gift_exchange") && hasAssignments) {
+              if (
+                category === "ACTIVITY" &&
+                activeModuleTypes.has("gift_exchange") &&
+                hasAssignments
+              ) {
                 categoryBadge = { label: "Setup Complete" };
               }
 
               return (
                 <View key={category} style={{ marginBottom: 20 }}>
                   {/* Category header row */}
-                  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: 8,
+                    }}
+                  >
                     <Text
                       style={{
                         fontSize: 11,
@@ -417,8 +587,22 @@ export default function EventDetailsScreen() {
                       {category}
                     </Text>
                     {categoryBadge ? (
-                      <View style={{ borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3, backgroundColor: "#ccfbf1" }}>
-                        <Text style={{ fontSize: 10, fontWeight: "700", color: "#0f766e", letterSpacing: 0.3 }}>
+                      <View
+                        style={{
+                          borderRadius: 10,
+                          paddingHorizontal: 8,
+                          paddingVertical: 3,
+                          backgroundColor: "#ccfbf1",
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: 10,
+                            fontWeight: "700",
+                            color: "#0f766e",
+                            letterSpacing: 0.3,
+                          }}
+                        >
                           {categoryBadge.label}
                         </Text>
                       </View>
@@ -430,8 +614,10 @@ export default function EventDetailsScreen() {
                     const isActive = activeModuleTypes.has(entry.type as any);
                     const isComingSoon = entry.comingSoon === true;
                     const isTappable = isActive && !isComingSoon;
-                    const iconColor = isComingSoon || !isActive ? "#94a3b8" : "#0d9488";
-                    const iconBg = isComingSoon || !isActive ? "#f8fafc" : "#f0fdfa";
+                    const iconColor =
+                      isComingSoon || !isActive ? "#94a3b8" : "#0d9488";
+                    const iconBg =
+                      isComingSoon || !isActive ? "#f8fafc" : "#f0fdfa";
 
                     // Description line (below module name)
                     const descriptionLine = entry.description;
@@ -501,7 +687,10 @@ export default function EventDetailsScreen() {
                               style={{
                                 fontSize: 15,
                                 fontWeight: "600",
-                                color: isComingSoon || !isActive ? "#94a3b8" : "#0f172a",
+                                color:
+                                  isComingSoon || !isActive
+                                    ? "#94a3b8"
+                                    : "#0f172a",
                                 marginBottom: 2,
                               }}
                             >
@@ -510,7 +699,10 @@ export default function EventDetailsScreen() {
                             <Text
                               style={{
                                 fontSize: 12,
-                                color: isComingSoon || !isActive ? "#cbd5e1" : "#64748b",
+                                color:
+                                  isComingSoon || !isActive
+                                    ? "#cbd5e1"
+                                    : "#64748b",
                               }}
                             >
                               {descriptionLine}
@@ -522,7 +714,10 @@ export default function EventDetailsScreen() {
                             <Text
                               style={{
                                 fontSize: 11,
-                                color: isActive && !isComingSoon ? "#0d9488" : "#94a3b8",
+                                color:
+                                  isActive && !isComingSoon
+                                    ? "#0d9488"
+                                    : "#94a3b8",
                                 marginRight: isTappable ? 4 : 0,
                                 flexShrink: 0,
                               }}
@@ -544,7 +739,6 @@ export default function EventDetailsScreen() {
             })}
           </View>
         </ScrollView>
-
       </View>
     </SafeAreaView>
   );

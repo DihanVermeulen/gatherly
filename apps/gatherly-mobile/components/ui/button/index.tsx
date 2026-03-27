@@ -56,6 +56,8 @@ const buttonStyle = tva({
       outline:
         "bg-transparent border data-[hover=true]:bg-background-50 data-[active=true]:bg-transparent",
       solid: "bg-primary-500",
+      ghost:
+        "bg-transparent data-[hover=true]:bg-background-50 data-[active=true]:bg-background-100",
     },
 
     size: {
@@ -205,6 +207,7 @@ const buttonIconStyle = tva({
       outline: "",
       solid:
         "text-typography-0 data-[hover=true]:text-typography-0 data-[active=true]:text-typography-0",
+      ghost: "bg-transparent",
     },
     size: {
       xs: "h-3.5 w-3.5",

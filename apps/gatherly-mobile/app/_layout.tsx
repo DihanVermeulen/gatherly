@@ -13,7 +13,10 @@ import { useEffect, useState } from "react";
 import { useColorScheme } from "@/components/useColorScheme";
 import { Stack, useRouter } from "expo-router";
 import { View } from "react-native";
-import { consumePendingInviteCode, consumePendingMagicToken } from "./utils/pendingInvite";
+import {
+  consumePendingInviteCode,
+  consumePendingMagicToken,
+} from "./utils/pendingInvite";
 import { SafeAreaView } from "@/components/ui/safe-area-view";
 import { SessionProvider, useSession } from "./contexts/AuthContext";
 import { EventsProvider } from "./contexts/EventsContext";
@@ -58,6 +61,9 @@ function RootLayoutNav() {
     }
   }, [isLoading]);
 
+  // Only alphanumeric, hyphens, underscores — no slashes, dots, or percent-encoding
+  const SAFE_TOKEN_RE = /^[a-zA-Z0-9_-]{8,128}$/;
+
   // After authentication, check for pending magic token or invite code and redirect.
   // Magic token takes priority — it came from the user's original deep link.
   // This handles the race condition where Stack.Protected redirects away from
@@ -66,6 +72,7 @@ function RootLayoutNav() {
     if (session && !isLoading) {
       const magicToken = consumePendingMagicToken();
       if (magicToken) {
+        if (!SAFE_TOKEN_RE.test(magicToken)) return;
         // Small delay to let the Stack.Protected navigation settle
         const timer = setTimeout(() => {
           router.replace(`/magic-link/${magicToken}` as never);
@@ -74,6 +81,7 @@ function RootLayoutNav() {
       }
       const pendingCode = consumePendingInviteCode();
       if (pendingCode) {
+        if (!SAFE_TOKEN_RE.test(pendingCode)) return;
         // Small delay to let the Stack.Protected navigation settle
         const timer = setTimeout(() => {
           router.replace(`/join?token=${pendingCode}`);
@@ -157,6 +165,14 @@ function RootLayoutNav() {
                       />
                       <Stack.Screen
                         name="edit-event-details"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="potluck"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="potluck-setup"
                         options={{ headerShown: false }}
                       />
                     </Stack.Protected>

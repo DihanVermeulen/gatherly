@@ -1,10 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
-import {
-  View,
-  SectionList,
-  Image,
-  ActivityIndicator,
-} from "react-native";
+import { View, SectionList, Image, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Eye, EyeOff, Gift, CheckCircle, Plus } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -68,14 +63,16 @@ export default function ViewWishlistsScreen() {
   const { user } = useSession();
 
   // Local state for participant details (fetched via getById)
-  const [participantDetails, setParticipantDetails] = useState<
-    Array<{ id: number; name: string }> | null
-  >(null);
+  const [participantDetails, setParticipantDetails] = useState<Array<{
+    id: number;
+    name: string;
+  }> | null>(null);
   const [isLoadingParticipants, setIsLoadingParticipants] = useState(true);
   const [isLoadingWishlists, setIsLoadingWishlists] = useState(true);
 
   // ActionSheet state — which item was long-pressed and its section context
-  const [actionsheetState, setActionsheetState] = useState<ActionsheetState>(null);
+  const [actionsheetState, setActionsheetState] =
+    useState<ActionsheetState>(null);
 
   // Delete dialog state
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
@@ -174,20 +171,17 @@ export default function ViewWishlistsScreen() {
 
   // ── ActionSheet handlers ──────────────────────────────────────────────────
 
-  const handleLongPress = useCallback(
-    (item: TWishlistItem, isOwn: boolean) => {
-      // Others' items claimed by someone else → no action
-      if (!isOwn && item.isClaimed && !item.claimedByMe) return;
-      setActionsheetState({ item, isOwn });
-    },
-    []
-  );
+  const handleLongPress = useCallback((item: TWishlistItem, isOwn: boolean) => {
+    // Others' items claimed by someone else → no action
+    if (!isOwn && item.isClaimed && !item.claimedByMe) return;
+    setActionsheetState({ item, isOwn });
+  }, []);
 
   const handleEdit = useCallback(() => {
     if (!actionsheetState) return;
     setActionsheetState(null);
     router.push(
-      `/edit-wishlist-item?id=${actionsheetState.item.id}&eventId=${id}`
+      `/edit-wishlist-item?id=${actionsheetState.item.id}&eventId=${id}`,
     );
   }, [actionsheetState, id, router]);
 
@@ -223,7 +217,10 @@ export default function ViewWishlistsScreen() {
           payload: { eventId: id, items: fresh },
         });
       } catch (revertErr) {
-        console.error("Failed to revert wishlist after delete failure:", revertErr);
+        console.error(
+          "Failed to revert wishlist after delete failure:",
+          revertErr,
+        );
       }
     }
   }, [itemToDeleteId, id, myParticipantId, dispatch]);
@@ -353,7 +350,8 @@ export default function ViewWishlistsScreen() {
 
   // Secret assignment state
   const [assignmentRevealed, setAssignmentRevealed] = useState(false);
-  const hasAssignments = event?.assignments !== null && event?.assignments !== undefined;
+  const hasAssignments =
+    event?.assignments !== null && event?.assignments !== undefined;
   const myAssignment: string[] = event?.assignments?.[user?.name ?? ""] ?? [];
 
   // Event not found
@@ -378,7 +376,7 @@ export default function ViewWishlistsScreen() {
   return (
     <SafeAreaView
       className="h-full w-full max-w-7xl mx-auto bg-background-0"
-      edges={["top", "bottom"]}
+      edges={["bottom"]}
     >
       <View className="flex-1 bg-background-0">
         {/* ── Header ───────────────────────────────────────────────── */}
@@ -390,36 +388,71 @@ export default function ViewWishlistsScreen() {
 
         {/* ── Secret Assignment card ───────────────────────────────── */}
         {!isLoading && (
-          <View style={{ marginHorizontal: 16, marginTop: 8, marginBottom: 4, borderRadius: 16, padding: 16, backgroundColor: "#f0fdfa" }}>
-            <Text style={{ fontWeight: "700", fontSize: 18, color: "#0f766e", marginBottom: 4 }}>
+          <View
+            style={{
+              marginHorizontal: 16,
+              marginTop: 8,
+              marginBottom: 4,
+              borderRadius: 16,
+              padding: 16,
+              backgroundColor: "#f0fdfa",
+            }}
+          >
+            <Text
+              style={{
+                fontWeight: "700",
+                fontSize: 18,
+                color: "#0f766e",
+                marginBottom: 4,
+              }}
+            >
               Your Secret Assignment
             </Text>
             {!hasAssignments ? (
               <Text style={{ fontSize: 14, color: "#64748b", marginTop: 4 }}>
-                Assignments haven't been generated yet. The event organizer will generate them when everyone is ready.
+                Assignments haven't been generated yet. The event organizer will
+                generate them when everyone is ready.
               </Text>
             ) : myAssignment.length === 0 ? (
               <Text style={{ fontSize: 14, color: "#64748b", marginTop: 4 }}>
-                No assignment found for your account. Make sure your name matches the participant list.
+                No assignment found for your account. Make sure your name
+                matches the participant list.
               </Text>
             ) : (
               <>
-                <Text style={{ fontSize: 14, color: "#475569", marginTop: 4, lineHeight: 20 }}>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    color: "#475569",
+                    marginTop: 4,
+                    lineHeight: 20,
+                  }}
+                >
                   {assignmentRevealed
                     ? `You are buying for: ${myAssignment.join(", ")}`
                     : "Shh! It's a secret. Tap the button to reveal who you are buying for."}
                 </Text>
                 <Button
-                  style={{ marginTop: 12, borderRadius: 12, backgroundColor: "#0f766e" }}
+                  style={{
+                    marginTop: 12,
+                    borderRadius: 12,
+                    backgroundColor: "#0f766e",
+                  }}
                   onPress={() => setAssignmentRevealed((prev) => !prev)}
                 >
                   {assignmentRevealed ? (
-                    <EyeOff size={16} color="white" style={{ marginRight: 6 }} />
+                    <EyeOff
+                      size={16}
+                      color="white"
+                      style={{ marginRight: 6 }}
+                    />
                   ) : (
                     <Eye size={16} color="white" style={{ marginRight: 6 }} />
                   )}
                   <ButtonText style={{ color: "#ffffff", fontWeight: "600" }}>
-                    {assignmentRevealed ? "Hide Assignment" : "View My Assignment"}
+                    {assignmentRevealed
+                      ? "Hide Assignment"
+                      : "View My Assignment"}
                   </ButtonText>
                 </Button>
               </>
@@ -584,7 +617,9 @@ export default function ViewWishlistsScreen() {
                   className="flex-1 rounded-xl bg-error-600"
                   onPress={handleDeleteConfirmed}
                 >
-                  <ButtonText className="text-white font-bold">Delete</ButtonText>
+                  <ButtonText className="text-white font-bold">
+                    Delete
+                  </ButtonText>
                 </Button>
               </View>
             </AlertDialogFooter>
@@ -604,7 +639,11 @@ function SectionHeader({ section }: { section: SectionData }) {
     return (
       <View
         className="flex-row items-center px-3 py-2 mb-2 rounded-xl"
-        style={{ backgroundColor: "#f0fdfa", borderLeftWidth: 3, borderLeftColor: "#0d9488" }}
+        style={{
+          backgroundColor: "#f0fdfa",
+          borderLeftWidth: 3,
+          borderLeftColor: "#0d9488",
+        }}
       >
         <Text className="font-bold text-base" style={{ color: "#0f766e" }}>
           My Wishlist
@@ -649,7 +688,8 @@ function WishlistCard({ item, isOwn, onLongPress }: WishlistCardProps) {
 
   // Determine visual state
   const isOthersClaimedByMe = !isOwn && item.claimedByMe;
-  const isOthersClaimedBySomeoneElse = !isOwn && item.isClaimed && !item.claimedByMe;
+  const isOthersClaimedBySomeoneElse =
+    !isOwn && item.isClaimed && !item.claimedByMe;
   const isOwnClaimed = isOwn && item.isClaimed;
 
   // Card opacity: gray out only others' items claimed by someone else
@@ -685,12 +725,14 @@ function WishlistCard({ item, isOwn, onLongPress }: WishlistCardProps) {
               <Text className="text-white text-xs font-bold">CLAIMED</Text>
             </View>
           )}
-          {(isOthersClaimedByMe) && (
+          {isOthersClaimedByMe && (
             <View
               className="absolute bottom-2 right-2 rounded-full px-3 py-1"
               style={{ backgroundColor: "#0d9488" }}
             >
-              <Text className="text-white text-xs font-bold">CLAIMED BY ME</Text>
+              <Text className="text-white text-xs font-bold">
+                CLAIMED BY ME
+              </Text>
             </View>
           )}
         </View>
@@ -723,9 +765,7 @@ function WishlistCard({ item, isOwn, onLongPress }: WishlistCardProps) {
           </Text>
 
           {/* Own items claimed by others: subtle teal CheckCircle */}
-          {isOwnClaimed && (
-            <CheckCircle size={20} color="#0d9488" />
-          )}
+          {isOwnClaimed && <CheckCircle size={20} color="#0d9488" />}
 
           {/* Others' items with no image: show text status */}
           {!item.imageUrl && isOthersClaimedBySomeoneElse && (
@@ -753,10 +793,7 @@ function WishlistCard({ item, isOwn, onLongPress }: WishlistCardProps) {
 
         {/* Description if present */}
         {item.description ? (
-          <Text
-            className="mt-1 text-sm text-typography-400"
-            numberOfLines={2}
-          >
+          <Text className="mt-1 text-sm text-typography-400" numberOfLines={2}>
             {item.description}
           </Text>
         ) : null}

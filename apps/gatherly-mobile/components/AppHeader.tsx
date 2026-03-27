@@ -3,6 +3,7 @@ import { View, ActivityIndicator } from "react-native";
 import { ArrowLeft } from "lucide-react-native";
 import { Text } from "@/components/ui/text";
 import { Pressable } from "@/components/ui/pressable";
+import { Button } from "./ui/button";
 
 type RightAction = {
   icon?: React.ReactNode;
@@ -21,7 +22,13 @@ type Props = {
   rightElement?: React.ReactNode;
 };
 
-export function AppHeader({ title, subtitle, onBack, rightAction, rightElement }: Props) {
+export function AppHeader({
+  title,
+  subtitle,
+  onBack,
+  rightAction,
+  rightElement,
+}: Props) {
   // Determine right side content
   let rightContent: React.ReactNode;
 
@@ -35,7 +42,7 @@ export function AppHeader({ title, subtitle, onBack, rightAction, rightElement }
           onPress={rightAction.onPress}
           disabled={rightAction.disabled}
           style={{
-            backgroundColor: rightAction.style?.backgroundColor ?? "#0d9488",
+            backgroundColor: rightAction.style?.backgroundColor ?? "#43A398",
             borderRadius: 20,
             paddingHorizontal: 16,
             height: 40,
@@ -84,28 +91,27 @@ export function AppHeader({ title, subtitle, onBack, rightAction, rightElement }
       style={{
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "#ffffff",
         paddingHorizontal: 12,
         paddingVertical: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: "#f1f5f9",
         minHeight: 56,
       }}
     >
       {/* Back button */}
       {onBack ? (
-        <Pressable
+        <Button
           onPress={onBack}
+          variant="ghost"
           style={{
-            height: 40,
-            width: 40,
+            height: 36,
+            width: 36,
             alignItems: "center",
             justifyContent: "center",
             flexShrink: 0,
+            borderRadius: 18,
           }}
         >
-          <ArrowLeft size={22} color="#0d9488" />
-        </Pressable>
+          <ArrowLeft size={18} className="text-neutral-500" />
+        </Button>
       ) : null}
 
       {/* Title + subtitle */}

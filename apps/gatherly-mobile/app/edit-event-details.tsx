@@ -121,8 +121,7 @@ export default function EditEventDetailsScreen() {
       router.back();
     } catch (err: any) {
       setError(
-        err?.response?.data?.error ||
-          "Failed to save. Please try again.",
+        err?.response?.data?.error || "Failed to save. Please try again.",
       );
     } finally {
       setSaving(false);
@@ -148,7 +147,7 @@ export default function EditEventDetailsScreen() {
   return (
     <SafeAreaView
       className="h-full w-full max-w-7xl mx-auto bg-background-0"
-      edges={["top", "bottom"]}
+      edges={["bottom"]}
     >
       <View className="flex-1 bg-background-0">
         {/* ── Header ───────────────────────────────────────────── */}
@@ -156,7 +155,11 @@ export default function EditEventDetailsScreen() {
 
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 40, paddingTop: 16, paddingHorizontal: 16 }}
+          contentContainerStyle={{
+            paddingBottom: 40,
+            paddingTop: 16,
+            paddingHorizontal: 16,
+          }}
         >
           {/* ── Cover Photo ────────────────────────────────────── */}
           <Text className="text-sm font-semibold text-typography-700 mb-1.5">
@@ -179,7 +182,9 @@ export default function EditEventDetailsScreen() {
                   style={{ backgroundColor: "rgba(0,0,0,0.55)" }}
                 >
                   <Camera size={14} color="#ffffff" />
-                  <Text className="text-white text-xs font-semibold">Change</Text>
+                  <Text className="text-white text-xs font-semibold">
+                    Change
+                  </Text>
                 </View>
               </View>
             ) : (
@@ -228,7 +233,6 @@ export default function EditEventDetailsScreen() {
           <Pressable
             onPress={() => setShowDatePicker(true)}
             style={{
-              fontSize: 14,
               borderWidth: 1,
               borderColor: "#e2e8f0",
               borderRadius: 12,
@@ -239,7 +243,9 @@ export default function EditEventDetailsScreen() {
               justifyContent: "center",
             }}
           >
-            <Text style={{ fontSize: 14, color: eventDate ? "#0f172a" : "#94a3b8" }}>
+            <Text
+              style={{ fontSize: 14, color: eventDate ? "#0f172a" : "#94a3b8" }}
+            >
               {eventDate
                 ? new Date(eventDate).toLocaleString("en-US", {
                     month: "short",
@@ -293,7 +299,10 @@ export default function EditEventDetailsScreen() {
               className="rounded-xl px-4 py-3 mb-4"
               style={{ backgroundColor: "#fef2f2" }}
             >
-              <Text className="text-sm text-center" style={{ color: "#dc2626" }}>
+              <Text
+                className="text-sm text-center"
+                style={{ color: "#dc2626" }}
+              >
                 {error}
               </Text>
             </View>
@@ -304,7 +313,10 @@ export default function EditEventDetailsScreen() {
             onPress={handleSave}
             disabled={saving}
             className="rounded-2xl py-4"
-            style={{ backgroundColor: saving ? "#0f766e" : "#0d9488", width: "100%" }}
+            style={{
+              backgroundColor: saving ? "#0f766e" : "#0d9488",
+              width: "100%",
+            }}
           >
             {saving && <ButtonSpinner color="white" />}
             <ButtonText className="text-white font-bold text-base ml-1">

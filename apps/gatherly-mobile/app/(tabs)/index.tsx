@@ -44,7 +44,6 @@ import { useSession } from "@/app/contexts/AuthContext";
 // Filter pill types
 type FilterType = "All" | "Planning" | "Active";
 
-
 export default function EventsScreen() {
   const colorScheme = useColorScheme();
   const {
@@ -131,7 +130,7 @@ export default function EventsScreen() {
   return (
     <View className="flex-1 bg-background-0">
       {/* Header */}
-      <View className="flex-row items-center justify-between px-5 pt-4 pb-3">
+      <View className="flex-row items-center justify-between px-4 pt-4 pb-3">
         <Text className="text-2xl font-bold text-typography-900">
           My Events
         </Text>
@@ -141,7 +140,7 @@ export default function EventsScreen() {
       </View>
 
       {/* Search Bar */}
-      <View className="mx-5 ps-2 mb-3 flex-row items-center gap-2 rounded-2xl border border-outline-200 bg-background-50">
+      <View className="mx-4 ps-2 mb-3 flex-row items-center gap-2 rounded-2xl border border-outline-200 bg-background-50">
         <Search size={18} color="#94a3b8" />
         <TextInput
           placeholder="Search events..."
@@ -157,12 +156,11 @@ export default function EventsScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        className="px-4 mb-4"
         contentContainerStyle={{
-          paddingHorizontal: 20,
           gap: 8,
           paddingBottom: 16,
         }}
-        className="mb-4"
       >
         {filterPills.map((pill) => (
           <Button
@@ -185,22 +183,9 @@ export default function EventsScreen() {
         ))}
       </ScrollView>
 
-      {/* FAB */}
-      <Fab
-        size="xl"
-        onPress={createEvent}
-        isDisabled={false}
-        isHovered={false}
-        isPressed={false}
-        placement="bottom right"
-        className="bg-primary-500"
-      >
-        <FabIcon as={Plus} />
-      </Fab>
-
       {/* Empty State */}
       {filteredEvents.length === 0 ? (
-        <View className="flex-1 items-center justify-center px-8">
+        <View className="flex-1 items-center justify-center px-4">
           <View className="items-center rounded-2xl border border-outline-200 p-8 w-full">
             <Calendar size={40} color="#cbd5e1" />
             <Text className="mt-3 text-typography-500 font-medium text-center">
@@ -226,7 +211,8 @@ export default function EventsScreen() {
         <FlatList
           data={filteredEvents}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 120 }}
+          className="px-4"
+          contentContainerStyle={{ paddingBottom: 120 }}
           renderItem={({ item }) => (
             <EventCard
               item={item}
@@ -265,6 +251,26 @@ export default function EventsScreen() {
           <CreateEvent onClose={closeBottomSheet} />
         </BottomSheetView>
       </BottomSheet>
+
+      {/* FAB */}
+      <Fab
+        size="xl"
+        placement="bottom right"
+        onPress={createEvent}
+        isDisabled={false}
+        isHovered={false}
+        isPressed={false}
+        className="bg-secondary-500 active:bg-secondary-600"
+        style={{
+          elevation: 8,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+        }}
+      >
+        <FabIcon as={Plus} />
+      </Fab>
     </View>
   );
 }
@@ -280,12 +286,7 @@ type EventCardProps = {
   onDelete: () => void;
 };
 
-function EventCard({
-  item,
-  onPress,
-  onManage,
-  onDelete,
-}: EventCardProps) {
+function EventCard({ item, onPress, onManage, onDelete }: EventCardProps) {
   const isActive = item.assignments !== null && item.assignments !== undefined;
   const initial = item.name.charAt(0).toUpperCase();
   const participantCount =

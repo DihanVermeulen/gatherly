@@ -27,7 +27,10 @@ type Priority = "low" | "medium" | "high";
 const PRIORITIES: Priority[] = ["low", "medium", "high"];
 
 export default function EditWishlistItemScreen() {
-  const { id, eventId } = useLocalSearchParams<{ id: string; eventId: string }>();
+  const { id, eventId } = useLocalSearchParams<{
+    id: string;
+    eventId: string;
+  }>();
   const router = useRouter();
 
   const {
@@ -41,11 +44,15 @@ export default function EditWishlistItemScreen() {
 
   // Local form state — initialised from item
   const [itemName, setItemName] = useState<string>(item?.itemName ?? "");
-  const [description, setDescription] = useState<string>(item?.description ?? "");
-  const [imageUrl, setImageUrl] = useState<string | null>(item?.imageUrl ?? null);
+  const [description, setDescription] = useState<string>(
+    item?.description ?? "",
+  );
+  const [imageUrl, setImageUrl] = useState<string | null>(
+    item?.imageUrl ?? null,
+  );
   const [priority, setPriority] = useState<Priority>(item?.priority ?? "low");
   const [priceInput, setPriceInput] = useState<string>(
-    item?.pricePence ? (item.pricePence / 100).toFixed(2) : ""
+    item?.pricePence ? (item.pricePence / 100).toFixed(2) : "",
   );
 
   // Save state
@@ -57,7 +64,8 @@ export default function EditWishlistItemScreen() {
 
   const pickImage = useCallback(async () => {
     try {
-      const permResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const permResult =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permResult.granted) {
         Alert.alert(
           "Permission Required",
@@ -99,7 +107,8 @@ export default function EditWishlistItemScreen() {
     setIsSaving(true);
     try {
       const pricePence = priceInput.trim()
-        ? Math.round(parseFloat(priceInput.replace(/[^0-9.]/g, "")) * 100) || null
+        ? Math.round(parseFloat(priceInput.replace(/[^0-9.]/g, "")) * 100) ||
+          null
         : null;
       const updatedItem = await wishlistsApi.update(eventId, Number(id), {
         participantId: item.participantId,
@@ -119,12 +128,24 @@ export default function EditWishlistItemScreen() {
     } catch (err: any) {
       console.error("Failed to update wishlist item:", err);
       setSaveError(
-        err?.response?.data?.error || "Failed to save changes. Please try again.",
+        err?.response?.data?.error ||
+          "Failed to save changes. Please try again.",
       );
     } finally {
       setIsSaving(false);
     }
-  }, [eventId, id, item, itemName, description, imageUrl, priority, priceInput, dispatch, router]);
+  }, [
+    eventId,
+    id,
+    item,
+    itemName,
+    description,
+    imageUrl,
+    priority,
+    priceInput,
+    dispatch,
+    router,
+  ]);
 
   // ── Item not found guard ─────────────────────────────────────────────────
 
@@ -149,7 +170,7 @@ export default function EditWishlistItemScreen() {
   return (
     <SafeAreaView
       className="h-full w-full max-w-7xl mx-auto bg-background-0"
-      edges={["top", "bottom"]}
+      edges={["bottom"]}
     >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -207,7 +228,9 @@ export default function EditWishlistItemScreen() {
             <View className="mb-4">
               <Text className="text-sm font-semibold text-typography-700 mb-2">
                 Description{" "}
-                <Text className="text-typography-400 font-normal">(optional)</Text>
+                <Text className="text-typography-400 font-normal">
+                  (optional)
+                </Text>
               </Text>
               <View className="border border-outline-200 rounded-xl px-4 py-3 bg-background-50">
                 <TextInput
@@ -231,7 +254,9 @@ export default function EditWishlistItemScreen() {
             <View className="mb-4">
               <Text className="text-sm font-semibold text-typography-700 mb-2">
                 Image{" "}
-                <Text className="text-typography-400 font-normal">(optional)</Text>
+                <Text className="text-typography-400 font-normal">
+                  (optional)
+                </Text>
               </Text>
 
               {isSafeImageUri(imageUrl) ? (
@@ -279,7 +304,9 @@ export default function EditWishlistItemScreen() {
             <View className="mb-4">
               <Text className="text-sm font-semibold text-typography-700 mb-2">
                 Price{" "}
-                <Text className="text-typography-400 font-normal">(optional)</Text>
+                <Text className="text-typography-400 font-normal">
+                  (optional)
+                </Text>
               </Text>
               <View className="flex-row items-center border border-outline-200 rounded-xl px-4 py-3 bg-background-50">
                 <Text className="text-typography-500 mr-2 text-base">£</Text>
@@ -327,7 +354,10 @@ export default function EditWishlistItemScreen() {
                 className="mb-4 rounded-xl px-4 py-3"
                 style={{ backgroundColor: "#fef2f2" }}
               >
-                <Text className="text-sm text-center" style={{ color: "#dc2626" }}>
+                <Text
+                  className="text-sm text-center"
+                  style={{ color: "#dc2626" }}
+                >
                   {saveError}
                 </Text>
               </View>

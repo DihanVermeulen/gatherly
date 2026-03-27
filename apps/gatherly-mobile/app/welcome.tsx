@@ -66,7 +66,11 @@ export default function WelcomeScreen() {
           className="w-48 h-48 rounded-3xl items-center justify-center mb-8"
           style={{ backgroundColor: "#ccfbf1" }}
         >
-          <Icon as={Gift} size="xl" style={{ color: "#0d9488", width: 72, height: 72 }} />
+          <Icon
+            as={Gift}
+            size="xl"
+            style={{ color: "#0d9488", width: 72, height: 72 }}
+          />
         </View>
 
         {/* Title */}
@@ -94,7 +98,7 @@ export default function WelcomeScreen() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background-0" edges={["top", "bottom"]}>
+    <SafeAreaView className="flex-1 bg-background-0" edges={["bottom"]}>
       <View className="flex-1">
         {/* Carousel */}
         <FlatList
@@ -124,8 +128,7 @@ export default function WelcomeScreen() {
                 width: activeIndex === index ? 24 : 8,
                 height: 8,
                 borderRadius: 4,
-                backgroundColor:
-                  activeIndex === index ? "#0d9488" : "#cbd5e1",
+                backgroundColor: activeIndex === index ? "#0d9488" : "#cbd5e1",
               }}
             />
           ))}

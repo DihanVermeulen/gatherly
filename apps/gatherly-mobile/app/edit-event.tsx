@@ -130,7 +130,9 @@ export default function EditEventScreen() {
   const [allowGuestInvites, setAllowGuestInvites] = useState(false);
   const [isPublic, setIsPublic] = useState(false);
   const [updatingSettings, setUpdatingSettings] = useState(false);
-  const [detailCoverPhotoUrl, setDetailCoverPhotoUrl] = useState<string | null>(null);
+  const [detailCoverPhotoUrl, setDetailCoverPhotoUrl] = useState<string | null>(
+    null,
+  );
 
   // ── Derived values ───────────────────────────────────────────────
   const event = events.find((e) => e.id === id) ?? null;
@@ -175,14 +177,17 @@ export default function EditEventScreen() {
   useFocusEffect(
     useCallback(() => {
       if (id) loadModules();
-    }, [id])
+    }, [id]),
   );
 
   useEffect(() => {
-    eventsApi.getById(id).then((detail) => {
-      const url = detail.coverPhotoUrl ?? null;
-      setDetailCoverPhotoUrl(isSafeImageUri(url) ? url : null);
-    }).catch(() => {});
+    eventsApi
+      .getById(id)
+      .then((detail) => {
+        const url = detail.coverPhotoUrl ?? null;
+        setDetailCoverPhotoUrl(isSafeImageUri(url) ? url : null);
+      })
+      .catch(() => {});
   }, [id]);
 
   // ── Handlers ─────────────────────────────────────────────────────
@@ -287,7 +292,10 @@ export default function EditEventScreen() {
   };
 
   const toggleReveal = (participant: string) => {
-    setRevealedCodes((prev) => ({ ...prev, [participant]: !prev[participant] }));
+    setRevealedCodes((prev) => ({
+      ...prev,
+      [participant]: !prev[participant],
+    }));
   };
 
   const handleAllowGuestInvitesToggle = async (value: boolean) => {
@@ -343,7 +351,7 @@ export default function EditEventScreen() {
   return (
     <SafeAreaView
       className="h-full w-full max-w-7xl mx-auto bg-background-0"
-      edges={["top", "bottom"]}
+      edges={["bottom"]}
     >
       <View className="flex-1 bg-background-0">
         {/* ── Header ─────────────────────────────────────────────── */}
@@ -360,11 +368,16 @@ export default function EditEventScreen() {
                 Event Details
               </Text>
               <Pressable
-                onPress={() => router.push(`/edit-event-details?id=${id}` as never)}
+                onPress={() =>
+                  router.push(`/edit-event-details?id=${id}` as never)
+                }
                 className="flex-row items-center gap-1 active:opacity-70"
               >
                 <Pencil size={14} color="#0d9488" />
-                <Text className="text-sm font-semibold" style={{ color: "#0d9488" }}>
+                <Text
+                  className="text-sm font-semibold"
+                  style={{ color: "#0d9488" }}
+                >
                   Edit
                 </Text>
               </Pressable>
@@ -381,7 +394,12 @@ export default function EditEventScreen() {
               ) : (
                 <View
                   className="h-14 w-14 rounded-xl items-center justify-center"
-                  style={{ width: 56, height: 56, borderRadius: 12, backgroundColor: "#0d9488" }}
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: 12,
+                    backgroundColor: "#0d9488",
+                  }}
                 >
                   <Text className="text-white text-xl font-bold">
                     {event.name?.charAt(0)?.toUpperCase() ?? "E"}
@@ -391,19 +409,27 @@ export default function EditEventScreen() {
 
               {/* Event info */}
               <View className="flex-1">
-                <Text className="text-base font-bold text-typography-900" numberOfLines={1}>
+                <Text
+                  className="text-base font-bold text-typography-900"
+                  numberOfLines={1}
+                >
                   {event.name}
                 </Text>
                 {displayDate ? (
                   <View className="flex-row items-center gap-1 mt-1">
                     <Calendar size={12} color="#64748b" />
-                    <Text className="text-xs text-typography-500">{displayDate}</Text>
+                    <Text className="text-xs text-typography-500">
+                      {displayDate}
+                    </Text>
                   </View>
                 ) : null}
                 {event.location ? (
                   <View className="flex-row items-center gap-1 mt-0.5">
                     <MapPin size={12} color="#64748b" />
-                    <Text className="text-xs text-typography-500" numberOfLines={1}>
+                    <Text
+                      className="text-xs text-typography-500"
+                      numberOfLines={1}
+                    >
                       {event.location}
                     </Text>
                   </View>
@@ -422,7 +448,10 @@ export default function EditEventScreen() {
                 onPress={() => setShowGuestDetails((prev) => !prev)}
                 className="active:opacity-70"
               >
-                <Text className="text-sm font-semibold" style={{ color: "#0d9488" }}>
+                <Text
+                  className="text-sm font-semibold"
+                  style={{ color: "#0d9488" }}
+                >
                   {showGuestDetails ? "Hide" : "Manage"}
                 </Text>
               </Pressable>
@@ -446,7 +475,10 @@ export default function EditEventScreen() {
                     >
                       <Avatar
                         size="sm"
-                        style={{ backgroundColor: AVATAR_COLORS[idx % AVATAR_COLORS.length] }}
+                        style={{
+                          backgroundColor:
+                            AVATAR_COLORS[idx % AVATAR_COLORS.length],
+                        }}
                       >
                         <AvatarFallbackText className="text-white text-xs">
                           {name}
@@ -480,10 +512,15 @@ export default function EditEventScreen() {
                   <Text className="text-sm font-semibold text-typography-800">
                     {participants.length} attending
                   </Text>
-                  {inviteList.filter((i) => i.status === "pending").length > 0 && (
+                  {inviteList.filter((i) => i.status === "pending").length >
+                    0 && (
                     <Text className="text-xs text-typography-400">
-                      {inviteList.filter((i) => i.status === "pending").length} pending invite
-                      {inviteList.filter((i) => i.status === "pending").length !== 1 ? "s" : ""}
+                      {inviteList.filter((i) => i.status === "pending").length}{" "}
+                      pending invite
+                      {inviteList.filter((i) => i.status === "pending")
+                        .length !== 1
+                        ? "s"
+                        : ""}
                     </Text>
                   )}
                 </View>
@@ -518,14 +555,18 @@ export default function EditEventScreen() {
                   ) : (
                     <View className="flex-row flex-wrap gap-2 mb-3">
                       {participants.map((name, idx) => {
-                        const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+                        const avatarColor =
+                          AVATAR_COLORS[idx % AVATAR_COLORS.length];
                         return (
                           <View
                             key={name}
                             className="flex-row items-center rounded-full px-3 py-1.5 gap-1.5 border border-outline-100"
                             style={{ backgroundColor: "#f8fafc" }}
                           >
-                            <Avatar size="xs" style={{ backgroundColor: avatarColor }}>
+                            <Avatar
+                              size="xs"
+                              style={{ backgroundColor: avatarColor }}
+                            >
                               <AvatarFallbackText className="text-white text-xs">
                                 {name}
                               </AvatarFallbackText>
@@ -549,8 +590,14 @@ export default function EditEventScreen() {
 
                   {/* Locked notice */}
                   {isLocked && (
-                    <View className="rounded-xl px-3 py-2 mb-3" style={{ backgroundColor: "#fef9c3" }}>
-                      <Text className="text-xs text-center" style={{ color: "#92400e" }}>
+                    <View
+                      className="rounded-xl px-3 py-2 mb-3"
+                      style={{ backgroundColor: "#fef9c3" }}
+                    >
+                      <Text
+                        className="text-xs text-center"
+                        style={{ color: "#92400e" }}
+                      >
                         Participant list is locked after generation.
                       </Text>
                     </View>
@@ -569,7 +616,9 @@ export default function EditEventScreen() {
                           <View
                             key={invite.id}
                             className={`flex-row items-center justify-between py-2 ${
-                              idx < inviteList.length - 1 ? "border-b border-outline-100" : ""
+                              idx < inviteList.length - 1
+                                ? "border-b border-outline-100"
+                                : ""
                             }`}
                           >
                             <View className="flex-1 mr-2">
@@ -584,12 +633,16 @@ export default function EditEventScreen() {
                               <View
                                 className="mt-0.5 self-start rounded-full px-2 py-0.5"
                                 style={{
-                                  backgroundColor: isPending ? "#fef9c3" : "#dcfce7",
+                                  backgroundColor: isPending
+                                    ? "#fef9c3"
+                                    : "#dcfce7",
                                 }}
                               >
                                 <Text
                                   className="text-xs font-bold uppercase tracking-wide"
-                                  style={{ color: isPending ? "#92400e" : "#15803d" }}
+                                  style={{
+                                    color: isPending ? "#92400e" : "#15803d",
+                                  }}
                                 >
                                   {invite.status}
                                 </Text>
@@ -634,7 +687,10 @@ export default function EditEventScreen() {
                 onPress={() => router.push(`/modules-config?id=${id}` as never)}
                 className="active:opacity-70"
               >
-                <Text className="text-sm font-semibold" style={{ color: "#0d9488" }}>
+                <Text
+                  className="text-sm font-semibold"
+                  style={{ color: "#0d9488" }}
+                >
                   Add Module
                 </Text>
               </Pressable>
@@ -661,7 +717,9 @@ export default function EditEventScreen() {
                     <View
                       key={mod.moduleType}
                       className={`flex-row items-center px-4 py-3 ${
-                        idx < activeModules.length - 1 ? "border-b border-outline-100" : ""
+                        idx < activeModules.length - 1
+                          ? "border-b border-outline-100"
+                          : ""
                       }`}
                     >
                       {/* Icon circle */}
@@ -742,7 +800,10 @@ export default function EditEventScreen() {
 
             {/* Cancel Event */}
             <Pressable className="mt-4 items-center active:opacity-70">
-              <Text className="text-sm font-semibold" style={{ color: "#ef4444" }}>
+              <Text
+                className="text-sm font-semibold"
+                style={{ color: "#ef4444" }}
+              >
                 Cancel Event
               </Text>
               <Text className="text-xs text-typography-400 mt-0.5">
@@ -784,7 +845,10 @@ export default function EditEventScreen() {
                   className="mt-2 rounded-xl px-3 py-2"
                   style={{ backgroundColor: "#fef2f2" }}
                 >
-                  <Text className="text-xs text-center" style={{ color: "#dc2626" }}>
+                  <Text
+                    className="text-xs text-center"
+                    style={{ color: "#dc2626" }}
+                  >
                     {generateError}
                   </Text>
                 </View>
@@ -901,7 +965,9 @@ export default function EditEventScreen() {
                     {currentInvite.magic_link_url}
                   </Text>
                   <Pressable
-                    onPress={() => handleCopyInviteLink(currentInvite.magic_link_url)}
+                    onPress={() =>
+                      handleCopyInviteLink(currentInvite.magic_link_url)
+                    }
                     className="h-8 w-8 items-center justify-center rounded-lg bg-background-100 active:opacity-70"
                   >
                     <Copy size={14} color="#64748b" />
