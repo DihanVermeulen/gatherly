@@ -1,10 +1,11 @@
-import React, { useState, useRef, useMemo, useCallback, useEffect } from "react";
-import {
-  View,
-  FlatList,
-  Image,
-  ActivityIndicator,
-} from "react-native";
+import React, {
+  useState,
+  useRef,
+  useMemo,
+  useCallback,
+  useEffect,
+} from "react";
+import { View, FlatList, Image, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Gift, Plus } from "lucide-react-native";
 import BottomSheet, {
@@ -52,14 +53,17 @@ export default function MyWishlistScreen() {
   const { user } = useSession();
 
   // Local state for participant details (fetched via getById — not in getAll response)
-  const [participantDetails, setParticipantDetails] = useState<
-    Array<{ id: number; name: string }> | null
-  >(null);
+  const [participantDetails, setParticipantDetails] = useState<Array<{
+    id: number;
+    name: string;
+  }> | null>(null);
   const [isLoadingParticipants, setIsLoadingParticipants] = useState(true);
   const [isLoadingWishlists, setIsLoadingWishlists] = useState(true);
 
   // ActionSheet state — which item was long-pressed
-  const [actionsheetItem, setActionsheetItem] = useState<TWishlistItem | null>(null);
+  const [actionsheetItem, setActionsheetItem] = useState<TWishlistItem | null>(
+    null,
+  );
 
   // Delete dialog state
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
@@ -82,7 +86,9 @@ export default function MyWishlistScreen() {
   // Derive my wishlist items from event context
   const myItems = useMemo(() => {
     if (!event?.wishlists || myParticipantId === 0) return [];
-    return event.wishlists.filter((item) => item.participantId === myParticipantId);
+    return event.wishlists.filter(
+      (item) => item.participantId === myParticipantId,
+    );
   }, [event?.wishlists, myParticipantId]);
 
   // On mount: fetch participant details + wishlist items
@@ -173,7 +179,10 @@ export default function MyWishlistScreen() {
           payload: { eventId: id, items: fresh },
         });
       } catch (revertErr) {
-        console.error("Failed to revert wishlist after delete failure:", revertErr);
+        console.error(
+          "Failed to revert wishlist after delete failure:",
+          revertErr,
+        );
       }
     }
   }, [itemToDeleteId, id, myParticipantId, dispatch]);
@@ -187,11 +196,10 @@ export default function MyWishlistScreen() {
         payload: { eventId: id, item },
       });
     },
-    [id, dispatch]
+    [id, dispatch],
   );
 
   const isLoading = isLoadingParticipants || isLoadingWishlists;
-
 
   // Event not found
   if (!event) {
@@ -213,7 +221,7 @@ export default function MyWishlistScreen() {
   return (
     <SafeAreaView
       className="h-full w-full max-w-7xl mx-auto bg-background-0"
-      edges={["top", "bottom"]}
+      edges={["bottom"]}
     >
       <View className="flex-1 bg-background-0">
         {/* ── Header ─────────────────────────────────────────────── */}
@@ -258,7 +266,11 @@ export default function MyWishlistScreen() {
           <FlatList
             data={myItems}
             keyExtractor={(item) => String(item.id)}
-            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, paddingTop: 8 }}
+            contentContainerStyle={{
+              paddingHorizontal: 16,
+              paddingBottom: 120,
+              paddingTop: 8,
+            }}
             renderItem={({ item }) => (
               <WishlistCard item={item} onLongPress={handleLongPress} />
             )}
@@ -347,7 +359,9 @@ export default function MyWishlistScreen() {
                   className="flex-1 rounded-xl bg-error-600"
                   onPress={handleDeleteConfirmed}
                 >
-                  <ButtonText className="text-white font-bold">Delete</ButtonText>
+                  <ButtonText className="text-white font-bold">
+                    Delete
+                  </ButtonText>
                 </Button>
               </View>
             </AlertDialogFooter>

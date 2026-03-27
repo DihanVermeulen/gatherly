@@ -108,7 +108,11 @@ const MODULE_DEFS: ModuleDef[] = [
   },
 ];
 
-const CATEGORY_ORDER: ModuleCategory[] = ["ACTIVITY", "COLLABORATION", "MEMORIES"];
+const CATEGORY_ORDER: ModuleCategory[] = [
+  "ACTIVITY",
+  "COLLABORATION",
+  "MEMORIES",
+];
 
 export default function ModulesConfigScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -196,7 +200,7 @@ export default function ModulesConfigScreen() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background-50" edges={["top", "bottom"]}>
+    <SafeAreaView className="flex-1 bg-background-50" edges={["bottom"]}>
       {/* Header */}
       <AppHeader title="Customize Your Event" onBack={() => router.back()} />
 
@@ -264,7 +268,9 @@ export default function ModulesConfigScreen() {
                       <View
                         key={mod.type}
                         className={`flex-row items-center px-4 py-4 ${
-                          idx < mods.length - 1 ? "border-b border-outline-100" : ""
+                          idx < mods.length - 1
+                            ? "border-b border-outline-100"
+                            : ""
                         }`}
                       >
                         {/* Icon */}
@@ -318,7 +324,11 @@ export default function ModulesConfigScreen() {
                           <Switch
                             value={isActive}
                             onValueChange={() =>
-                              handleToggle(mod.type, mod.premium, mod.comingSoon)
+                              handleToggle(
+                                mod.type,
+                                mod.premium,
+                                mod.comingSoon,
+                              )
                             }
                             disabled={isLocked || !!mod.comingSoon}
                             trackColor={{ false: "#cbd5e1", true: "#0d9488" }}
@@ -394,7 +404,9 @@ export default function ModulesConfigScreen() {
               className="flex-1 mr-2 rounded-xl border-outline-300"
               onPress={() => setShowUpgradeModal(false)}
             >
-              <ButtonText className="text-typography-700">Maybe Later</ButtonText>
+              <ButtonText className="text-typography-700">
+                Maybe Later
+              </ButtonText>
             </Button>
             <Button
               className="flex-1 rounded-xl"

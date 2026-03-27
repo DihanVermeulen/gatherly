@@ -14,10 +14,34 @@ import { AppHeader } from "@/components/AppHeader";
 
 type RsvpStatus = "accepted" | "declined" | "maybe";
 
-const STATUS_OPTIONS: { value: RsvpStatus; label: string; emoji: string; color: string; bg: string }[] = [
-  { value: "accepted", label: "Accepted", emoji: "✓", color: "#059669", bg: "#d1fae5" },
-  { value: "maybe",    label: "Maybe",    emoji: "~", color: "#d97706", bg: "#fef3c7" },
-  { value: "declined", label: "Declined", emoji: "✕", color: "#dc2626", bg: "#fee2e2" },
+const STATUS_OPTIONS: {
+  value: RsvpStatus;
+  label: string;
+  emoji: string;
+  color: string;
+  bg: string;
+}[] = [
+  {
+    value: "accepted",
+    label: "Accepted",
+    emoji: "✓",
+    color: "#059669",
+    bg: "#d1fae5",
+  },
+  {
+    value: "maybe",
+    label: "Maybe",
+    emoji: "~",
+    color: "#d97706",
+    bg: "#fef3c7",
+  },
+  {
+    value: "declined",
+    label: "Declined",
+    emoji: "✕",
+    color: "#dc2626",
+    bg: "#fee2e2",
+  },
 ];
 
 export default function RsvpScreen() {
@@ -78,7 +102,7 @@ export default function RsvpScreen() {
   // ── Organizer view ────────────────────────────────────────────────
   if (isOrganizer) {
     return (
-      <SafeAreaView className="flex-1 bg-background-50" edges={["top", "bottom"]}>
+      <SafeAreaView className="flex-1 bg-background-50" edges={["bottom"]}>
         <AppHeader title="RSVP Responses" onBack={() => router.back()} />
 
         {loading ? (
@@ -88,7 +112,11 @@ export default function RsvpScreen() {
         ) : summary ? (
           <ScrollView
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: 16, paddingTop: 8 }}
+            contentContainerStyle={{
+              paddingBottom: 40,
+              paddingHorizontal: 16,
+              paddingTop: 8,
+            }}
           >
             {/* Summary cards */}
             <View className="flex-row gap-3 mb-5">
@@ -96,19 +124,25 @@ export default function RsvpScreen() {
                 <Text className="text-2xl font-bold text-typography-900">
                   {summary.summary.accepted}
                 </Text>
-                <Text className="text-xs text-typography-500 mt-0.5">Accepted</Text>
+                <Text className="text-xs text-typography-500 mt-0.5">
+                  Accepted
+                </Text>
               </View>
               <View className="flex-1 rounded-2xl bg-white border border-outline-100 p-4 items-center">
                 <Text className="text-2xl font-bold text-typography-900">
                   {summary.summary.maybe}
                 </Text>
-                <Text className="text-xs text-typography-500 mt-0.5">Maybe</Text>
+                <Text className="text-xs text-typography-500 mt-0.5">
+                  Maybe
+                </Text>
               </View>
               <View className="flex-1 rounded-2xl bg-white border border-outline-100 p-4 items-center">
                 <Text className="text-2xl font-bold text-typography-900">
                   {summary.summary.declined}
                 </Text>
-                <Text className="text-xs text-typography-500 mt-0.5">Declined</Text>
+                <Text className="text-xs text-typography-500 mt-0.5">
+                  Declined
+                </Text>
               </View>
             </View>
 
@@ -118,7 +152,10 @@ export default function RsvpScreen() {
               style={{ backgroundColor: "#f0fdfa" }}
             >
               <Users size={18} color="#0d9488" />
-              <Text className="ml-2 text-sm font-semibold" style={{ color: "#0f766e" }}>
+              <Text
+                className="ml-2 text-sm font-semibold"
+                style={{ color: "#0f766e" }}
+              >
                 Total confirmed headcount: {summary.summary.totalHeadcount}
               </Text>
             </View>
@@ -126,7 +163,9 @@ export default function RsvpScreen() {
             {/* Response list */}
             {summary.responses.length === 0 ? (
               <View className="items-center py-10">
-                <Text className="text-typography-400 text-sm">No responses yet.</Text>
+                <Text className="text-typography-400 text-sm">
+                  No responses yet.
+                </Text>
               </View>
             ) : (
               <>
@@ -144,7 +183,10 @@ export default function RsvpScreen() {
                         className="h-9 w-9 rounded-full items-center justify-center mr-3 flex-shrink-0"
                         style={{ backgroundColor: st.bg }}
                       >
-                        <Text className="text-sm font-bold" style={{ color: st.color }}>
+                        <Text
+                          className="text-sm font-bold"
+                          style={{ color: st.color }}
+                        >
                           {st.emoji}
                         </Text>
                       </View>
@@ -153,7 +195,9 @@ export default function RsvpScreen() {
                           {r.participantName}
                         </Text>
                         {r.note ? (
-                          <Text className="text-xs text-typography-400 mt-0.5">"{r.note}"</Text>
+                          <Text className="text-xs text-typography-400 mt-0.5">
+                            "{r.note}"
+                          </Text>
                         ) : null}
                       </View>
                       <View className="items-end">
@@ -161,7 +205,10 @@ export default function RsvpScreen() {
                           className="rounded-full px-2 py-0.5"
                           style={{ backgroundColor: st.bg }}
                         >
-                          <Text className="text-xs font-bold capitalize" style={{ color: st.color }}>
+                          <Text
+                            className="text-xs font-bold capitalize"
+                            style={{ color: st.color }}
+                          >
                             {r.status}
                           </Text>
                         </View>
@@ -184,12 +231,16 @@ export default function RsvpScreen() {
 
   // ── Participant view ──────────────────────────────────────────────
   return (
-    <SafeAreaView className="flex-1 bg-background-50" edges={["top", "bottom"]}>
+    <SafeAreaView className="flex-1 bg-background-50" edges={["bottom"]}>
       <AppHeader title="RSVP" onBack={() => router.back()} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: 16, paddingTop: 16 }}
+        contentContainerStyle={{
+          paddingBottom: 40,
+          paddingHorizontal: 16,
+          paddingTop: 16,
+        }}
       >
         {submitted ? (
           <View className="items-center py-16 px-8">
@@ -210,7 +261,9 @@ export default function RsvpScreen() {
               style={{ backgroundColor: "#0d9488" }}
               onPress={() => setSubmitted(false)}
             >
-              <ButtonText className="text-white font-semibold">Update Response</ButtonText>
+              <ButtonText className="text-white font-semibold">
+                Update Response
+              </ButtonText>
             </Button>
           </View>
         ) : (
@@ -236,7 +289,13 @@ export default function RsvpScreen() {
                       backgroundColor: isSelected ? opt.bg : "white",
                     }}
                   >
-                    <Text style={{ fontSize: 20 }}>{opt.emoji === "✓" ? "✅" : opt.emoji === "~" ? "🤔" : "❌"}</Text>
+                    <Text style={{ fontSize: 20 }}>
+                      {opt.emoji === "✓"
+                        ? "✅"
+                        : opt.emoji === "~"
+                          ? "🤔"
+                          : "❌"}
+                    </Text>
                     <Text
                       className="text-xs font-bold mt-1"
                       style={{ color: isSelected ? opt.color : "#64748b" }}

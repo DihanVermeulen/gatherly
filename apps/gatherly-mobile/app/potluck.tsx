@@ -99,7 +99,7 @@ export default function PotluckScreen() {
   useFocusEffect(
     useCallback(() => {
       loadData();
-    }, [loadData])
+    }, [loadData]),
   );
 
   // ─── Derived: progress bar calculations ───────────────────────────────────
@@ -113,8 +113,7 @@ export default function PotluckScreen() {
   // ─── Signup actions ───────────────────────────────────────────────────────
 
   const handleSignUpPress = (category: TPotluckCategory, slotIndex: number) => {
-    const suggestionText =
-      category.suggestionChips[slotIndex] ?? category.name;
+    const suggestionText = category.suggestionChips[slotIndex] ?? category.name;
     setSelectedSlot({ category, slotIndex, suggestionText });
     setNote("");
   };
@@ -146,32 +145,31 @@ export default function PotluckScreen() {
   };
 
   const handleRemoveSignup = (signup: TPotluckSignup, categoryName: string) => {
-    Alert.alert(
-      "Remove Signup",
-      `Remove your signup for ${categoryName}?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Remove",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await modulesApi.deletePotluckSignup(id as string, signup.id);
-              await loadData();
-              showToast("Signup removed");
-            } catch {
-              showToast("Failed to remove signup.");
-            }
-          },
+    Alert.alert("Remove Signup", `Remove your signup for ${categoryName}?`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Remove",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await modulesApi.deletePotluckSignup(id as string, signup.id);
+            await loadData();
+            showToast("Signup removed");
+          } catch {
+            showToast("Failed to remove signup.");
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f3f4f6" }} edges={["top", "bottom"]}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: "#f3f4f6" }}
+      edges={["bottom"]}
+    >
       {/* Header */}
       <AppHeader
         title="Potluck List"
@@ -187,7 +185,9 @@ export default function PotluckScreen() {
       />
 
       {loading ? (
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <View
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
           <ActivityIndicator color="#0d9488" size="large" />
         </View>
       ) : categories.length === 0 ? (
@@ -232,7 +232,9 @@ export default function PotluckScreen() {
                 paddingVertical: 12,
               }}
             >
-              <Text style={{ color: "#ffffff", fontWeight: "600", fontSize: 15 }}>
+              <Text
+                style={{ color: "#ffffff", fontWeight: "600", fontSize: 15 }}
+              >
                 Set Up Potluck
               </Text>
             </Pressable>
@@ -287,7 +289,9 @@ export default function PotluckScreen() {
               >
                 {totalSignups}/{totalQuantity}
               </Text>
-              <Text style={{ fontSize: 13, color: "#64748b" }}>Items Claimed</Text>
+              <Text style={{ fontSize: 13, color: "#64748b" }}>
+                Items Claimed
+              </Text>
             </View>
             {/* Progress bar */}
             <View
@@ -308,7 +312,9 @@ export default function PotluckScreen() {
                 }}
               />
             </View>
-            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            >
               <Text
                 style={{ fontSize: 12, fontWeight: "700", color: "#0d9488" }}
               >
@@ -326,7 +332,8 @@ export default function PotluckScreen() {
               .filter((s) => s.categoryId === category.id)
               .sort(
                 (a, b) =>
-                  new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                  new Date(a.createdAt).getTime() -
+                  new Date(b.createdAt).getTime(),
               );
 
             return (
@@ -341,7 +348,13 @@ export default function PotluckScreen() {
                     paddingVertical: 6,
                   }}
                 >
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                  >
                     <Utensils size={14} color="#94a3b8" />
                     <Text
                       style={{
@@ -365,74 +378,114 @@ export default function PotluckScreen() {
                 </View>
 
                 {/* Slots */}
-                {Array.from({ length: category.quantity }).map((_, slotIndex) => {
-                  const signup = categorySignups[slotIndex] ?? null;
-                  const suggestionText =
-                    category.suggestionChips[slotIndex] ?? category.name;
-                  const isMySignup =
-                    signup !== null && signup.participantName === (user?.name ?? "Guest");
+                {Array.from({ length: category.quantity }).map(
+                  (_, slotIndex) => {
+                    const signup = categorySignups[slotIndex] ?? null;
+                    const suggestionText =
+                      category.suggestionChips[slotIndex] ?? category.name;
+                    const isMySignup =
+                      signup !== null &&
+                      signup.participantName === (user?.name ?? "Guest");
 
-                  return (
-                    <View
-                      key={slotIndex}
-                      style={{
-                        backgroundColor: "#ffffff",
-                        marginHorizontal: 16,
-                        marginBottom: 8,
-                        borderRadius: 12,
-                        paddingHorizontal: 14,
-                        paddingVertical: 12,
-                        flexDirection: "row",
-                        alignItems: "center",
-                        shadowColor: "#000",
-                        shadowOffset: { width: 0, height: 1 },
-                        shadowOpacity: 0.04,
-                        shadowRadius: 2,
-                        elevation: 1,
-                      }}
-                    >
-                      {signup ? (
-                        /* Claimed slot */
-                        <>
-                          <View style={{ flex: 1 }}>
-                            <Text
-                              style={{
-                                fontSize: 14,
-                                fontWeight: "700",
-                                color: "#0f172a",
-                                marginBottom: 2,
-                              }}
-                            >
-                              {signup.participantName}
-                            </Text>
-                            <Text style={{ fontSize: 12, color: "#64748b" }}>
-                              {suggestionText}
-                            </Text>
-                            {signup.note ? (
+                    return (
+                      <View
+                        key={slotIndex}
+                        style={{
+                          backgroundColor: "#ffffff",
+                          marginHorizontal: 16,
+                          marginBottom: 8,
+                          borderRadius: 12,
+                          paddingHorizontal: 14,
+                          paddingVertical: 12,
+                          flexDirection: "row",
+                          alignItems: "center",
+                          shadowColor: "#000",
+                          shadowOffset: { width: 0, height: 1 },
+                          shadowOpacity: 0.04,
+                          shadowRadius: 2,
+                          elevation: 1,
+                        }}
+                      >
+                        {signup ? (
+                          /* Claimed slot */
+                          <>
+                            <View style={{ flex: 1 }}>
                               <Text
                                 style={{
-                                  fontSize: 11,
+                                  fontSize: 14,
+                                  fontWeight: "700",
+                                  color: "#0f172a",
+                                  marginBottom: 2,
+                                }}
+                              >
+                                {signup.participantName}
+                              </Text>
+                              <Text style={{ fontSize: 12, color: "#64748b" }}>
+                                {suggestionText}
+                              </Text>
+                              {signup.note ? (
+                                <Text
+                                  style={{
+                                    fontSize: 11,
+                                    color: "#94a3b8",
+                                    marginTop: 2,
+                                    fontStyle: "italic",
+                                  }}
+                                >
+                                  {signup.note}
+                                </Text>
+                              ) : null}
+                            </View>
+                            {isMySignup ? (
+                              <Pressable
+                                onPress={() =>
+                                  handleRemoveSignup(signup, category.name)
+                                }
+                                style={{
+                                  paddingHorizontal: 12,
+                                  paddingVertical: 6,
+                                  borderRadius: 8,
+                                  borderWidth: 1,
+                                  borderColor: "#fca5a5",
+                                  backgroundColor: "#fff1f2",
+                                  flexShrink: 0,
+                                }}
+                              >
+                                <Text
+                                  style={{
+                                    fontSize: 12,
+                                    fontWeight: "600",
+                                    color: "#ef4444",
+                                  }}
+                                >
+                                  Remove
+                                </Text>
+                              </Pressable>
+                            ) : null}
+                          </>
+                        ) : (
+                          /* Unclaimed slot */
+                          <>
+                            <View style={{ flex: 1 }}>
+                              <Text
+                                style={{
+                                  fontSize: 13,
                                   color: "#94a3b8",
-                                  marginTop: 2,
                                   fontStyle: "italic",
                                 }}
                               >
-                                {signup.note}
+                                {suggestionText}
                               </Text>
-                            ) : null}
-                          </View>
-                          {isMySignup ? (
+                            </View>
                             <Pressable
                               onPress={() =>
-                                handleRemoveSignup(signup, category.name)
+                                handleSignUpPress(category, slotIndex)
                               }
                               style={{
-                                paddingHorizontal: 12,
-                                paddingVertical: 6,
+                                paddingHorizontal: 14,
+                                paddingVertical: 7,
                                 borderRadius: 8,
-                                borderWidth: 1,
-                                borderColor: "#fca5a5",
-                                backgroundColor: "#fff1f2",
+                                backgroundColor: "#0d9488",
                                 flexShrink: 0,
                               }}
                             >
@@ -440,53 +493,18 @@ export default function PotluckScreen() {
                                 style={{
                                   fontSize: 12,
                                   fontWeight: "600",
-                                  color: "#ef4444",
+                                  color: "#ffffff",
                                 }}
                               >
-                                Remove
+                                Sign Up
                               </Text>
                             </Pressable>
-                          ) : null}
-                        </>
-                      ) : (
-                        /* Unclaimed slot */
-                        <>
-                          <View style={{ flex: 1 }}>
-                            <Text
-                              style={{
-                                fontSize: 13,
-                                color: "#94a3b8",
-                                fontStyle: "italic",
-                              }}
-                            >
-                              {suggestionText}
-                            </Text>
-                          </View>
-                          <Pressable
-                            onPress={() => handleSignUpPress(category, slotIndex)}
-                            style={{
-                              paddingHorizontal: 14,
-                              paddingVertical: 7,
-                              borderRadius: 8,
-                              backgroundColor: "#0d9488",
-                              flexShrink: 0,
-                            }}
-                          >
-                            <Text
-                              style={{
-                                fontSize: 12,
-                                fontWeight: "600",
-                                color: "#ffffff",
-                              }}
-                            >
-                              Sign Up
-                            </Text>
-                          </Pressable>
-                        </>
-                      )}
-                    </View>
-                  );
-                })}
+                          </>
+                        )}
+                      </View>
+                    );
+                  },
+                )}
               </View>
             );
           })}

@@ -40,7 +40,9 @@ export default function PollsScreen() {
 
   // Vote state
   const [votingPollId, setVotingPollId] = useState<number | null>(null);
-  const [pendingVotes, setPendingVotes] = useState<Record<number, number[]>>({});
+  const [pendingVotes, setPendingVotes] = useState<Record<number, number[]>>(
+    {},
+  );
   const [submittingVote, setSubmittingVote] = useState<number | null>(null);
 
   const loadPolls = useCallback(async () => {
@@ -104,12 +106,18 @@ export default function PollsScreen() {
       const current = prev[poll.id] ?? [...poll.myVotes];
       if (poll.allowMultiple) {
         if (current.includes(optionId)) {
-          return { ...prev, [poll.id]: current.filter((id) => id !== optionId) };
+          return {
+            ...prev,
+            [poll.id]: current.filter((id) => id !== optionId),
+          };
         }
         return { ...prev, [poll.id]: [...current, optionId] };
       }
       // Single choice
-      return { ...prev, [poll.id]: current.includes(optionId) ? [] : [optionId] };
+      return {
+        ...prev,
+        [poll.id]: current.includes(optionId) ? [] : [optionId],
+      };
     });
   };
 
@@ -132,7 +140,7 @@ export default function PollsScreen() {
   const hasVoted = (poll: TPoll) => poll.myVotes.length > 0;
 
   return (
-    <SafeAreaView className="flex-1 bg-background-50" edges={["top", "bottom"]}>
+    <SafeAreaView className="flex-1 bg-background-50" edges={["bottom"]}>
       {/* Header */}
       <AppHeader
         title="Polls"
@@ -150,7 +158,11 @@ export default function PollsScreen() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: 16, paddingTop: 8 }}
+        contentContainerStyle={{
+          paddingBottom: 40,
+          paddingHorizontal: 16,
+          paddingTop: 8,
+        }}
       >
         {loading ? (
           <View className="items-center py-12">
@@ -219,7 +231,9 @@ export default function PollsScreen() {
                             className="absolute left-0 top-0 bottom-0 rounded-xl"
                             style={{
                               width: `${pct}%`,
-                              backgroundColor: isSelected ? "#ccfbf1" : "#f1f5f9",
+                              backgroundColor: isSelected
+                                ? "#ccfbf1"
+                                : "#f1f5f9",
                             }}
                           />
                         )}
@@ -272,7 +286,10 @@ export default function PollsScreen() {
                     </Button>
                   )}
                   {voted && !isOrganizer && (
-                    <Text className="text-xs font-semibold" style={{ color: "#0d9488" }}>
+                    <Text
+                      className="text-xs font-semibold"
+                      style={{ color: "#0d9488" }}
+                    >
                       ✓ Voted
                     </Text>
                   )}
@@ -292,7 +309,9 @@ export default function PollsScreen() {
         <ModalBackdrop />
         <ModalContent>
           <ModalHeader>
-            <Text className="text-lg font-bold text-typography-900">Create Poll</Text>
+            <Text className="text-lg font-bold text-typography-900">
+              Create Poll
+            </Text>
             <ModalCloseButton onPress={() => setShowCreateModal(false)}>
               <X size={20} color="#64748b" />
             </ModalCloseButton>
@@ -347,7 +366,9 @@ export default function PollsScreen() {
                 />
                 {options.length > 2 && (
                   <Pressable
-                    onPress={() => setOptions(options.filter((_, i) => i !== idx))}
+                    onPress={() =>
+                      setOptions(options.filter((_, i) => i !== idx))
+                    }
                     className="ml-2 h-8 w-8 rounded-full bg-background-100 items-center justify-center active:opacity-70"
                   >
                     <X size={14} color="#64748b" />
@@ -360,14 +381,23 @@ export default function PollsScreen() {
               className="flex-row items-center gap-1.5 mt-1 mb-4"
             >
               <Plus size={14} color="#0d9488" />
-              <Text className="text-sm font-semibold" style={{ color: "#0d9488" }}>
+              <Text
+                className="text-sm font-semibold"
+                style={{ color: "#0d9488" }}
+              >
                 Add option
               </Text>
             </Pressable>
 
             {createError && (
-              <View className="rounded-xl px-3 py-2 mb-2" style={{ backgroundColor: "#fef2f2" }}>
-                <Text className="text-xs text-center" style={{ color: "#dc2626" }}>
+              <View
+                className="rounded-xl px-3 py-2 mb-2"
+                style={{ backgroundColor: "#fef2f2" }}
+              >
+                <Text
+                  className="text-xs text-center"
+                  style={{ color: "#dc2626" }}
+                >
                   {createError}
                 </Text>
               </View>
