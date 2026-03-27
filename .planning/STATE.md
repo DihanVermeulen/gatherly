@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** v2.2 UI Rehaul — Phase 33: Potluck Screens
+**Current focus:** v2.3 Pricing Plans — Defining requirements
 
 ## Current Position
 
-Phase: 33 of 33 (Potluck Screens)
-Plan: 03 of 3 complete (gap closure)
-Status: Phase complete
-Last activity: 2026-03-25 — Completed 33-03-PLAN.md: Local-first optimistic category creation — fixed "+ Add New Category" 400 error
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-27 — Milestone v2.3 started
 
 Progress: [██████████████████████████] v2.1 complete, v2.2 Phases 30-33 done
 

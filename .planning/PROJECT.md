@@ -47,27 +47,23 @@ Participants can easily discover what gifts people actually want and claim them 
 
 ### Active
 
-<!-- Current scope: v2.2 UI Rehaul -->
+<!-- Current scope: v2.3 Pricing Plans -->
 
-**Screen redesigns (existing screens updated to new templates):**
-- [ ] Event Details screen → Event Hub layout (module cards: Gift Exchange, Potluck, Memories)
-- [ ] Manage Event screen → new layout with cover photo, location, guest list, active modules, global settings
-- [ ] Module Config screen → "Customize Your Event" redesign
+**Tier system (per-event upgrade model):**
+- [ ] Free tier definition — photo album (limited) + trial limits on premium modules + participant cap
+- [ ] Premium tier definition — all modules unlocked, participant cap lifted, full feature access
+- [ ] Per-event upgrade mechanism — pay to unlock a single event (not subscription)
 
-**Welcoming onboarding flow (new users, post-registration):**
-- [ ] Getting Started splash screen
-- [ ] Preferences screen — interest/category selection, saved to user profile
-- [ ] Profile Setup screen — name, bio, gift preferences (multi-step)
+**Paywall UX (no Stripe/billing — stub payment CTA):**
+- [ ] Paywall screens wired to every locked feature (modules, participant limit)
+- [ ] Pricing/plans page showing tier comparison
+- [ ] Upgrade flow — stub CTA ("Contact us" / waitlist) instead of real payment
+- [ ] Trial limit states — UI for modules with trial caps (e.g. limited items/categories)
 
-**Potluck module (new feature):**
-- [ ] Potluck List screen — items by category, claimed/unclaimed status
-- [ ] Potluck Setup screen — configure categories + quantities (organizer)
-- [ ] Potluck Signup screen — claim an item with optional note (participant)
-
-**Backend additions:**
-- [ ] Potluck data model — categories, items, signups
-- [ ] Event: location, cover photo, allow_guest_invites, is_public fields
-- [ ] User: interests/preferences array
+**Module tier enforcement:**
+- [ ] `photo_gallery` module — free tier (with usage limit); build or defer TBD by research
+- [ ] `gift_exchange`, `potluck`, `polls`, `rsvp`, `white_elephant` — premium modules (trial limits on free)
+- [ ] Participant cap — free events capped (exact number TBD by research)
 
 ### Out of Scope
 
@@ -148,15 +144,16 @@ Participants can easily discover what gifts people actually want and claim them 
 | EventsProvider key={session} outside Stack.Protected | Expo Router expects only Stack.Screen inside Stack.Protected; key triggers clean remount | ✓ Good — correct Expo Router contract |
 | /lookup read-only endpoint before /redeem         | Allows event preview without consuming invite or creating participant | ✓ Good — enables back-navigation from preview |
 
-## Current Milestone: v2.2 UI Rehaul
+## Current Milestone: v2.3 Pricing Plans
 
-**Goal:** Implement new screen designs from screen-templates, add Welcoming onboarding flow for new users, and ship the Potluck collaboration module — backed by new API fields for location, cover photo, guest settings, user interests, and the full potluck data model.
+**Goal:** Implement a per-event upgrade model with full paywall UX — locked feature screens, trial limits, pricing/plans page, and a stub payment CTA — without real billing integration. Research will determine exact tier limits, photo album module scope, and participant cap.
 
 **Target features:**
-- Redesigned Event Details (Event Hub), Manage Event, and Module Config screens matching new templates
-- Welcoming onboarding: Getting Started splash + Preferences (interests) + Profile Setup, shown once after registration
-- Potluck module: Setup (organizer), List (everyone), Signup (participant)
+- Per-event upgrade: free events get photo album (limited) + trial access to premium modules; paid events unlock everything
+- Paywall screens wired to every locked feature (modules, participant cap)
+- Pricing/plans comparison page
+- Stub upgrade CTA (waitlist / "Contact us") — Stripe deferred to a future milestone
 
 ---
 
-_Last updated: 2026-03-17 after v2.2 milestone started_
+_Last updated: 2026-03-27 after v2.3 milestone started_
