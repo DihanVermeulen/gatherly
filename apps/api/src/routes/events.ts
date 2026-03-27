@@ -285,8 +285,8 @@ router.put(
       const { id } = req.params;
       const { name, coupleCrossing, people, couples, assignments, eventDate, wishlistDeadline, featureFlags, location, coverPhoto, allowGuestInvites, isPublic } = req.body;
 
-      // Update event basic info
-      await client.query(
+      // Update event basic info — organizer_id check ensures only the owner can modify
+      const updateResult = await client.query(
         `UPDATE events SET
           name = COALESCE($1, name),
           couple_crossing = COALESCE($2, couple_crossing),
@@ -297,9 +297,15 @@ router.put(
           cover_photo = CASE WHEN $7::text IS NOT NULL THEN $7::text ELSE cover_photo END,
           allow_guest_invites = CASE WHEN $8::text IS NOT NULL THEN $8::boolean ELSE allow_guest_invites END,
           is_public = CASE WHEN $9::text IS NOT NULL THEN $9::boolean ELSE is_public END
-        WHERE id = $10`,
-        [name, coupleCrossing, eventDate || null, wishlistDeadline || null, featureFlags ? JSON.stringify(featureFlags) : null, location || null, coverPhoto || null, allowGuestInvites != null ? String(allowGuestInvites) : null, isPublic != null ? String(isPublic) : null, id],
+        WHERE id = $10 AND organizer_id = $11
+        RETURNING id`,
+        [name, coupleCrossing, eventDate || null, wishlistDeadline || null, featureFlags ? JSON.stringify(featureFlags) : null, location || null, coverPhoto || null, allowGuestInvites != null ? String(allowGuestInvites) : null, isPublic != null ? String(isPublic) : null, id, (req as any).user.userId],
       );
+
+      if (updateResult.rowCount === 0) {
+        await client.query("ROLLBACK");
+        return res.status(403).json({ error: "Forbidden" });
+      }
 
       // If people array is provided, sync participants
       if (people !== undefined) {
@@ -410,15 +416,34 @@ router.delete(
     const { id } = req.params;
 
     const result = await query(
-      "DELETE FROM events WHERE id = $1 RETURNING id",
-      [id],
+      "DELETE FROM events WHERE id = $1 AND organizer_id = $2 RETURNING id",
+      [id, (req as any).user.userId],
     );
 
     if (result.rowCount === 0) {
-      return res.status(404).json({ error: "Event not found" });
+      return res.status(403).json({ error: "Forbidden" });
     }
 
     res.json({ success: true });
+  }),
+);
+
+// PATCH /api/events/:id/upgrade — promote event to premium tier (idempotent)
+router.patch(
+  "/:id/upgrade",
+  authenticateJWT,
+  requireOrganizer,
+  asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await query(
+      "UPDATE events SET plan_tier = 'premium' WHERE id = $1 AND organizer_id = $2 RETURNING id",
+      [id, (req as any).user.userId],
+    );
+    if (result.rowCount === 0) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+    const updatedEvent = await fetchEventById(id);
+    res.json(updatedEvent);
   }),
 );
 
@@ -431,6 +456,10 @@ router.post("/:id/participants", authenticateJWT, requireOrganizer, async (req: 
     if (!name || !name.trim()) {
       return res.status(400).json({ error: "Participant name is required" });
     }
+
+    // Verify ownership before modifying
+    const ownerCheck = await query("SELECT id FROM events WHERE id = $1 AND organizer_id = $2", [id, (req as any).user.userId]);
+    if (ownerCheck.rows.length === 0) return res.status(403).json({ error: "Forbidden" });
 
     await query(
       "INSERT INTO participants (event_id, name) VALUES ($1, $2) ON CONFLICT (event_id, name) DO NOTHING",
@@ -452,6 +481,10 @@ router.delete(
   async (req: Request, res: Response) => {
     try {
       const { id, name } = req.params;
+
+      // Verify ownership before modifying
+      const ownerCheck = await query("SELECT id FROM events WHERE id = $1 AND organizer_id = $2", [id, (req as any).user.userId]);
+      if (ownerCheck.rows.length === 0) return res.status(403).json({ error: "Forbidden" });
 
       const result = await query(
         "DELETE FROM participants WHERE event_id = $1 AND name = $2 RETURNING id",
@@ -475,6 +508,10 @@ router.post("/:id/couples", authenticateJWT, requireOrganizer, async (req: Reque
   try {
     const { id } = req.params;
     const { person1, person2 } = req.body;
+
+    // Verify ownership before modifying
+    const ownerCheck = await query("SELECT id FROM events WHERE id = $1 AND organizer_id = $2", [id, (req as any).user.userId]);
+    if (ownerCheck.rows.length === 0) return res.status(403).json({ error: "Forbidden" });
 
     const p1Result = await query(
       "SELECT id FROM participants WHERE event_id = $1 AND name = $2",
@@ -506,6 +543,10 @@ router.delete("/:id/couples/:coupleId", authenticateJWT, requireOrganizer, async
   try {
     const { id, coupleId } = req.params;
 
+    // Verify ownership before modifying
+    const ownerCheck = await query("SELECT id FROM events WHERE id = $1 AND organizer_id = $2", [id, (req as any).user.userId]);
+    if (ownerCheck.rows.length === 0) return res.status(403).json({ error: "Forbidden" });
+
     const result = await query(
       "DELETE FROM couples WHERE id = $1 AND event_id = $2 RETURNING id",
       [coupleId, id],
@@ -531,14 +572,14 @@ router.post("/:id/generate", authenticateJWT, requireOrganizer, async (req: Requ
     const { id } = req.params;
     const { giftCount = 1 } = req.body;
 
-    // Get event and settings
+    // Get event and settings — also verifies ownership
     const eventResult = await client.query(
-      "SELECT couple_crossing FROM events WHERE id = $1",
-      [id],
+      "SELECT couple_crossing FROM events WHERE id = $1 AND organizer_id = $2",
+      [id, (req as any).user.userId],
     );
 
     if (eventResult.rows.length === 0) {
-      return res.status(404).json({ error: "Event not found" });
+      return res.status(403).json({ error: "Forbidden" });
     }
 
     const coupleCrossing = eventResult.rows[0].couple_crossing;

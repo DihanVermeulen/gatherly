@@ -6,7 +6,7 @@ import { requireOrganizer } from "../middleware/requireOrganizer.js";
 
 const router: Router = Router();
 
-const PREMIUM_MODULES = ["polls", "potluck", "rsvp", "white_elephant"];
+const PREMIUM_MODULES = ["white_elephant"];
 const FREE_MODULES = ["gift_exchange"];
 
 // GET /api/events/:id/modules — list active modules
