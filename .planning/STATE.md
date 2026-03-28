@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-27)
 ## Current Position
 
 Phase: 36 — Paywall Wiring
-Plan: 01 of 2 complete
-Status: In progress
-Last activity: 2026-03-28 — Completed 36-01-PLAN.md (PaywallModal, Module Config lock treatment, Event Details premium hiding)
+Plan: 02 of 2 complete
+Status: Phase complete
+Last activity: 2026-03-28 — Completed 36-02-PLAN.md (Potluck Setup gate removed, Edit Event participant badge, Polls counter + PaywallModal)
 
 Progress: [████████████████████████████] v2.1 complete, v2.2 Phases 30-33 done, v2.3 starting
 
@@ -38,7 +38,7 @@ Progress: [███████████████████████
 |-------|-------|-------|----------|
 | 34. Infrastructure | 2/2 done | ~? | — |
 | 35. Paywall Components | 2/2 done | ~3m | ~1.5m |
-| 36. Paywall Wiring | 0/2 | — | — |
+| 36. Paywall Wiring | 2/2 done | ~5m | ~2.5m |
 
 *Updated after each plan completion*
 
@@ -98,6 +98,10 @@ Progress: [███████████████████████
 - UPGRADE_REQUEST_URL in constants/upgrades.ts is a placeholder — replace with real Typeform/Tally slug before launch
 - Pricing screen (app/pricing.tsx): Free card uses gray Check icons, Premium uses amber Check icons — visual hierarchy without price points
 - Pricing screen CTA disabled when eventId is empty string (default from useLocalSearchParams); disabled={!eventId} + opacity 0.5
+- Potluck Setup: full-screen free-tier gate removed — free organizers see normal setup screen with amber category counter (visible at 2+)
+- Category counter (X of 3) / participant badge (X/20) / poll counter (X of 1): amber #fffbeb bg, #92400e text — canonical counter style
+- isFree derivation pattern: (event?.planTier ?? 'free') === 'free' — default to free defensively if event not yet loaded
+- Cap guard dual pattern: guard inside action handler (handleAddCategory) + onPress conditional — belt-and-suspenders for all cap enforcements
 
 ### Quick Tasks Completed
 
@@ -128,7 +132,7 @@ Progress: [███████████████████████
 ## Session Continuity
 
 Last session: 2026-03-28
-Stopped at: Completed 36-01-PLAN.md (PaywallModal, Module Config lock treatment, Event Details premium hiding)
+Stopped at: Completed 36-02-PLAN.md (Potluck Setup gate removed, Edit Event participant badge, Polls counter + PaywallModal)
 Resume file: None
 
-Next step: Execute Phase 36 Plan 02 — `/gsd:execute-phase 36-02`
+Next step: Phase 36 complete. Plan Phase 37 (paywall backend wiring / upgrade flow).
