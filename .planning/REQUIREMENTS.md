@@ -66,10 +66,10 @@
 | INFRA-03 | Phase 34 | Complete |
 | INFRA-04 | Phase 34 | Complete |
 | INFRA-05 | Phase 34 | Complete |
-| UPGRADE-01 | Phase 35 | Pending |
-| UPGRADE-02 | Phase 35 | Pending |
-| PAYWALL-01 | Phase 35 | Pending |
-| PAYWALL-02 | Phase 35 | Pending |
+| UPGRADE-01 | Phase 35 | Complete |
+| UPGRADE-02 | Phase 35 | Complete |
+| PAYWALL-01 | Phase 35 | Complete |
+| PAYWALL-02 | Phase 35 | Complete |
 | WIRE-01 | Phase 36 | Pending |
 | WIRE-02 | Phase 36 | Pending |
 | WIRE-03 | Phase 36 | Pending |

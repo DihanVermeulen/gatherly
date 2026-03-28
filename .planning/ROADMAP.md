@@ -182,5 +182,5 @@ Plans:
 | 32. Screen Redesigns | v2.2 | 6/6 | Complete | 2026-03-22 |
 | 33. Potluck Screens | v2.2 | 3/3 | Complete | 2026-03-25 |
 | 34. Infrastructure | v2.3 | 2/2 | Complete | 2026-03-27 |
-| 35. Paywall Components | v2.3 | 0/2 | Not started | — |
+| 35. Paywall Components | v2.3 | 2/2 | Complete | 2026-03-28 |
 | 36. Paywall Wiring | v2.3 | 0/2 | Not started | — |

@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-03-27)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** v2.3 Pricing Plans — Phase 35 Paywall Components
+**Current focus:** v2.3 Pricing Plans — Phase 36 Paywall Wiring
 
 ## Current Position
 
-Phase: 35 — Paywall Components
-Plan: 02 of 2
-Status: Phase complete
-Last activity: 2026-03-28 — Completed 35-02-PLAN.md (PricingScreen)
+Phase: 36 — Paywall Wiring
+Plan: Not started
+Status: Not started
+Last activity: 2026-03-28 — Phase 35 complete (PaywallBanner, plansApi, UPGRADE_REQUEST_URL, pricing screen)
 
 Progress: [████████████████████████████] v2.1 complete, v2.2 Phases 30-33 done, v2.3 starting
 
