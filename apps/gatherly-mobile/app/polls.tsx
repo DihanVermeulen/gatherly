@@ -5,6 +5,9 @@ import { Plus, Trash2, X } from "lucide-react-native";
 
 import { modulesApi, TPoll } from "./api/modules";
 import { useSession } from "./contexts/AuthContext";
+import { useEvents } from "./contexts/EventsContext";
+
+import { PaywallModal } from "@/components/PaywallModal";
 
 import { Text } from "@/components/ui/text";
 import { Button, ButtonText, ButtonSpinner } from "@/components/ui/button";
@@ -27,6 +30,13 @@ export default function PollsScreen() {
   const { user } = useSession();
   const isOrganizer = user?.participantId === undefined;
 
+  const {
+    state: { events },
+  } = useEvents();
+  const event = events.find((e) => e.id === id) ?? null;
+  const isFree = (event?.planTier ?? "free") === "free";
+
+  const [showPaywall, setShowPaywall] = useState(false);
   const [polls, setPolls] = useState<TPoll[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -149,7 +159,13 @@ export default function PollsScreen() {
           isOrganizer
             ? {
                 icon: <Plus size={20} color="white" />,
-                onPress: () => setShowCreateModal(true),
+                onPress: () => {
+                  if (isFree && polls.length >= 1) {
+                    setShowPaywall(true);
+                  } else {
+                    setShowCreateModal(true);
+                  }
+                },
                 style: { backgroundColor: "#0d9488" },
               }
             : undefined
@@ -164,6 +180,28 @@ export default function PollsScreen() {
           paddingTop: 8,
         }}
       >
+        {/* Free-tier poll counter */}
+        {isFree && isOrganizer && !loading && (
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: "#fffbeb",
+              borderRadius: 10,
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              marginBottom: 12,
+            }}
+          >
+            <Text style={{ fontSize: 13, color: "#92400e", fontWeight: "600" }}>
+              {polls.length} of 1 polls used
+            </Text>
+            <Text style={{ fontSize: 13, color: "#92400e", marginLeft: 4 }}>
+              · Upgrade for unlimited
+            </Text>
+          </View>
+        )}
+
         {loading ? (
           <View className="items-center py-12">
             <ActivityIndicator color="#0d9488" />
@@ -425,6 +463,14 @@ export default function PollsScreen() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <PaywallModal
+        isOpen={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        feature="polls_trial"
+        eventId={id}
+        isParticipant={false}
+      />
     </SafeAreaView>
   );
 }

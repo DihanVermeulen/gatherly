@@ -50,6 +50,9 @@ import {
 } from "@/components/ui/modal";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppHeader } from "@/components/AppHeader";
+import { PaywallModal } from "@/components/PaywallModal";
+
+const PARTICIPANT_CAP = 20;
 
 // Avatar background colours for participant chips
 const AVATAR_COLORS = [
@@ -107,6 +110,7 @@ export default function EditEventScreen() {
   const { user } = useSession();
 
   // ── State ────────────────────────────────────────────────────────
+  const [showPaywall, setShowPaywall] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [currentInvite, setCurrentInvite] = useState<Invite | null>(null);
   const [inviteLoading, setInviteLoading] = useState(false);
@@ -137,6 +141,7 @@ export default function EditEventScreen() {
   // ── Derived values ───────────────────────────────────────────────
   const event = events.find((e) => e.id === id) ?? null;
   const participants: string[] = event?.people ?? [];
+  const isFree = (event?.planTier ?? "free") === "free";
   const isLocked =
     event?.assignments !== null && event?.assignments !== undefined;
 
@@ -444,6 +449,22 @@ export default function EditEventScreen() {
               <Text className="text-base font-bold text-typography-900">
                 Guest List
               </Text>
+              {isFree && participants.length >= 15 && (
+                <View
+                  style={{
+                    backgroundColor: "#fffbeb",
+                    borderRadius: 10,
+                    paddingHorizontal: 8,
+                    paddingVertical: 3,
+                    marginRight: "auto",
+                    marginLeft: 8,
+                  }}
+                >
+                  <Text style={{ fontSize: 11, fontWeight: "700", color: "#92400e" }}>
+                    {participants.length}/{PARTICIPANT_CAP} participants
+                  </Text>
+                </View>
+              )}
               <Pressable
                 onPress={() => setShowGuestDetails((prev) => !prev)}
                 className="active:opacity-70"
@@ -528,7 +549,7 @@ export default function EditEventScreen() {
                 {/* Invite button */}
                 {!isLocked && (
                   <Pressable
-                    onPress={handleCreateInvite}
+                    onPress={isFree && participants.length >= PARTICIPANT_CAP ? () => setShowPaywall(true) : handleCreateInvite}
                     disabled={inviteLoading}
                     className="h-9 w-9 rounded-full items-center justify-center active:opacity-70"
                     style={{ backgroundColor: "#f0fdfa" }}
@@ -1008,6 +1029,14 @@ export default function EditEventScreen() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <PaywallModal
+        isOpen={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        feature="participant_cap"
+        eventId={id}
+        isParticipant={false}
+      />
     </SafeAreaView>
   );
 }
