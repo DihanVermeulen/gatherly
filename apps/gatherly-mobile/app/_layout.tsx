@@ -175,6 +175,10 @@ function RootLayoutNav() {
                         name="potluck-setup"
                         options={{ headerShown: false }}
                       />
+                      <Stack.Screen
+                        name="pricing"
+                        options={{ headerShown: false }}
+                      />
                     </Stack.Protected>
 
                     {/* Unauthenticated routes — only accessible when no session */}
