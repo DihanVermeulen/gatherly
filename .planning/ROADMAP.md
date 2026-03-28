@@ -5,7 +5,7 @@
 - ✅ **v2.0 Gift Exchange Platform** — Phases 1–10 (shipped 2026-02-22)
 - ✅ **v2.1 Gatherly Mobile** — Phases 11–21 + 22–24, 27–29 (shipped 2026-03-16)
 - ✅ **v2.2 UI Rehaul** — Phases 30–33 (shipped 2026-03-25)
-- 🚧 **v2.3 Pricing Plans** — Phases 34–36 (in progress)
+- ✅ **v2.3 Pricing Plans** — Phases 34–36 (shipped 2026-03-28)
 
 ## Phases
 
@@ -183,4 +183,4 @@ Plans:
 | 33. Potluck Screens | v2.2 | 3/3 | Complete | 2026-03-25 |
 | 34. Infrastructure | v2.3 | 2/2 | Complete | 2026-03-27 |
 | 35. Paywall Components | v2.3 | 2/2 | Complete | 2026-03-28 |
-| 36. Paywall Wiring | v2.3 | 0/2 | Not started | — |
+| 36. Paywall Wiring | v2.3 | 2/2 | Complete | 2026-03-28 |
