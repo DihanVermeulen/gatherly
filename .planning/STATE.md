@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-27)
 ## Current Position
 
 Phase: 35 — Paywall Components
-Plan: Not started
-Status: Not started
-Last activity: 2026-03-27 — Phase 34 complete (tier type fix, PREMIUM_MODULES reduction, participant caps, trial limits)
+Plan: 01 of 2
+Status: In progress
+Last activity: 2026-03-28 — Completed 35-01-PLAN.md (PaywallBanner, plansApi, UPGRADE_REQUEST_URL, pricing route)
 
 Progress: [████████████████████████████] v2.1 complete, v2.2 Phases 30-33 done, v2.3 starting
 
@@ -36,8 +36,8 @@ Progress: [███████████████████████
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 34. Infrastructure | 0/2 | — | — |
-| 35. Paywall Components | 0/2 | — | — |
+| 34. Infrastructure | 2/2 done | ~? | — |
+| 35. Paywall Components | 1/2 | ~2m | ~2m |
 | 36. Paywall Wiring | 0/2 | — | — |
 
 *Updated after each plan completion*
@@ -89,6 +89,9 @@ Progress: [███████████████████████
 - v2.3 PaywallBanner: single shared component for all upgrade UX; accepts feature + eventId props; organiser sees CTA, magic-link participant sees "Ask your organiser" copy
 - v2.3 pricing screen: no price points shown — stub CTA only; only reachable via upgrade CTAs, not main nav
 - v2.3 upgrade flow: PATCH /api/events/:id/upgrade -> refreshEvents() -> navigate back — always refresh before nav to clear stale planTier cache
+- PaywallBanner CTA uses Pressable + native Text (not GlueStack Button) — inline amber hex colors conflict with NativeWind variant system
+- PaywallBanner eventId prop is optional and intentionally unused in Phase 35 — acts as Phase 36 routing hook only
+- UPGRADE_REQUEST_URL in constants/upgrades.ts is a placeholder — replace with real Typeform/Tally slug before launch
 
 ### Quick Tasks Completed
 
@@ -118,8 +121,8 @@ Progress: [███████████████████████
 
 ## Session Continuity
 
-Last session: 2026-03-27
-Stopped at: v2.3 roadmap created — phases 34–36 defined, files written
+Last session: 2026-03-28
+Stopped at: Completed 35-01-PLAN.md (PaywallBanner, plansApi, UPGRADE_REQUEST_URL, pricing route registered)
 Resume file: None
 
-Next step: Plan Phase 34 — `/gsd:plan-phase 34`
+Next step: Execute Plan 35-02 — `/gsd:execute-phase 35-02`
