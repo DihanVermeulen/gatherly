@@ -1,5 +1,5 @@
 import React from "react";
-import { Alert, Pressable, View, Text as RNText } from "react-native";
+import { Pressable, View, Text as RNText } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 import { Lock } from "lucide-react-native";
 import { Text } from "@/components/ui/text";
@@ -49,19 +49,7 @@ function getHeadline(
 }
 
 function handleUpgradeCta() {
-  Alert.alert(
-    "Request Premium Access",
-    "You'll be taken to an external form to request Premium access.",
-    [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Continue",
-        onPress: () => {
-          WebBrowser.openBrowserAsync(UPGRADE_REQUEST_URL);
-        },
-      },
-    ]
-  );
+  WebBrowser.openBrowserAsync(UPGRADE_REQUEST_URL);
 }
 
 // ---------------------------------------------------------------------------
