@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-27)
 ## Current Position
 
 Phase: 35 — Paywall Components
-Plan: 01 of 2
-Status: In progress
-Last activity: 2026-03-28 — Completed 35-01-PLAN.md (PaywallBanner, plansApi, UPGRADE_REQUEST_URL, pricing route)
+Plan: 02 of 2
+Status: Phase complete
+Last activity: 2026-03-28 — Completed 35-02-PLAN.md (PricingScreen)
 
 Progress: [████████████████████████████] v2.1 complete, v2.2 Phases 30-33 done, v2.3 starting
 
@@ -37,7 +37,7 @@ Progress: [███████████████████████
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 34. Infrastructure | 2/2 done | ~? | — |
-| 35. Paywall Components | 1/2 | ~2m | ~2m |
+| 35. Paywall Components | 2/2 done | ~3m | ~1.5m |
 | 36. Paywall Wiring | 0/2 | — | — |
 
 *Updated after each plan completion*
@@ -92,6 +92,8 @@ Progress: [███████████████████████
 - PaywallBanner CTA uses Pressable + native Text (not GlueStack Button) — inline amber hex colors conflict with NativeWind variant system
 - PaywallBanner eventId prop is optional and intentionally unused in Phase 35 — acts as Phase 36 routing hook only
 - UPGRADE_REQUEST_URL in constants/upgrades.ts is a placeholder — replace with real Typeform/Tally slug before launch
+- Pricing screen (app/pricing.tsx): Free card uses gray Check icons, Premium uses amber Check icons — visual hierarchy without price points
+- Pricing screen CTA disabled when eventId is empty string (default from useLocalSearchParams); disabled={!eventId} + opacity 0.5
 
 ### Quick Tasks Completed
 
@@ -122,7 +124,7 @@ Progress: [███████████████████████
 ## Session Continuity
 
 Last session: 2026-03-28
-Stopped at: Completed 35-01-PLAN.md (PaywallBanner, plansApi, UPGRADE_REQUEST_URL, pricing route registered)
+Stopped at: Completed 35-02-PLAN.md (PricingScreen — Free vs Premium comparison, Request Access CTA)
 Resume file: None
 
-Next step: Execute Plan 35-02 — `/gsd:execute-phase 35-02`
+Next step: Execute Phase 36 — Paywall Wiring — `/gsd:execute-phase 36-01`
