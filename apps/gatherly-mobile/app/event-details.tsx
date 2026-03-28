@@ -187,6 +187,17 @@ export default function EventDetailsScreen() {
 
   // Find the event
   const event = events.find((e) => e.id === id) ?? null;
+  const isFree = (event?.planTier ?? "free") === "free";
+
+  // Premium module types hidden on free-tier events
+  const PREMIUM_MODULE_TYPES = new Set([
+    "polls",
+    "rsvp",
+    "potluck",
+    "white_elephant",
+    "photo_gallery",
+    "expense_splitter",
+  ]);
 
   // Edge case: event not found
   if (!event) {
@@ -551,8 +562,11 @@ export default function EventDetailsScreen() {
             {/* ── Module cards grouped by category ─────────────────── */}
             {CATEGORY_ORDER.map((category) => {
               const entries = MODULE_CATALOG.filter(
-                (m) => m.category === category,
+                (m) =>
+                  m.category === category &&
+                  !(isFree && PREMIUM_MODULE_TYPES.has(m.type)),
               );
+              if (entries.length === 0) return null;
 
               // Category-level badge: ACTIVITY shows "Setup Complete" when gift_exchange is active + has assignments
               let categoryBadge: { label: string } | null = null;

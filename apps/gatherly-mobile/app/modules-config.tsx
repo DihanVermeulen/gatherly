@@ -16,20 +16,12 @@ import { modulesApi } from "./api/modules";
 import { useEvents } from "./contexts/EventsContext";
 
 import { Text } from "@/components/ui/text";
-import { Button, ButtonText, ButtonSpinner } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Pressable } from "@/components/ui/pressable";
-import {
-  Modal,
-  ModalBackdrop,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
-} from "@/components/ui/modal";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppHeader } from "@/components/AppHeader";
+import { PaywallModal } from "@/components/PaywallModal";
+import { PaywallFeature } from "@/components/PaywallBanner";
 
 type ModuleCategory = "ACTIVITY" | "COLLABORATION" | "MEMORIES";
 
@@ -128,7 +120,9 @@ export default function ModulesConfigScreen() {
   const [activeModules, setActiveModules] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [savingModule, setSavingModule] = useState<string | null>(null);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [paywallFeature, setPaywallFeature] = useState<PaywallFeature | null>(
+    null,
+  );
 
   useEffect(() => {
     (async () => {
@@ -149,27 +143,23 @@ export default function ModulesConfigScreen() {
     })();
   }, [id]);
 
-  const handleToggle = async (
-    type: string,
-    isPremium: boolean,
-    comingSoon?: boolean,
-  ) => {
-    if (comingSoon) return;
-    if (isPremium && isFree) {
-      setShowUpgradeModal(true);
+  const handleToggle = async (mod: ModuleDef) => {
+    if (mod.comingSoon) return;
+    if (mod.premium && isFree) {
+      setPaywallFeature({ type: "module_locked", moduleName: mod.label });
       return;
     }
 
     // Optimistic update
     const prevModules = new Set(activeModules);
     const newModules = new Set(activeModules);
-    if (newModules.has(type)) {
-      newModules.delete(type);
+    if (newModules.has(mod.type)) {
+      newModules.delete(mod.type);
     } else {
-      newModules.add(type);
+      newModules.add(mod.type);
     }
     setActiveModules(newModules);
-    setSavingModule(type);
+    setSavingModule(mod.type);
 
     // Auto-save
     try {
@@ -183,7 +173,7 @@ export default function ModulesConfigScreen() {
       // Revert on error
       setActiveModules(prevModules);
       if (err?.response?.data?.error === "upgrade_required") {
-        setShowUpgradeModal(true);
+        setPaywallFeature({ type: "module_locked", moduleName: mod.label });
       }
     } finally {
       setSavingModule(null);
@@ -230,7 +220,12 @@ export default function ModulesConfigScreen() {
               Upgrade your event to access all modules and features
             </Text>
             <Pressable
-              onPress={() => setShowUpgradeModal(true)}
+              onPress={() =>
+                setPaywallFeature({
+                  type: "module_locked",
+                  moduleName: "Premium Modules",
+                })
+              }
               className="self-start rounded-xl px-4 py-2 active:opacity-80"
               style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
             >
@@ -263,15 +258,23 @@ export default function ModulesConfigScreen() {
                     const isActive = activeModules.has(mod.type);
                     const isLocked = mod.premium && isFree;
                     const isSaving = savingModule === mod.type;
+                    const isComingSoon = !!mod.comingSoon;
 
-                    return (
+                    const cardRow = (
                       <View
-                        key={mod.type}
-                        className={`flex-row items-center px-4 py-4 ${
-                          idx < mods.length - 1
-                            ? "border-b border-outline-100"
-                            : ""
-                        }`}
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          paddingHorizontal: 16,
+                          paddingVertical: 16,
+                          backgroundColor:
+                            isLocked || isComingSoon
+                              ? "rgba(0,0,0,0.03)"
+                              : "transparent",
+                          borderBottomWidth:
+                            idx < mods.length - 1 ? 1 : 0,
+                          borderBottomColor: "#f1f5f9",
+                        }}
                       >
                         {/* Icon */}
                         <View
@@ -287,7 +290,7 @@ export default function ModulesConfigScreen() {
                             <Text className="text-sm font-bold text-typography-900">
                               {mod.label}
                             </Text>
-                            {mod.comingSoon && (
+                            {isComingSoon && (
                               <View
                                 className="rounded-full px-2 py-0.5"
                                 style={{ backgroundColor: "#f0fdfa" }}
@@ -300,46 +303,49 @@ export default function ModulesConfigScreen() {
                                 </Text>
                               </View>
                             )}
-                            {isLocked && !mod.comingSoon && (
-                              <Lock size={12} color="#94a3b8" />
-                            )}
                           </View>
                           <Text className="text-xs text-typography-500 mt-0.5 leading-4">
                             {mod.description}
                           </Text>
-                          {isLocked && !mod.comingSoon && (
-                            <Text
-                              className="text-xs font-semibold mt-1"
-                              style={{ color: "#0d9488" }}
-                            >
-                              Upgrade to enable
-                            </Text>
-                          )}
                         </View>
 
-                        {/* Toggle */}
+                        {/* Right side: spinner, lock icon, coming-soon placeholder, or toggle */}
                         {isSaving ? (
                           <ActivityIndicator size="small" color="#0d9488" />
+                        ) : isLocked && !isComingSoon ? (
+                          <Lock size={16} color="#94a3b8" />
+                        ) : isComingSoon ? (
+                          // Empty spacer to keep alignment consistent
+                          <View style={{ width: 16 }} />
                         ) : (
                           <Switch
                             value={isActive}
-                            onValueChange={() =>
-                              handleToggle(
-                                mod.type,
-                                mod.premium,
-                                mod.comingSoon,
-                              )
-                            }
-                            disabled={isLocked || !!mod.comingSoon}
+                            onValueChange={() => handleToggle(mod)}
                             trackColor={{ false: "#cbd5e1", true: "#0d9488" }}
                             thumbColor="#ffffff"
-                            style={{
-                              opacity: isLocked || mod.comingSoon ? 0.4 : 1,
-                            }}
                           />
                         )}
                       </View>
                     );
+
+                    // Locked (non-coming-soon) cards are tappable to show paywall
+                    if (isLocked && !isComingSoon) {
+                      return (
+                        <Pressable
+                          key={mod.type}
+                          onPress={() =>
+                            setPaywallFeature({
+                              type: "module_locked",
+                              moduleName: mod.label,
+                            })
+                          }
+                        >
+                          {cardRow}
+                        </Pressable>
+                      );
+                    }
+
+                    return <View key={mod.type}>{cardRow}</View>;
                   })}
                 </View>
               </View>
@@ -364,62 +370,14 @@ export default function ModulesConfigScreen() {
         </View>
       </ScrollView>
 
-      {/* Upgrade modal */}
-      <Modal
-        isOpen={showUpgradeModal}
-        onClose={() => setShowUpgradeModal(false)}
-        size="md"
-      >
-        <ModalBackdrop />
-        <ModalContent>
-          <ModalHeader>
-            <Text className="text-lg font-bold text-typography-900">
-              Upgrade Your Event
-            </Text>
-            <ModalCloseButton onPress={() => setShowUpgradeModal(false)}>
-              <Text className="text-typography-500 text-lg">✕</Text>
-            </ModalCloseButton>
-          </ModalHeader>
-          <ModalBody>
-            <Text className="text-sm text-typography-600 leading-5">
-              Polls, RSVP, Potluck, and White Elephant are premium modules
-              available on the Standard plan. Upgrade your event to unlock all
-              modules and give your guests the best experience.
-            </Text>
-            <View
-              className="rounded-xl mt-4 px-4 py-3"
-              style={{ backgroundColor: "#f0fdfa" }}
-            >
-              <Text className="text-sm font-bold" style={{ color: "#0d9488" }}>
-                Standard Plan
-              </Text>
-              <Text className="text-xs text-typography-500 mt-1">
-                All modules · Unlimited participants · Priority support
-              </Text>
-            </View>
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              variant="outline"
-              className="flex-1 mr-2 rounded-xl border-outline-300"
-              onPress={() => setShowUpgradeModal(false)}
-            >
-              <ButtonText className="text-typography-700">
-                Maybe Later
-              </ButtonText>
-            </Button>
-            <Button
-              className="flex-1 rounded-xl"
-              style={{ backgroundColor: "#0d9488" }}
-              onPress={() => setShowUpgradeModal(false)}
-            >
-              <ButtonText className="text-white font-semibold">
-                Coming Soon
-              </ButtonText>
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      {/* Paywall modal */}
+      <PaywallModal
+        isOpen={paywallFeature !== null}
+        onClose={() => setPaywallFeature(null)}
+        feature={paywallFeature!}
+        eventId={id}
+        isParticipant={false}
+      />
     </SafeAreaView>
   );
 }
