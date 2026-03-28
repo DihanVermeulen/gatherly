@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-27)
 ## Current Position
 
 Phase: 36 — Paywall Wiring
-Plan: Not started
-Status: Not started
-Last activity: 2026-03-28 — Phase 35 complete (PaywallBanner, plansApi, UPGRADE_REQUEST_URL, pricing screen)
+Plan: 01 of 2 complete
+Status: In progress
+Last activity: 2026-03-28 — Completed 36-01-PLAN.md (PaywallModal, Module Config lock treatment, Event Details premium hiding)
 
 Progress: [████████████████████████████] v2.1 complete, v2.2 Phases 30-33 done, v2.3 starting
 
@@ -91,6 +91,10 @@ Progress: [███████████████████████
 - v2.3 upgrade flow: PATCH /api/events/:id/upgrade -> refreshEvents() -> navigate back — always refresh before nav to clear stale planTier cache
 - PaywallBanner CTA uses Pressable + native Text (not GlueStack Button) — inline amber hex colors conflict with NativeWind variant system
 - PaywallBanner eventId prop is optional and intentionally unused in Phase 35 — acts as Phase 36 routing hook only
+- PaywallModal pattern: useState<PaywallFeature | null>(null) — modal open when non-null; <PaywallModal isOpen={paywallFeature !== null} onClose={() => setPaywallFeature(null)} feature={paywallFeature!} />
+- Module Config lock treatment: isLocked && !comingSoon -> hide Switch + show Lock icon (size 16, #94a3b8); wrap card in Pressable to open PaywallModal
+- Event Details free-tier hiding: PREMIUM_MODULE_TYPES Set + isFree flag -> filter MODULE_CATALOG to remove premium entries on free events (no lock UI shown, just absent)
+- PaywallBanner CTA: Alert.alert confirmation removed — WebBrowser.openBrowserAsync called directly
 - UPGRADE_REQUEST_URL in constants/upgrades.ts is a placeholder — replace with real Typeform/Tally slug before launch
 - Pricing screen (app/pricing.tsx): Free card uses gray Check icons, Premium uses amber Check icons — visual hierarchy without price points
 - Pricing screen CTA disabled when eventId is empty string (default from useLocalSearchParams); disabled={!eventId} + opacity 0.5
@@ -124,7 +128,7 @@ Progress: [███████████████████████
 ## Session Continuity
 
 Last session: 2026-03-28
-Stopped at: Completed 35-02-PLAN.md (PricingScreen — Free vs Premium comparison, Request Access CTA)
+Stopped at: Completed 36-01-PLAN.md (PaywallModal, Module Config lock treatment, Event Details premium hiding)
 Resume file: None
 
-Next step: Execute Phase 36 — Paywall Wiring — `/gsd:execute-phase 36-01`
+Next step: Execute Phase 36 Plan 02 — `/gsd:execute-phase 36-02`
