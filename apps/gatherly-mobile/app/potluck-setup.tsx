@@ -18,6 +18,8 @@ import { useEvents } from "./contexts/EventsContext";
 import { useSession } from "./contexts/AuthContext";
 import { isSafeImageUri } from "./utils/imageUri";
 
+import { PaywallModal } from "@/components/PaywallModal";
+
 import { Text } from "@/components/ui/text";
 import { Pressable } from "@/components/ui/pressable";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -497,6 +499,7 @@ export default function PotluckSetupScreen() {
   const [categories, setCategories] = useState<LocalCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
 
   const event = events.find((e) => e.id === id) ?? null;
   const isFree = (event?.planTier ?? "free") === "free";
@@ -540,6 +543,10 @@ export default function PotluckSetupScreen() {
 
   // Add new category — local-first, no API call yet
   const handleAddCategory = useCallback(() => {
+    if (isFree && categories.length >= 3) {
+      setShowPaywall(true);
+      return;
+    }
     const tempId = `temp-${Date.now()}`;
     const tempCat: LocalCategory = {
       id: tempId,
@@ -610,78 +617,6 @@ export default function PotluckSetupScreen() {
       setSaving(false);
     }
   }, [id, categories, router]);
-
-  // ── Free-tier gate ───────────────────────────────────────────────────────
-
-  if (!loading && isFree) {
-    return (
-      <SafeAreaView
-        style={{ flex: 1, backgroundColor: "#ffffff" }}
-        edges={["bottom"]}
-      >
-        <AppHeader title="Setup Potluck" onBack={() => router.back()} />
-        <View
-          style={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 32,
-          }}
-        >
-          <View
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: 32,
-              backgroundColor: "#f0fdfa",
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 16,
-            }}
-          >
-            <Utensils size={28} color="#0d9488" />
-          </View>
-          <Text
-            style={{
-              fontSize: 20,
-              fontWeight: "700",
-              color: "#0f172a",
-              marginBottom: 8,
-              textAlign: "center",
-            }}
-          >
-            Premium Feature
-          </Text>
-          <Text
-            style={{
-              fontSize: 14,
-              color: "#64748b",
-              textAlign: "center",
-              lineHeight: 20,
-              marginBottom: 24,
-            }}
-          >
-            Potluck coordination is available on the Standard plan. Upgrade your
-            event to coordinate food and drink signups with your guests.
-          </Text>
-          <Pressable
-            disabled
-            style={{
-              borderRadius: 12,
-              paddingHorizontal: 24,
-              paddingVertical: 12,
-              backgroundColor: "#0d9488",
-              opacity: 0.5,
-            }}
-          >
-            <Text style={{ color: "#ffffff", fontWeight: "700", fontSize: 15 }}>
-              Upgrade Plan
-            </Text>
-          </Pressable>
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   // ── Loading state ─────────────────────────────────────────────────────────
 
@@ -756,6 +691,28 @@ export default function PotluckSetupScreen() {
             Define what guests should bring and how many of each item you need
             for the party.
           </Text>
+
+          {/* Free-tier category counter */}
+          {isFree && categories.length >= 2 && (
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                backgroundColor: "#fffbeb",
+                borderRadius: 10,
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                marginBottom: 16,
+              }}
+            >
+              <Text style={{ fontSize: 13, color: "#92400e", fontWeight: "600" }}>
+                {categories.length} of 3 categories
+              </Text>
+              <Text style={{ fontSize: 13, color: "#92400e", marginLeft: 4 }}>
+                · Upgrade for unlimited
+              </Text>
+            </View>
+          )}
 
           {/* Empty state */}
           {categories.length === 0 ? (
@@ -865,6 +822,14 @@ export default function PotluckSetupScreen() {
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <PaywallModal
+        isOpen={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        feature="potluck_trial"
+        eventId={id}
+        isParticipant={false}
+      />
     </SafeAreaView>
   );
 }
