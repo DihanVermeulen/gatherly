@@ -155,6 +155,19 @@ Plans:
 - [ ] 36-01-PLAN.md — Module Config + Event Details wiring (lock icons, PaywallBanner routing)
 - [ ] 36-02-PLAN.md — Potluck Setup + Edit Event + Polls wiring (counters, cap badge, PaywallBanner)
 
+#### Phase 37: Paywall Polish
+**Goal**: The participant variant of PaywallBanner is reachable, API 403 responses are surfaced as paywalls instead of silent toasts, and the magic-link redemption cap has a specific error message — closing the three broken/partial integration chains from the v2.3 audit.
+**Depends on**: Phase 36
+**Requirements**: PAYWALL-01 (participant variant), audit tech debt items 3–5
+**Success Criteria** (what must be TRUE):
+  1. A magic-link participant who triggers any paywall sees "Ask your organiser to upgrade this event" copy with no upgrade CTA — `isParticipant` is derived from `useSession()` in all four PaywallModal call sites
+  2. If the API returns `trial_limit_reached` 403 from `createPoll` or `createPotluckCategory` (e.g. stale client state), the screen opens PaywallModal rather than showing a generic error toast
+  3. If magic-link redemption fails with `participant_cap_reached` 403, the magic-link screen shows a specific "This event is full" message rather than a generic error state
+**Plans:** 1 plan
+
+Plans:
+- [ ] 37-01-PLAN.md — isParticipant derivation fix + 403 catch handling + magic-link cap UX
+
 ---
 
 ## Progress
@@ -184,3 +197,4 @@ Plans:
 | 34. Infrastructure | v2.3 | 2/2 | Complete | 2026-03-27 |
 | 35. Paywall Components | v2.3 | 2/2 | Complete | 2026-03-28 |
 | 36. Paywall Wiring | v2.3 | 2/2 | Complete | 2026-03-28 |
+| 37. Paywall Polish | v2.3 | 0/1 | Planned | — |
