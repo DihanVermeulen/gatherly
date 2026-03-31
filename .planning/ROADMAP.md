@@ -104,7 +104,7 @@ Plans:
 
 ---
 
-### 🚧 v2.3 Pricing Plans (In Progress)
+### ✅ v2.3 Pricing Plans (Shipped 2026-03-31)
 
 **Milestone Goal:** Implement a per-event upgrade model with full paywall UX — locked feature screens, trial limits, pricing/plans page, and a stub payment CTA — without real billing integration. Free events get trial access to premium modules with defined limits; paid events unlock everything.
 
@@ -166,7 +166,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 37-01-PLAN.md — isParticipant derivation fix + 403 catch handling + magic-link cap UX
+- [x] 37-01-PLAN.md — isParticipant derivation fix + 403 catch handling + magic-link cap UX
 
 ---
 
@@ -197,4 +197,4 @@ Plans:
 | 34. Infrastructure | v2.3 | 2/2 | Complete | 2026-03-27 |
 | 35. Paywall Components | v2.3 | 2/2 | Complete | 2026-03-28 |
 | 36. Paywall Wiring | v2.3 | 2/2 | Complete | 2026-03-28 |
-| 37. Paywall Polish | v2.3 | 0/1 | Planned | — |
+| 37. Paywall Polish | v2.3 | 1/1 | Complete | 2026-03-31 |
