@@ -21,6 +21,7 @@ type MagicLinkState =
   | "success" // auto-dismiss 1.5s then event-details
   | "already-joined" // user already a participant
   | "invalid" // token expired/not-found
+  | "event-full" // organiser has reached participant cap (403 participant_cap_reached)
   | "error"; // network or unexpected error
 
 const HERO_COLORS = [
@@ -105,17 +106,27 @@ export default function MagicLinkScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, state]);
 
-  // Navigate to event details 1.5 seconds after success (wait for event to be in context)
+  // Navigate to event details after success.
+  // Prefers waiting for the event to appear in context (1.5s delay),
+  // but falls back to a hard 4s timeout in case refreshEvents was slow or failed.
   useEffect(() => {
-    console.log("🚀 ~ MagicLinkScreen ~ eventId:", eventId);
-    console.log("🚀 ~ MagicLinkScreen ~ state:", state);
     if (state === "success" && eventId !== null) {
-      const eventInContext = events.some((e) => e.id === String(eventId));
-      if (!eventInContext) return; // wait for refreshEvents to populate
-      const timer = setTimeout(() => {
+      const hardTimer = setTimeout(() => {
         router.replace(`/event-details?id=${eventId}` as never);
-      }, 1500);
-      return () => clearTimeout(timer);
+      }, 4000);
+
+      const eventInContext = events.some((e) => e.id === String(eventId));
+      if (eventInContext) {
+        clearTimeout(hardTimer);
+        const timer = setTimeout(() => {
+          router.replace(`/event-details?id=${eventId}` as never);
+        }, 1500);
+        return () => {
+          clearTimeout(hardTimer);
+          clearTimeout(timer);
+        };
+      }
+      return () => clearTimeout(hardTimer);
     }
   }, [state, eventId, events]);
 
@@ -138,8 +149,13 @@ export default function MagicLinkScreen() {
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response
         ?.status;
+      const errorCode = (
+        err as { response?: { data?: { error?: string } } }
+      )?.response?.data?.error;
       if (status === 401 || status === 400) {
         setState("invalid");
+      } else if (status === 403 && errorCode === "participant_cap_reached") {
+        setState("event-full");
       } else {
         setState("error");
       }
@@ -169,8 +185,17 @@ export default function MagicLinkScreen() {
       await refreshEvents();
       hasJoined.current = true;
       setState("success");
-    } catch {
-      setState("error");
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response
+        ?.status;
+      const errorCode = (
+        err as { response?: { data?: { error?: string } } }
+      )?.response?.data?.error;
+      if (status === 403 && errorCode === "participant_cap_reached") {
+        setState("event-full");
+      } else {
+        setState("error");
+      }
     } finally {
       setIsSubmittingName(false);
     }
@@ -372,6 +397,33 @@ export default function MagicLinkScreen() {
                 <ButtonText className="font-semibold">View Event</ButtonText>
               </Button>
             </View>
+          </View>
+        );
+
+      case "event-full":
+        return (
+          <View className="flex-1 items-center justify-center px-8 gap-4">
+            <AlertTriangle size={64} color="#f59e0b" />
+            <VStack className="items-center gap-2">
+              <Heading
+                size="xl"
+                className="text-typography-900 font-bold text-center"
+              >
+                This event is full
+              </Heading>
+              <Text className="text-typography-500 text-center">
+                The organiser has reached the maximum number of participants for
+                this event.
+              </Text>
+            </VStack>
+            <Button
+              size="xl"
+              action="primary"
+              className="w-full rounded-2xl mt-4"
+              onPress={() => router.back()}
+            >
+              <ButtonText className="font-semibold">Go Back</ButtonText>
+            </Button>
           </View>
         );
 
