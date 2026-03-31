@@ -135,6 +135,7 @@ type CategoryCardProps = {
   onUpdate: (updated: TPotluckCategory) => void;
   onDelete: (catId: number | string) => void;
   onReplace: (tempId: number | string, serverCat: TPotluckCategory) => void;
+  onTrialLimitReached?: () => void;
 };
 
 function CategoryCard({
@@ -143,6 +144,7 @@ function CategoryCard({
   onUpdate,
   onDelete,
   onReplace,
+  onTrialLimitReached,
 }: CategoryCardProps) {
   const [name, setName] = useState(cat.name);
   const [quantity, setQuantity] = useState(cat.quantity);
@@ -197,8 +199,15 @@ function CategoryCard({
           suggestionChips: chips,
         });
         onReplace(cat.id, created);
-      } catch {
-        showToast("Failed to save category. Please try again.");
+      } catch (err: unknown) {
+        const errorCode = (
+          err as { response?: { data?: { error?: string } } }
+        )?.response?.data?.error;
+        if (errorCode === "trial_limit_reached") {
+          onTrialLimitReached?.();
+        } else {
+          showToast("Failed to save category. Please try again.");
+        }
       }
     } else {
       saveCategory({ name, quantity, foodImageUrl, suggestionChips: chips });
@@ -504,6 +513,7 @@ export default function PotluckSetupScreen() {
   const event = events.find((e) => e.id === id) ?? null;
   const isFree = (event?.planTier ?? "free") === "free";
   const isOrganizer = user?.participantId === undefined;
+  const isParticipant = !isOrganizer;
 
   // Load categories on mount
   useEffect(() => {
@@ -763,6 +773,7 @@ export default function PotluckSetupScreen() {
               onUpdate={handleCategoryUpdate}
               onDelete={handleCategoryDelete}
               onReplace={handleCategoryReplace}
+              onTrialLimitReached={() => setShowPaywall(true)}
             />
           ))}
 
@@ -828,7 +839,7 @@ export default function PotluckSetupScreen() {
         onClose={() => setShowPaywall(false)}
         feature="potluck_trial"
         eventId={id}
-        isParticipant={false}
+        isParticipant={isParticipant}
       />
     </SafeAreaView>
   );

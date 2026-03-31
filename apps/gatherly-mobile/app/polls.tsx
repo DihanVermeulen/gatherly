@@ -29,6 +29,7 @@ export default function PollsScreen() {
   const router = useRouter();
   const { user } = useSession();
   const isOrganizer = user?.participantId === undefined;
+  const isParticipant = !isOrganizer;
 
   const {
     state: { events },
@@ -95,8 +96,16 @@ export default function PollsScreen() {
       setOptions(["", ""]);
       setAllowMultiple(false);
       await loadPolls();
-    } catch {
-      setCreateError("Failed to create poll. Please try again.");
+    } catch (err: unknown) {
+      const errorCode = (
+        err as { response?: { data?: { error?: string } } }
+      )?.response?.data?.error;
+      if (errorCode === "trial_limit_reached") {
+        setShowCreateModal(false);
+        setShowPaywall(true);
+      } else {
+        setCreateError("Failed to create poll. Please try again.");
+      }
     } finally {
       setCreating(false);
     }
@@ -469,7 +478,7 @@ export default function PollsScreen() {
         onClose={() => setShowPaywall(false)}
         feature="polls_trial"
         eventId={id}
-        isParticipant={false}
+        isParticipant={isParticipant}
       />
     </SafeAreaView>
   );

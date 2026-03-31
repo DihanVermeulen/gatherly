@@ -142,6 +142,7 @@ export default function EditEventScreen() {
   const event = events.find((e) => e.id === id) ?? null;
   const participants: string[] = event?.people ?? [];
   const isFree = (event?.planTier ?? "free") === "free";
+  const isParticipant = user?.participantId !== undefined;
   const isLocked =
     event?.assignments !== null && event?.assignments !== undefined;
 
@@ -1035,7 +1036,7 @@ export default function EditEventScreen() {
         onClose={() => setShowPaywall(false)}
         feature="participant_cap"
         eventId={id}
-        isParticipant={false}
+        isParticipant={isParticipant}
       />
     </SafeAreaView>
   );

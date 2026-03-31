@@ -14,6 +14,7 @@ import {
 
 import { modulesApi } from "./api/modules";
 import { useEvents } from "./contexts/EventsContext";
+import { useSession } from "./contexts/AuthContext";
 
 import { Text } from "@/components/ui/text";
 import { Switch } from "@/components/ui/switch";
@@ -112,10 +113,12 @@ export default function ModulesConfigScreen() {
   const {
     state: { events },
   } = useEvents();
+  const { user } = useSession();
 
   const event = events.find((e) => e.id === id) ?? null;
   const planTier = event?.planTier ?? "free";
   const isFree = planTier === "free";
+  const isParticipant = user?.participantId !== undefined;
 
   const [activeModules, setActiveModules] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -376,7 +379,7 @@ export default function ModulesConfigScreen() {
         onClose={() => setPaywallFeature(null)}
         feature={paywallFeature!}
         eventId={id}
-        isParticipant={false}
+        isParticipant={isParticipant}
       />
     </SafeAreaView>
   );
