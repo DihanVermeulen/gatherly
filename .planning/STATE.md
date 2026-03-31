@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-03-27)
 
 ## Current Position
 
-Phase: 36 — Paywall Wiring
-Plan: 02 of 2 complete
-Status: Phase verified and complete
-Last activity: 2026-03-28 — Phase 36 complete (PaywallModal, Module Config lock UI, Event Details hiding, Potluck counter, Edit Event badge, Polls counter)
+Phase: 37 — Paywall Polish
+Plan: 01 of ? in progress
+Status: In progress
+Last activity: 2026-03-31 — Completed 37-01 (isParticipant threading, trial_limit_reached, participant_cap_reached handling)
 
-Progress: [████████████████████████████████] v2.3 Pricing Plans complete
+Progress: [████████████████████████████████+] v2.3 complete + Phase 37 started
 
 ## Performance Metrics
 
@@ -102,6 +102,10 @@ Progress: [███████████████████████
 - Category counter (X of 3) / participant badge (X/20) / poll counter (X of 1): amber #fffbeb bg, #92400e text — canonical counter style
 - isFree derivation pattern: (event?.planTier ?? 'free') === 'free' — default to free defensively if event not yet loaded
 - Cap guard dual pattern: guard inside action handler (handleAddCategory) + onPress conditional — belt-and-suspenders for all cap enforcements
+- isParticipant threading pattern: use !isOrganizer where isOrganizer already exists; use user?.participantId !== undefined directly elsewhere; pass isParticipant={isParticipant} to every PaywallModal call site
+- trial_limit_reached 403 interception: catch (err: unknown) -> extract response.data.error -> if trial_limit_reached, open PaywallModal; else show generic error/toast
+- onTrialLimitReached callback prop: child component (CategoryCard) bubbles 403 trial limit up to parent screen which opens PaywallModal — keeps child self-contained
+- participant_cap_reached 403 on magic-link: setState("event-full") in both handleJoin and handleNameSubmit; render branch has amber AlertTriangle + "This event is full" copy + Go Back button (router.back())
 
 ### Quick Tasks Completed
 
@@ -131,10 +135,8 @@ Progress: [███████████████████████
 
 ## Session Continuity
 
-Last session: 2026-03-28
-Stopped at: Phase 36 verified and complete — v2.3 Pricing Plans milestone finished
+Last session: 2026-03-31
+Stopped at: Completed 37-01-PLAN.md — isParticipant threading + 403 error handling
 Resume file: None
 
-Next step: /gsd:audit-milestone — audit v2.3 before archiving
-
-Next step: Phase 36 complete. Plan Phase 37 (paywall backend wiring / upgrade flow).
+Next step: Continue Phase 37 — execute 37-02 plan if it exists, or plan remaining paywall polish tasks.
