@@ -17,6 +17,7 @@ import { Text } from "@/components/ui/text";
 import { AppHeader } from "@/components/AppHeader";
 import { eventsApi, TEvent } from "@/app/api/events";
 import { PREMIUM_PRICE_DISPLAY } from "@/constants/upgrades";
+import { Button } from "@/components/ui/button";
 
 // ─── Input field component ────────────────────────────────────────────────────
 
@@ -107,7 +108,10 @@ export default function CheckoutScreen() {
 
   useEffect(() => {
     if (eventId) {
-      eventsApi.getById(eventId).then(setEvent).catch(() => null);
+      eventsApi
+        .getById(eventId)
+        .then(setEvent)
+        .catch(() => null);
     }
   }, [eventId]);
 
@@ -174,11 +178,18 @@ export default function CheckoutScreen() {
               }}
             >
               <View style={{ flex: 1, marginRight: 12 }}>
-                <RNText style={{ fontSize: 12, color: "#6b7280", marginBottom: 2 }}>
+                <RNText
+                  style={{ fontSize: 12, color: "#6b7280", marginBottom: 2 }}
+                >
                   {event?.name ?? "Your Event"}
                 </RNText>
                 <RNText
-                  style={{ fontSize: 16, fontWeight: "700", color: "#111827", marginBottom: 4 }}
+                  style={{
+                    fontSize: 16,
+                    fontWeight: "700",
+                    color: "#111827",
+                    marginBottom: 4,
+                  }}
                 >
                   Standard Plan
                 </RNText>
@@ -227,7 +238,7 @@ export default function CheckoutScreen() {
             </Text>
             <View style={{ flexDirection: "row", gap: 10, marginBottom: 16 }}>
               {/* Apple Pay */}
-              <Pressable
+              <Button
                 onPress={() =>
                   Alert.alert(
                     "Coming Soon",
@@ -247,9 +258,9 @@ export default function CheckoutScreen() {
                 >
                   Apple Pay
                 </RNText>
-              </Pressable>
+              </Button>
               {/* Google Pay */}
-              <Pressable
+              <Button
                 onPress={() =>
                   Alert.alert(
                     "Coming Soon",
@@ -271,7 +282,7 @@ export default function CheckoutScreen() {
                 >
                   Google Pay
                 </RNText>
-              </Pressable>
+              </Button>
             </View>
 
             {/* Divider */}
@@ -282,7 +293,9 @@ export default function CheckoutScreen() {
                 gap: 10,
               }}
             >
-              <View style={{ flex: 1, height: 1, backgroundColor: "#e5e7eb" }} />
+              <View
+                style={{ flex: 1, height: 1, backgroundColor: "#e5e7eb" }}
+              />
               <RNText
                 style={{
                   fontSize: 11,
@@ -293,7 +306,9 @@ export default function CheckoutScreen() {
               >
                 OR PAY WITH CARD
               </RNText>
-              <View style={{ flex: 1, height: 1, backgroundColor: "#e5e7eb" }} />
+              <View
+                style={{ flex: 1, height: 1, backgroundColor: "#e5e7eb" }}
+              />
             </View>
           </View>
 
@@ -404,9 +419,7 @@ export default function CheckoutScreen() {
           </Pressable>
 
           {/* ── Footer ───────────────────────────────────────────────────── */}
-          <View
-            style={{ alignItems: "center", gap: 8 }}
-          >
+          <View style={{ alignItems: "center", gap: 8 }}>
             <View
               style={{
                 flexDirection: "row",
@@ -420,7 +433,12 @@ export default function CheckoutScreen() {
               </RNText>
             </View>
             <RNText
-              style={{ fontSize: 11, color: "#9ca3af", textAlign: "center", lineHeight: 16 }}
+              style={{
+                fontSize: 11,
+                color: "#9ca3af",
+                textAlign: "center",
+                lineHeight: 16,
+              }}
             >
               By completing this purchase, you agree to Gatherly's Terms of
               Service and Privacy Policy.

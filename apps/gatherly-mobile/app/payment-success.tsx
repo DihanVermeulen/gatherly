@@ -14,6 +14,7 @@ import { CheckCircle, ChevronLeft, CreditCard } from "lucide-react-native";
 import { eventsApi, TEvent } from "@/app/api/events";
 import { useEvents } from "@/app/contexts/EventsContext";
 import { PREMIUM_PRICE_DISPLAY } from "@/constants/upgrades";
+import { Button } from "@/components/ui/button";
 
 export default function PaymentSuccessScreen() {
   const {
@@ -30,7 +31,10 @@ export default function PaymentSuccessScreen() {
 
   useEffect(() => {
     if (eventId) {
-      eventsApi.getById(eventId).then(setEvent).catch(() => null);
+      eventsApi
+        .getById(eventId)
+        .then(setEvent)
+        .catch(() => null);
     }
   }, [eventId]);
 
@@ -90,7 +94,13 @@ export default function PaymentSuccessScreen() {
         </View>
 
         {/* ── Hero section ─────────────────────────────────────────────── */}
-        <View style={{ alignItems: "center", paddingHorizontal: 24, paddingTop: 32 }}>
+        <View
+          style={{
+            alignItems: "center",
+            paddingHorizontal: 24,
+            paddingTop: 32,
+          }}
+        >
           {/* Green circle with checkmark */}
           <View
             style={{
@@ -230,8 +240,12 @@ export default function PaymentSuccessScreen() {
               borderTopColor: "#f3f4f6",
             }}
           >
-            <RNText style={{ fontSize: 14, color: "#6b7280" }}>Amount Paid</RNText>
-            <RNText style={{ fontSize: 14, fontWeight: "700", color: "#111827" }}>
+            <RNText style={{ fontSize: 14, color: "#6b7280" }}>
+              Amount Paid
+            </RNText>
+            <RNText
+              style={{ fontSize: 14, fontWeight: "700", color: "#111827" }}
+            >
               {PREMIUM_PRICE_DISPLAY}
             </RNText>
           </View>
@@ -247,10 +261,16 @@ export default function PaymentSuccessScreen() {
               borderTopColor: "#f3f4f6",
             }}
           >
-            <RNText style={{ fontSize: 14, color: "#6b7280" }}>Payment Method</RNText>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+            <RNText style={{ fontSize: 14, color: "#6b7280" }}>
+              Payment Method
+            </RNText>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+            >
               <CreditCard size={14} color="#6b7280" />
-              <RNText style={{ fontSize: 14, fontWeight: "700", color: "#111827" }}>
+              <RNText
+                style={{ fontSize: 14, fontWeight: "700", color: "#111827" }}
+              >
                 {` Visa .... ${last4}`}
               </RNText>
             </View>
@@ -267,15 +287,21 @@ export default function PaymentSuccessScreen() {
               borderTopColor: "#f3f4f6",
             }}
           >
-            <RNText style={{ fontSize: 14, color: "#6b7280" }}>Transaction ID</RNText>
-            <RNText style={{ fontSize: 14, fontWeight: "700", color: "#111827" }}>
+            <RNText style={{ fontSize: 14, color: "#6b7280" }}>
+              Transaction ID
+            </RNText>
+            <RNText
+              style={{ fontSize: 14, fontWeight: "700", color: "#111827" }}
+            >
               {txId}
             </RNText>
           </View>
         </View>
 
         {/* ── Footer section ───────────────────────────────────────────── */}
-        <View style={{ paddingHorizontal: 24, alignItems: "center", marginTop: 20 }}>
+        <View
+          style={{ paddingHorizontal: 24, alignItems: "center", marginTop: 20 }}
+        >
           <RNText
             style={{
               fontSize: 12,
@@ -289,7 +315,7 @@ export default function PaymentSuccessScreen() {
         </View>
 
         {/* ── Go to Event Dashboard button ──────────────────────────────── */}
-        <Pressable
+        <Button
           onPress={handleGoToDashboard}
           disabled={loading}
           style={({ pressed }) => ({
@@ -305,16 +331,21 @@ export default function PaymentSuccessScreen() {
           {loading ? (
             <ActivityIndicator color="#ffffff" size="small" />
           ) : (
-            <RNText style={{ color: "#ffffff", fontWeight: "700", fontSize: 16 }}>
+            <RNText
+              style={{ color: "#ffffff", fontWeight: "700", fontSize: 16 }}
+            >
               Go to Event Dashboard
             </RNText>
           )}
-        </Pressable>
+        </Button>
 
         {/* ── View Receipt link ─────────────────────────────────────────── */}
         <Pressable
           onPress={() =>
-            Alert.alert("Coming Soon", "Receipt downloads will be available soon.")
+            Alert.alert(
+              "Coming Soon",
+              "Receipt downloads will be available soon.",
+            )
           }
           style={{ marginTop: 12 }}
         >
