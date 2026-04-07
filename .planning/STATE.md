@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-03-27)
 Phase: 37 — Paywall Polish
 Plan: 01 of 1 complete
 Status: Phase verified and complete
-Last activity: 2026-03-31 — Phase 37 complete (isParticipant threading, trial_limit_reached PaywallModal catch, participant_cap_reached magic-link screen)
+Last activity: 2026-04-07 — Quick task 005: Update paywall screen to match PayWall.png template
 
 Progress: [████████████████████████████████] v2.3 Pricing Plans complete (all 4 phases done)
 
@@ -115,6 +115,7 @@ Progress: [███████████████████████
 | 002 | (see quick/002) | — | — | [002-...](./quick/002-the-event-modules-in-the-event-hub-scree/) |
 | 003 | Make event hub header match Details.png — back button in own header above banner | 2026-03-24 | 18d6e14 | [003-event-hub-header-match-details-png](./quick/003-event-hub-header-match-details-png/) |
 | 004 | Create AppHeader component, replace all 10 inline header blocks across the app | 2026-03-24 | 845e184 | [004-modular-header-component](./quick/004-modular-header-component/) |
+| 005 | Update paywall screen to match PayWall.png template | 2026-04-07 | 00c6562 | [005-update-paywall-screen-to-match-template](./quick/005-update-paywall-screen-to-match-template/) |
 
 ### Pending Todos
 
