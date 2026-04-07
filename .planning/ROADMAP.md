@@ -168,6 +168,21 @@ Plans:
 Plans:
 - [x] 37-01-PLAN.md — isParticipant derivation fix + 403 catch handling + magic-link cap UX
 
+#### Phase 38: Checkout and Payment Success Screens
+**Goal**: The upgrade flow has a real checkout screen and payment success screen, so tapping "Upgrade" takes the organiser through a card payment form (dummy details for now) and lands on a confirmation screen.
+**Depends on**: Phase 37
+**Requirements**: BILLING-01 (stub)
+**Success Criteria** (what must be TRUE):
+  1. Tapping "Upgrade" in PaywallModal navigates to a Checkout screen matching Checkout.png — order summary, Express Pay row (Apple/Google Pay buttons), and a card payment form (cardholder name, card number, expiry, CVV)
+  2. Submitting the checkout form with any card details navigates to the Success screen matching Success.png — green checkmark, "Payment Successful!", active plan card with event name, amount paid, payment method, and transaction ID
+  3. The Success screen "Go to Event Dashboard" button navigates back to the event and the event's planTier is updated to `'premium'` (via `PATCH /api/events/:id/upgrade`)
+  4. Dummy card details are accepted client-side (no real Stripe integration) — any non-empty input passes validation
+**Plans:** 2 plans
+
+Plans:
+- [ ] 38-01-PLAN.md — Checkout screen + upgrade CTA wiring (PaywallModal + Pricing -> /checkout)
+- [ ] 38-02-PLAN.md — Payment Success screen + end-to-end verification checkpoint
+
 ---
 
 ## Progress
@@ -198,3 +213,4 @@ Plans:
 | 35. Paywall Components | v2.3 | 2/2 | Complete | 2026-03-28 |
 | 36. Paywall Wiring | v2.3 | 2/2 | Complete | 2026-03-28 |
 | 37. Paywall Polish | v2.3 | 1/1 | Complete | 2026-03-31 |
+| 38. Checkout and Payment Success Screens | v2.3 | 0/2 | Pending | — |
