@@ -148,6 +148,12 @@ export const eventsApi = {
     const response = await apiClient.get(`/api/events/${eventId}/codes`);
     return response.data;
   },
+
+  // Upgrade event to premium
+  upgradeEvent: async (id: string): Promise<TEvent> => {
+    const response = await apiClient.patch(`/api/events/${id}/upgrade`);
+    return response.data;
+  },
 };
 
 export default eventsApi;

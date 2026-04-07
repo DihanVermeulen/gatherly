@@ -179,6 +179,14 @@ function RootLayoutNav() {
                         name="pricing"
                         options={{ headerShown: false }}
                       />
+                      <Stack.Screen
+                        name="checkout"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="payment-success"
+                        options={{ headerShown: false }}
+                      />
                     </Stack.Protected>
 
                     {/* Unauthenticated routes — only accessible when no session */}
