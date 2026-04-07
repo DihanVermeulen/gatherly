@@ -116,6 +116,7 @@ Progress: [███████████████████████
 | 003 | Make event hub header match Details.png — back button in own header above banner | 2026-03-24 | 18d6e14 | [003-event-hub-header-match-details-png](./quick/003-event-hub-header-match-details-png/) |
 | 004 | Create AppHeader component, replace all 10 inline header blocks across the app | 2026-03-24 | 845e184 | [004-modular-header-component](./quick/004-modular-header-component/) |
 | 005 | Update paywall screen to match PayWall.png template | 2026-04-07 | 00c6562 | [005-update-paywall-screen-to-match-template](./quick/005-update-paywall-screen-to-match-template/) |
+| 006 | Update PaywallModal to match PayWall.png template | 2026-04-07 | 41c24a6 | [006-update-paywallmodal-to-match-template](./quick/006-update-paywallmodal-to-match-template/) |
 
 ### Pending Todos
 
