@@ -27,7 +27,8 @@ interface PaywallModalProps {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function getContextualSubtitle(feature: PaywallFeature): string {
+function getContextualSubtitle(feature: PaywallFeature | null): string {
+  if (!feature) return "Choose the plan that fits your hosting style.";
   if (feature === "participant_cap") {
     return "Free events are limited to 20 guests. Upgrade for unlimited capacity.";
   }
@@ -37,7 +38,7 @@ function getContextualSubtitle(feature: PaywallFeature): string {
   if (feature === "polls_trial") {
     return "Free events include 1 poll. Upgrade for unlimited polls.";
   }
-  if (typeof feature === "object" && feature.type === "module_locked") {
+  if (feature !== null && typeof feature === "object" && feature.type === "module_locked") {
     return `${feature.moduleName} is a Premium feature. Upgrade to unlock all modules.`;
   }
   return "Choose the plan that fits your hosting style.";
