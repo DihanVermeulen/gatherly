@@ -1,5 +1,5 @@
 import React from "react";
-import { Alert, ScrollView, View, Pressable } from "react-native";
+import { ScrollView, View, Pressable } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { Check, ShieldCheck } from "lucide-react-native";
@@ -31,29 +31,15 @@ function FeatureRow({ label, iconColor }: FeatureRowProps) {
   );
 }
 
-// ─── CTA handler ─────────────────────────────────────────────────────────────
-
-function handleRequestAccess() {
-  Alert.alert(
-    "Request Premium Access",
-    "You'll be taken to an external form to request Premium access.",
-    [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Continue",
-        onPress: () => {
-          WebBrowser.openBrowserAsync(UPGRADE_REQUEST_URL);
-        },
-      },
-    ],
-  );
-}
-
 // ─── Main screen ──────────────────────────────────────────────────────────────
 
 export default function PricingScreen() {
   const { eventId = "" } = useLocalSearchParams<{ eventId: string }>();
   const router = useRouter();
+
+  function handleUpgrade() {
+    router.push(`/checkout?eventId=${eventId}` as never);
+  }
 
   return (
     <SafeAreaView
@@ -181,7 +167,7 @@ export default function PricingScreen() {
 
           {/* Request Access CTA */}
           <Pressable
-            onPress={handleRequestAccess}
+            onPress={handleUpgrade}
             disabled={!eventId}
             style={({ pressed }) => ({
               marginTop: 20,

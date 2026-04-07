@@ -1,15 +1,13 @@
 import React from "react";
 import { Pressable, ScrollView, View, Text as RNText } from "react-native";
 import * as WebBrowser from "expo-web-browser";
+import { useRouter } from "expo-router";
 import { Check, ShieldCheck, X } from "lucide-react-native";
-import {
-  Modal,
-  ModalBackdrop,
-  ModalContent,
-} from "@/components/ui/modal";
+import { Modal, ModalBackdrop, ModalContent } from "@/components/ui/modal";
 import { Text } from "@/components/ui/text";
 import { PaywallFeature } from "@/components/PaywallBanner";
 import { UPGRADE_REQUEST_URL } from "@/constants/upgrades";
+import { Button } from "./ui/button";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -38,7 +36,11 @@ function getContextualSubtitle(feature: PaywallFeature | null): string {
   if (feature === "polls_trial") {
     return "Free events include 1 poll. Upgrade for unlimited polls.";
   }
-  if (feature !== null && typeof feature === "object" && feature.type === "module_locked") {
+  if (
+    feature !== null &&
+    typeof feature === "object" &&
+    feature.type === "module_locked"
+  ) {
     return `${feature.moduleName} is a Premium feature. Upgrade to unlock all modules.`;
   }
   return "Choose the plan that fits your hosting style.";
@@ -74,12 +76,15 @@ export function PaywallModal({
   isOpen,
   onClose,
   feature,
+  eventId,
   isParticipant,
 }: PaywallModalProps) {
   const subtitle = getContextualSubtitle(feature);
+  const router = useRouter();
 
   function handleUpgrade() {
-    WebBrowser.openBrowserAsync(UPGRADE_REQUEST_URL);
+    onClose();
+    router.push(`/checkout?eventId=${eventId ?? ""}` as never);
   }
 
   return (
@@ -112,7 +117,11 @@ export function PaywallModal({
 
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ padding: 16, paddingTop: 56, paddingBottom: 40 }}
+          contentContainerStyle={{
+            padding: 16,
+            paddingTop: 56,
+            paddingBottom: 40,
+          }}
         >
           {/* ── Page headline ─────────────────────────────────────────────── */}
           <View style={{ marginBottom: 20 }}>
@@ -213,14 +222,17 @@ export function PaywallModal({
 
             <FeatureRow label="Unlimited guests" iconColor="#d97706" />
             <FeatureRow label="Unlimited polls" iconColor="#d97706" />
-            <FeatureRow label="Unlimited potluck categories" iconColor="#d97706" />
+            <FeatureRow
+              label="Unlimited potluck categories"
+              iconColor="#d97706"
+            />
             <FeatureRow label="White Elephant module" iconColor="#d97706" />
             <FeatureRow label="Photo Gallery module" iconColor="#d97706" />
             <FeatureRow label="Expense Splitter module" iconColor="#d97706" />
 
             {/* CTA — organiser only */}
             {!isParticipant && (
-              <Pressable
+              <Button
                 onPress={handleUpgrade}
                 style={({ pressed }) => ({
                   marginTop: 20,
@@ -235,7 +247,7 @@ export function PaywallModal({
                 >
                   Upgrade
                 </RNText>
-              </Pressable>
+              </Button>
             )}
 
             {/* Participant message */}
@@ -289,7 +301,7 @@ export function PaywallModal({
 
           {/* ── Help link ─────────────────────────────────────────────────── */}
           <Pressable
-            onPress={handleUpgrade}
+            onPress={() => WebBrowser.openBrowserAsync(UPGRADE_REQUEST_URL)}
             style={{ alignItems: "center", marginTop: 20 }}
           >
             <Text style={{ fontSize: 13, color: "#6b7280" }}>
