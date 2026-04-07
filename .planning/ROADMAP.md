@@ -180,8 +180,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 38-01-PLAN.md — Checkout screen + upgrade CTA wiring (PaywallModal + Pricing -> /checkout)
-- [ ] 38-02-PLAN.md — Payment Success screen + end-to-end verification checkpoint
+- [x] 38-01-PLAN.md — Checkout screen + upgrade CTA wiring (PaywallModal + Pricing -> /checkout)
+- [x] 38-02-PLAN.md — Payment Success screen + end-to-end verification checkpoint
 
 ---
 
@@ -213,4 +213,4 @@ Plans:
 | 35. Paywall Components | v2.3 | 2/2 | Complete | 2026-03-28 |
 | 36. Paywall Wiring | v2.3 | 2/2 | Complete | 2026-03-28 |
 | 37. Paywall Polish | v2.3 | 1/1 | Complete | 2026-03-31 |
-| 38. Checkout and Payment Success Screens | v2.3 | 0/2 | Pending | — |
+| 38. Checkout and Payment Success Screens | v2.3 | 2/2 | Complete | 2026-04-07 |
