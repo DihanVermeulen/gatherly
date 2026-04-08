@@ -83,30 +83,30 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| NAV-01 | Phase ? | Pending |
-| NAV-02 | Phase ? | Pending |
-| NAV-03 | Phase ? | Pending |
-| NAV-04 | Phase ? | Pending |
-| JOIN-01 | Phase ? | Pending |
-| JOIN-02 | Phase ? | Pending |
-| JOIN-03 | Phase ? | Pending |
-| JOIN-04 | Phase ? | Pending |
-| JOIN-05 | Phase ? | Pending |
-| MAGIC-01 | Phase ? | Pending |
-| MAGIC-02 | Phase ? | Pending |
-| UNIFORM-01 | Phase ? | Pending |
-| UNIFORM-02 | Phase ? | Pending |
-| UNIFORM-03 | Phase ? | Pending |
-| UNIFORM-04 | Phase ? | Pending |
-| UX-01 | Phase ? | Pending |
-| UX-02 | Phase ? | Pending |
-| UX-03 | Phase ? | Pending |
+| NAV-01 | Phase 39 | Pending |
+| NAV-02 | Phase 39 | Pending |
+| NAV-03 | Phase 39 | Pending |
+| NAV-04 | Phase 39 | Pending |
+| UX-01 | Phase 40 | Pending |
+| UX-02 | Phase 40 | Pending |
+| UX-03 | Phase 40 | Pending |
+| UNIFORM-01 | Phase 41 | Pending |
+| UNIFORM-02 | Phase 41 | Pending |
+| UNIFORM-03 | Phase 41 | Pending |
+| UNIFORM-04 | Phase 41 | Pending |
+| JOIN-01 | Phase 42 | Pending |
+| JOIN-02 | Phase 42 | Pending |
+| JOIN-03 | Phase 42 | Pending |
+| JOIN-04 | Phase 42 | Pending |
+| JOIN-05 | Phase 42 | Pending |
+| MAGIC-01 | Phase 43 | Pending |
+| MAGIC-02 | Phase 43 | Pending |
 
 **Coverage:**
 - v1 requirements: 18 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 18 ⚠️
+- Mapped to phases: 18 ✓
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-08*
-*Last updated: 2026-04-08 after initial definition*
+*Last updated: 2026-04-08 — traceability filled after roadmap creation*
