@@ -5,7 +5,7 @@
 - ✅ **v2.0 Gift Exchange Platform** — Phases 1–10 (shipped 2026-02-22)
 - ✅ **v2.1 Gatherly Mobile** — Phases 11–21 + 22–24, 27–29 (shipped 2026-03-16)
 - ✅ **v2.2 UI Rehaul** — Phases 30–33 (shipped 2026-03-25)
-- ✅ **v2.3 Pricing Plans** — Phases 34–36 (shipped 2026-03-28)
+- ✅ **v2.3 Pricing Plans** — Phases 34–38 (shipped 2026-04-08)
 
 ## Phases
 
@@ -104,84 +104,14 @@ Plans:
 
 ---
 
-### ✅ v2.3 Pricing Plans (Shipped 2026-03-31)
+<details>
+<summary>✅ v2.3 Pricing Plans (Phases 34–38) — SHIPPED 2026-04-08</summary>
 
-**Milestone Goal:** Implement a per-event upgrade model with full paywall UX — locked feature screens, trial limits, pricing/plans page, and a stub payment CTA — without real billing integration. Free events get trial access to premium modules with defined limits; paid events unlock everything.
+See `.planning/milestones/v2.3-ROADMAP.md` for full phase details.
 
-#### Phase 34: Infrastructure
-**Goal**: The API correctly enforces tier limits across all insertion paths and the mobile type system is unified, so every subsequent paywall screen can trust the error contracts it handles.
-**Depends on**: Phase 33 (v2.2 complete)
-**Requirements**: INFRA-01, INFRA-02, INFRA-03, INFRA-04, INFRA-05
-**Success Criteria** (what must be TRUE):
-  1. `TEvent.planTier` type is `'free' | 'premium'` everywhere in the mobile codebase — no `'standard'` references remain
-  2. Adding a 21st participant to a free event via any insertion path (direct POST, PUT sync, magic-link redemption) returns `{ error: 'participant_cap_reached', limit: 20 }` with HTTP 403
-  3. Creating a 4th potluck category on a free event returns `{ error: 'trial_limit_reached', limit: 3, resource: 'potluck_categories' }` with HTTP 403; creating a 2nd poll returns the same shape with `limit: 1, resource: 'polls'`
-  4. A free-tier event with the RSVP module enabled responds to all RSVP endpoints without a 403 — RSVP is no longer gated by plan tier
-  5. `PATCH /api/events/:id/upgrade` called by the event organizer sets `plan_tier = 'premium'` and returns the updated event; repeated calls are idempotent
-**Plans:** 2 plans
+**Summary:** Per-event upgrade model with server-side tier enforcement (participant cap 20, potluck categories 3, polls 1), shared PaywallBanner/PaywallModal components wired across all 5 gated surfaces, and stub checkout + payment success screens — shipped across 5 phases and 9 plans.
 
-Plans:
-- [ ] 34-01-PLAN.md — Type fix (planTier union) + RSVP tier removal + stub upgrade route
-- [ ] 34-02-PLAN.md — Participant cap enforcement (3 insertion paths) + trial limits (potluck categories, polls)
-
-#### Phase 35: Paywall Components
-**Goal**: The shared PaywallBanner component and pricing screen exist as the canonical upgrade UX, so no individual screen ever invents its own upgrade flow.
-**Depends on**: Phase 34
-**Requirements**: UPGRADE-01, UPGRADE-02, PAYWALL-01, PAYWALL-02
-**Success Criteria** (what must be TRUE):
-  1. Any `upgrade_required` 403 from the API — regardless of which screen triggered it — routes the user to the PaywallBanner instead of showing a raw error or crashing
-  2. An organizer sees "Request Access" copy and a working CTA that opens the external upgrade form URL; a magic-link participant sees "Ask your organiser to upgrade this event" with no upgrade CTA
-  3. The PaywallBanner headline is contextual — the copy differs between `participant_cap`, `potluck`, `polls`, `gift_exchange`, and `white_elephant` features
-  4. The pricing screen shows a Free vs Premium two-column feature comparison with no price point displayed, and is only reachable via upgrade CTAs (not from main navigation)
-**Plans:** 2 plans
-
-Plans:
-- [ ] 35-01-PLAN.md — PaywallBanner component + upgrade error handling + plansApi client + _layout registration
-- [ ] 35-02-PLAN.md — Pricing screen (app/pricing.tsx) with feature comparison + external CTA
-
-#### Phase 36: Paywall Wiring
-**Goal**: Every feature that has a tier limit shows a consistent locked state and routes through the shared PaywallBanner — replacing all bespoke upgrade implementations in the codebase.
-**Depends on**: Phase 35
-**Requirements**: WIRE-01, WIRE-02, WIRE-03, WIRE-04, WIRE-05
-**Success Criteria** (what must be TRUE):
-  1. In Module Config, premium modules display a lock icon and disabled toggle; tapping a locked module opens PaywallBanner — the old inline upgrade modal is gone
-  2. In the Potluck Setup screen, a free-tier organizer sees PaywallBanner for the plan block and a "X of 3 categories · Upgrade for unlimited" counter once 2 or more categories exist — the old bespoke locked view is gone
-  3. In Event Details, module cards for premium modules on free events show a lock icon and grey overlay; tapping any locked card opens PaywallBanner
-  4. In Edit Event, the guest list section always shows an "X/20 participants" badge; the Add Participant control is disabled and opens PaywallBanner when the cap is reached
-  5. In the Polls screen, a "1 of 1 polls used · Upgrade for unlimited" counter is visible when the limit is reached, and attempting to create another poll opens PaywallBanner
-**Plans:** 2 plans
-
-Plans:
-- [ ] 36-01-PLAN.md — Module Config + Event Details wiring (lock icons, PaywallBanner routing)
-- [ ] 36-02-PLAN.md — Potluck Setup + Edit Event + Polls wiring (counters, cap badge, PaywallBanner)
-
-#### Phase 37: Paywall Polish
-**Goal**: The participant variant of PaywallBanner is reachable, API 403 responses are surfaced as paywalls instead of silent toasts, and the magic-link redemption cap has a specific error message — closing the three broken/partial integration chains from the v2.3 audit.
-**Depends on**: Phase 36
-**Requirements**: PAYWALL-01 (participant variant), audit tech debt items 3–5
-**Success Criteria** (what must be TRUE):
-  1. A magic-link participant who triggers any paywall sees "Ask your organiser to upgrade this event" copy with no upgrade CTA — `isParticipant` is derived from `useSession()` in all four PaywallModal call sites
-  2. If the API returns `trial_limit_reached` 403 from `createPoll` or `createPotluckCategory` (e.g. stale client state), the screen opens PaywallModal rather than showing a generic error toast
-  3. If magic-link redemption fails with `participant_cap_reached` 403, the magic-link screen shows a specific "This event is full" message rather than a generic error state
-**Plans:** 1 plan
-
-Plans:
-- [x] 37-01-PLAN.md — isParticipant derivation fix + 403 catch handling + magic-link cap UX
-
-#### Phase 38: Checkout and Payment Success Screens
-**Goal**: The upgrade flow has a real checkout screen and payment success screen, so tapping "Upgrade" takes the organiser through a card payment form (dummy details for now) and lands on a confirmation screen.
-**Depends on**: Phase 37
-**Requirements**: BILLING-01 (stub)
-**Success Criteria** (what must be TRUE):
-  1. Tapping "Upgrade" in PaywallModal navigates to a Checkout screen matching Checkout.png — order summary, Express Pay row (Apple/Google Pay buttons), and a card payment form (cardholder name, card number, expiry, CVV)
-  2. Submitting the checkout form with any card details navigates to the Success screen matching Success.png — green checkmark, "Payment Successful!", active plan card with event name, amount paid, payment method, and transaction ID
-  3. The Success screen "Go to Event Dashboard" button navigates back to the event and the event's planTier is updated to `'premium'` (via `PATCH /api/events/:id/upgrade`)
-  4. Dummy card details are accepted client-side (no real Stripe integration) — any non-empty input passes validation
-**Plans:** 2 plans
-
-Plans:
-- [x] 38-01-PLAN.md — Checkout screen + upgrade CTA wiring (PaywallModal + Pricing -> /checkout)
-- [x] 38-02-PLAN.md — Payment Success screen + end-to-end verification checkpoint
+</details>
 
 ---
 

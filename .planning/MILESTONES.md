@@ -2,6 +2,36 @@
 
 ---
 
+## v2.3 Pricing Plans (Shipped: 2026-04-08)
+
+**Delivered:** Per-event upgrade model with full paywall UX — server-side tier enforcement, shared PaywallBanner/PaywallModal components, all 5 gated surfaces wired, and stub checkout + payment success screens — without real billing integration.
+
+**Phases completed:** 34–38 (9 plans total)
+
+**Key accomplishments:**
+
+- Unified type system: `planTier: 'free' | 'premium'` across mobile and API; PREMIUM_MODULES reduced to white_elephant; polls/potluck/rsvp gated at usage creation level
+- Server-side tier enforcement across 3 participant insertion paths (POST, PUT sync, magic-link redemption) + potluck category limit (3) + poll limit (1) with typed error contracts
+- Shared `PaywallBanner` + `PaywallModal` components with contextual copy per feature type and organizer vs participant variants — amber card design, single canonical upgrade UX
+- Full paywall wiring across all 5 gated surfaces: Module Config (lock icons), Event Details (premium module hiding), Potluck Setup (counter), Edit Event (participant badge), Polls (usage counter)
+- Phase 37 polish: `isParticipant` threaded from `useSession()` at all call sites; `trial_limit_reached` 403 intercepted to open PaywallModal; magic-link cap-reached "event is full" state
+- Checkout screen (order summary, express pay stubs, card form) + Payment Success screen (plan card, txId, post-upgrade refresh) — stub flow, any card details accepted
+
+**Stats:**
+
+- 56 files changed (7,474 insertions, 325 deletions)
+- ~32,000 lines TypeScript (mobile + API)
+- 5 phases, 9 plans
+- 12 days (2026-03-27 → 2026-04-08)
+
+**Git range:** `f2da840` (docs(34): research) → `882fe81` (test(38): UAT complete)
+
+**Tech debt deferred:** UPGRADE_REQUEST_URL Typeform placeholder, /pricing orphan screen, Stripe billing (BILLING-01), photo gallery module
+
+**What's next:** v2.4 — Real Stripe billing integration, photo gallery module, push notifications
+
+---
+
 ## v2.1 Gatherly Mobile (Shipped: 2026-03-16)
 
 **Delivered:** Full React Native mobile app (Expo 54 + GlueStack UI + Expo Router) with complete gift exchange feature parity, smart magic-link account linking, offline SQLite caching, and a Next.js marketing website — replacing the web app as the primary Gatherly client.

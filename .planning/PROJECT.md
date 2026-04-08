@@ -44,26 +44,29 @@ Participants can easily discover what gifts people actually want and claim them 
 - ✓ Organizer invite management: view/resend/revoke sent invites — v2.1
 - ✓ Next.js marketing website (apps/web) with Home, Features, Download, magic-link redirect — v2.1
 - ✓ User profile screen, event date/deadline metadata, email notifications, price tracking — v2.1
+- ✓ Per-event upgrade model: free tier (20 participants, 3 potluck categories, 1 poll) + premium tier (all limits lifted via stub checkout) — v2.3
+- ✓ Server-side tier enforcement across 3 participant insertion paths + typed error contracts (`participant_cap_reached`, `trial_limit_reached`) — v2.3
+- ✓ Shared PaywallBanner + PaywallModal components — contextual copy per feature, organizer vs participant variants, amber styling — v2.3
+- ✓ Paywall wiring across all 5 gated surfaces: Module Config, Event Details, Potluck Setup, Edit Event, Polls — v2.3
+- ✓ Stub upgrade flow: Checkout screen (card form, express pay stubs) + Payment Success screen (plan card, txId, post-upgrade refresh) — v2.3
 
 ### Active
 
-<!-- Current scope: v2.3 Pricing Plans -->
+<!-- Current scope: v2.4 Billing + Expansion -->
 
-**Tier system (per-event upgrade model):**
-- [ ] Free tier definition — photo album (limited) + trial limits on premium modules + participant cap
-- [ ] Premium tier definition — all modules unlocked, participant cap lifted, full feature access
-- [ ] Per-event upgrade mechanism — pay to unlock a single event (not subscription)
+**Billing (real payment integration):**
+- [ ] Stripe per-event payment flow — real card processing, webhook to set `plan_tier = 'premium'` on payment success
+- [ ] Payment history screen — organizer can see which events have been upgraded and when
+- [ ] Receipt/invoice delivery — email confirmation on upgrade
+- [ ] Replace `UPGRADE_REQUEST_URL` Typeform placeholder with real payment flow
 
-**Paywall UX (no Stripe/billing — stub payment CTA):**
-- [ ] Paywall screens wired to every locked feature (modules, participant limit)
-- [ ] Pricing/plans page showing tier comparison
-- [ ] Upgrade flow — stub CTA ("Contact us" / waitlist) instead of real payment
-- [ ] Trial limit states — UI for modules with trial caps (e.g. limited items/categories)
+**Photo Gallery Module:**
+- [ ] Photo gallery module implementation — upload, view, 10-photo free limit
+- [ ] Photo gallery paywall — "X of 10 photos · Upgrade for unlimited" counter + PaywallBanner
 
-**Module tier enforcement:**
-- [ ] `photo_gallery` module — free tier (with usage limit); build or defer TBD by research
-- [ ] `gift_exchange`, `potluck`, `polls`, `rsvp`, `white_elephant` — premium modules (trial limits on free)
-- [ ] Participant cap — free events capped (exact number TBD by research)
+**Housekeeping:**
+- [ ] Fix `/pricing` screen navigation orphan — add in-app surface to reach it
+- [ ] Replace `assetlinks.json` SHA-256 fingerprint + `associatedDomains` placeholders before production
 
 ### Out of Scope
 
@@ -77,20 +80,22 @@ Participants can easily discover what gifts people actually want and claim them 
 
 ## Context
 
-**Current Codebase (v2.1 shipped):**
+**Current Codebase (v2.3 shipped):**
 
 - React Native 0.81.5 + Expo 54 mobile app (apps/gatherly-mobile) — PRIMARY client, fully shipped
 - Next.js 15 marketing website (apps/web) — public pages + magic-link redirect
 - React 19 + React Router 7 frontend (apps/gatherly) — legacy web app, maintained as-is
 - Express + PostgreSQL backend API (apps/api) — shared by all clients
 - Turborepo monorepo structure
-- ~22,927 lines TypeScript across mobile + web
+- ~32,000 lines TypeScript across mobile + API
 
-**gatherly-mobile shipped state (v2.1):**
+**gatherly-mobile shipped state (v2.3):**
 
-- All core screens complete: Events, Event Details, Edit Event, My Wishlist, View Wishlists, Join Event, Profile, Manage Exclusions, edit-wishlist-item
+- All core screens complete: Events, Event Details, Edit Event, My Wishlist, View Wishlists, Join Event, Profile, Module Config, Potluck Setup, Potluck List, Polls, Onboarding (welcome/profile-setup/preferences), Checkout, Payment Success
+- Per-event tier model: `planTier: 'free' | 'premium'`; upgrade via stub Checkout → PATCH /api/events/:id/upgrade
+- PaywallBanner + PaywallModal shared components wired to all 5 gated surfaces
 - Offline SQLite caching via expo-sqlite; expo-secure-store for tokens; AsyncStorage removed
-- Smart magic-link join: /lookup preview endpoint, /redeem with account linking, 8-state join UX
+- Smart magic-link join: /lookup preview endpoint, /redeem with account linking, 8-state join UX + "event full" cap state
 - participantId discriminant: user.participantId !== undefined = magic-link session; undefined = full account
 - EventsProvider key={session ?? 'unauthenticated'} outside Stack.Protected for clean remount on session change
 
@@ -105,6 +110,8 @@ Participants can easily discover what gifts people actually want and claim them 
 **Known tech debt:**
 - join.tsx: add `await refreshEvents()` after `invitesApi.accept()` before `setJoinState("success")` (GAP-01)
 - assetlinks.json SHA-256 fingerprint + associatedDomains `YOUR_DOMAIN` are placeholders (must replace before production Universal/App Links)
+- `UPGRADE_REQUEST_URL` in `constants/upgrades.ts` is a Typeform placeholder — replace with real slug before launch
+- `/pricing` screen is a navigation orphan — registered in router but only reachable via upgrade CTAs (not main nav)
 
 ## Constraints
 
@@ -143,17 +150,25 @@ Participants can easily discover what gifts people actually want and claim them 
 | SQLite singleton + DatabaseProvider gate          | Single DB instance shared across app; renders blocked until init | ✓ Good — no race conditions on first load          |
 | EventsProvider key={session} outside Stack.Protected | Expo Router expects only Stack.Screen inside Stack.Protected; key triggers clean remount | ✓ Good — correct Expo Router contract |
 | /lookup read-only endpoint before /redeem         | Allows event preview without consuming invite or creating participant | ✓ Good — enables back-navigation from preview |
+| planTier: 'free' \| 'premium' only (no 'standard') | 'standard' removed — single upgrade tier simplifies every conditional in codebase | ✓ Good — v2.3 |
+| PREMIUM_MODULES = ["white_elephant"] only          | polls/potluck/rsvp gated at usage-creation level, not module-enable level — lets free users configure modules | ✓ Good — v2.3 |
+| External Typeform for upgrade demand capture       | Zero backend work; URL stored as app constant; validates demand before real billing | ✓ Good — v2.3 |
+| PaywallBanner uses Pressable + native Text for CTA | Inline amber hex (#f59e0b) conflicts with NativeWind variant system; GlueStack Button not used here | ✓ Good — v2.3 |
+| PaywallModal: useState<PaywallFeature \| null>     | Modal open when non-null, closed when null; single source of truth for open/close per screen | ✓ Good — v2.3 |
+| Event Details hides premium modules (not locks them) | Cleaner UX for participants; no lock overlay needed when modules are just absent | ✓ Good — v2.3 |
+| Checkout stub: any non-empty card fields accepted  | No Stripe — validates UX flow without billing complexity; synthetic txId | ✓ Good — v2.3 |
 
-## Current Milestone: v2.3 Pricing Plans
+## Current Milestone: v2.4 Billing + Expansion
 
-**Goal:** Implement a per-event upgrade model with full paywall UX — locked feature screens, trial limits, pricing/plans page, and a stub payment CTA — without real billing integration. Research will determine exact tier limits, photo album module scope, and participant cap.
+**Goal:** Replace the stub upgrade flow with real Stripe per-event payments, build the photo gallery module, and fix remaining navigation housekeeping (pricing orphan, Universal Links placeholders).
 
 **Target features:**
-- Per-event upgrade: free events get photo album (limited) + trial access to premium modules; paid events unlock everything
-- Paywall screens wired to every locked feature (modules, participant cap)
-- Pricing/plans comparison page
-- Stub upgrade CTA (waitlist / "Contact us") — Stripe deferred to a future milestone
+- Stripe checkout — real card processing, payment intent, webhook for `plan_tier = 'premium'`
+- Payment history screen + email receipts
+- Photo gallery module (upload, view, 10-photo free limit + paywall)
+- Fix `/pricing` as navigable screen + replace Typeform placeholder
+- Replace Universal Links / App Links placeholders before production
 
 ---
 
-_Last updated: 2026-03-27 after v2.3 milestone started_
+_Last updated: 2026-04-08 after v2.3 milestone complete_

@@ -1,8 +1,8 @@
 ---
-status: diagnosed
+status: resolved
 trigger: "magic-link-no-email-no-autosignin"
 created: 2026-03-13T00:00:00Z
-updated: 2026-03-13T00:00:00Z
+updated: 2026-03-30T00:00:00Z
 ---
 
 ## Current Focus
@@ -82,6 +82,21 @@ root_cause: |
   relies on the invite's stored email to do the user lookup. The fix must ensure that when
   a magic link is sent to a registered user's email, that email is recorded in the invite row.
 
-fix: (not applied — diagnose-only mode)
-verification: (not applied — diagnose-only mode)
-files_changed: []
+fix: |
+  API (apps/api/src/routes/invites.ts): POST /events/:eventId/invites now accepts
+  an optional `participantId` in the request body. When `email` is not provided but
+  `participantId` is, the endpoint queries participants JOIN users to retrieve the
+  linked user's email and stores it as invite_email. This ensures the /redeem
+  endpoint's user-scoped JWT path can fire even for invites created without an
+  explicit email address.
+
+  Mobile (apps/gatherly-mobile/app/api/invites.ts): invitesApi.create() signature
+  extended with an optional `participantId` parameter, which is forwarded in the
+  POST body. Existing callers (edit-event.tsx) are unaffected — they pass no
+  participantId and behaviour is unchanged. Future screens can pass participantId
+  when creating targeted invites for known participants.
+
+verification: applied
+files_changed:
+  - apps/api/src/routes/invites.ts
+  - apps/gatherly-mobile/app/api/invites.ts
