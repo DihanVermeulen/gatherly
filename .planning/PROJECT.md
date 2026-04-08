@@ -52,21 +52,29 @@ Participants can easily discover what gifts people actually want and claim them 
 
 ### Active
 
-<!-- Current scope: v2.4 Billing + Expansion -->
+<!-- Current scope: v2.4 Navigation & UX Overhaul -->
 
-**Billing (real payment integration):**
-- [ ] Stripe per-event payment flow — real card processing, webhook to set `plan_tier = 'premium'` on payment success
-- [ ] Payment history screen — organizer can see which events have been upgraded and when
-- [ ] Receipt/invoice delivery — email confirmation on upgrade
-- [ ] Replace `UPGRADE_REQUEST_URL` Typeform placeholder with real payment flow
+**Navigation:**
+- [ ] Flatten deep nested screens — key actions reachable in ≤ 2 taps from the tab bar
+- [ ] Consistent tab bar visibility across all primary screens
+- [ ] Short forms and single-field edits presented as modals, not full screens
 
-**Photo Gallery Module:**
-- [ ] Photo gallery module implementation — upload, view, 10-photo free limit
-- [ ] Photo gallery paywall — "X of 10 photos · Upgrade for unlimited" counter + PaywallBanner
+**Join Flow:**
+- [ ] Open join link (single shareable URL/QR) — anyone can join without an organizer invite
+- [ ] Join link uses the same name-entry UX as the magic link flow (unified experience)
+- [ ] Post-join account creation modal — prompts new participants to register for easier re-entry
+- [ ] Existing account holders following join link are auto-identified and linked
 
-**Housekeeping:**
-- [ ] Fix `/pricing` screen navigation orphan — add in-app surface to reach it
-- [ ] Replace `assetlinks.json` SHA-256 fingerprint + `associatedDomains` placeholders before production
+**Magic Link:**
+- [ ] Fix account linking edge cases — participant records correctly linked when user registers after joining as guest
+
+**UI Uniformity:**
+- [ ] Replace raw React Native primitives (Text, TouchableOpacity, View) with GlueStack components/ui equivalents throughout the app
+
+**UX Simplification:**
+- [ ] Edit Event screen simplified — fewer sub-screens, key actions accessible without deep navigation
+- [ ] Module Config screen redesigned for clarity — module state (enabled/disabled/locked) clearly communicated
+- [ ] Event Details screen hierarchy improved — reduced information density, clearer visual grouping
 
 ### Out of Scope
 
@@ -77,6 +85,9 @@ Participants can easily discover what gifts people actually want and claim them 
 - Multi-language support — English-only for now, can add later
 - Image compression — not selected for v2.1, defer to future
 - Web app feature changes — web app (apps/gatherly) is maintained as-is; all new feature work goes into gatherly-mobile
+- Stripe billing — deferred to v2.5 (was planned for v2.4, superseded by UX overhaul)
+- Photo gallery module — deferred to v2.5 with billing
+- Fix `/pricing` navigation orphan — deferred to v2.5
 
 ## Context
 
@@ -158,17 +169,17 @@ Participants can easily discover what gifts people actually want and claim them 
 | Event Details hides premium modules (not locks them) | Cleaner UX for participants; no lock overlay needed when modules are just absent | ✓ Good — v2.3 |
 | Checkout stub: any non-empty card fields accepted  | No Stripe — validates UX flow without billing complexity; synthetic txId | ✓ Good — v2.3 |
 
-## Current Milestone: v2.4 Billing + Expansion
+## Current Milestone: v2.4 Navigation & UX Overhaul
 
-**Goal:** Replace the stub upgrade flow with real Stripe per-event payments, build the photo gallery module, and fix remaining navigation housekeeping (pricing orphan, Universal Links placeholders).
+**Goal:** Make the app feel simple and intuitive — flatten confusing navigation, unify the join/magic-link flows into a single seamless experience, enforce GlueStack UI consistency across all screens, and simplify the three most cognitively heavy screens.
 
 **Target features:**
-- Stripe checkout — real card processing, payment intent, webhook for `plan_tier = 'premium'`
-- Payment history screen + email receipts
-- Photo gallery module (upload, view, 10-photo free limit + paywall)
-- Fix `/pricing` as navigable screen + replace Typeform placeholder
-- Replace Universal Links / App Links placeholders before production
+- Navigation architecture — flatten deep nesting, fix tab bar inconsistency, convert single-field edits to modals
+- Open join link — shareable URL/QR anyone can use to join (alongside magic links); post-join account creation prompt
+- Magic link account linking fixes — resolve edge cases when participants register after joining as guest
+- UI uniformity audit — replace raw React Native primitives with GlueStack components/ui throughout
+- Edit Event, Module Config, Event Details redesign — fewer steps, clearer hierarchy, less cognitive load
 
 ---
 
-_Last updated: 2026-04-08 after v2.3 milestone complete_
+_Last updated: 2026-04-08 after v2.4 milestone started_

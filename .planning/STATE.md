@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-04-08)
 
 **Core value:** Participants can easily discover what gifts people actually want and claim them anonymously, eliminating gift-giving guesswork while keeping the surprise element intact.
-**Current focus:** v2.4 Billing + Expansion — Planning next milestone
+**Current focus:** v2.4 Navigation & UX Overhaul
 
 ## Current Position
 
-Phase: 38 complete — v2.3 archived
-Plan: Not started (next milestone)
-Status: Ready to plan v2.4
-Last activity: 2026-04-08 — v2.3 milestone complete and archived
+Phase: Not started (defining requirements)
+Plan: —
+Status: Milestone v2.4 started — defining requirements
+Last activity: 2026-04-08 — Milestone v2.4 Navigation & UX Overhaul started
 
-Progress: [█████████████████████████████████] v2.3 complete ✅ — ready for v2.4
+Progress: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] v2.4 not started
 
 ## Performance Metrics
 
