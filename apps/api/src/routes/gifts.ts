@@ -141,11 +141,42 @@ router.post(
   "/:id/gifts/:giftId/claim",
   authenticateJWT,
   asyncHandler(async (req: Request, res: Response) => {
-    const { giftId } = req.params;
-    const { claimedBy } = req.body;
+    const { id, giftId } = req.params;
+    const user = (req as any).user;
 
-    if (!claimedBy) {
-      return res.status(400).json({ error: "claimedBy is required" });
+    // Verify gift belongs to the requested event
+    const giftCheck = await query(
+      "SELECT id FROM gifts WHERE id = $1 AND event_id = $2",
+      [giftId, id],
+    );
+    if (giftCheck.rows.length === 0) {
+      return res.status(404).json({ error: "Gift not found" });
+    }
+
+    // Verify caller is a member of this event (participant or organizer)
+    let callerName: string | null = null;
+    if (user.participantId) {
+      const participantCheck = await query(
+        "SELECT name FROM participants WHERE id = $1 AND event_id = $2",
+        [user.participantId, id],
+      );
+      if (participantCheck.rows.length === 0) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+      callerName = participantCheck.rows[0].name;
+    } else {
+      const organizerCheck = await query(
+        "SELECT name FROM users WHERE id = $1",
+        [user.userId],
+      );
+      const eventCheck = await query(
+        "SELECT id FROM events WHERE id = $1 AND organizer_id = $2",
+        [id, user.userId],
+      );
+      if (eventCheck.rows.length === 0) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+      callerName = organizerCheck.rows[0]?.name ?? `user:${user.userId}`;
     }
 
     // Check if already claimed
@@ -160,10 +191,10 @@ router.post(
 
     await query(
       "INSERT INTO gift_claims (gift_id, claimed_by) VALUES ($1, $2)",
-      [giftId, claimedBy],
+      [giftId, callerName],
     );
 
-    res.json({ success: true, claimedBy });
+    res.json({ success: true, claimedBy: callerName });
   }),
 );
 
@@ -172,7 +203,31 @@ router.delete(
   "/:id/gifts/:giftId/claim",
   authenticateJWT,
   asyncHandler(async (req: Request, res: Response) => {
-    const { giftId } = req.params;
+    const { id, giftId } = req.params;
+    const user = (req as any).user;
+
+    // Verify gift belongs to the requested event and caller is a member
+    const giftCheck = await query(
+      "SELECT id FROM gifts WHERE id = $1 AND event_id = $2",
+      [giftId, id],
+    );
+    if (giftCheck.rows.length === 0) {
+      return res.status(404).json({ error: "Gift not found" });
+    }
+
+    if (user.participantId) {
+      const memberCheck = await query(
+        "SELECT id FROM participants WHERE id = $1 AND event_id = $2",
+        [user.participantId, id],
+      );
+      if (memberCheck.rows.length === 0) return res.status(403).json({ error: "Forbidden" });
+    } else {
+      const ownerCheck = await query(
+        "SELECT id FROM events WHERE id = $1 AND organizer_id = $2",
+        [id, user.userId],
+      );
+      if (ownerCheck.rows.length === 0) return res.status(403).json({ error: "Forbidden" });
+    }
 
     const result = await query(
       "DELETE FROM gift_claims WHERE gift_id = $1 RETURNING id",

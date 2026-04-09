@@ -36,7 +36,15 @@ router.post(
   requireOrganizer,
   asyncHandler(async (req: Request, res: Response) => {
     const eventId = parseInt(req.params.eventId, 10);
-    const { email, expiresInDays } = req.body;
+    const { email, expiresInDays, participantId } = req.body;
+
+    // Validate email format if provided
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: "Invalid email format" });
+      }
+    }
 
     // Verify event exists
     const eventResult = await query(
@@ -50,12 +58,33 @@ router.post(
 
     const event = eventResult.rows[0];
 
+    // If no email provided but a participantId is given, check if that participant
+    // has a linked user account and use their email. This ensures magic links sent
+    // to known registered users always carry the email needed for user-scoped JWT
+    // redemption — even when the organizer does not explicitly type an email address.
+    let resolvedEmail: string | null = email || null;
+    if (!resolvedEmail && participantId) {
+      const parsedParticipantId = parseInt(participantId, 10);
+      if (!isNaN(parsedParticipantId)) {
+        const linkedUserResult = await query(
+          `SELECT u.email
+           FROM participants p
+           JOIN users u ON p.user_id = u.id
+           WHERE p.id = $1 AND p.event_id = $2`,
+          [parsedParticipantId, eventId],
+        );
+        if (linkedUserResult.rows.length > 0) {
+          resolvedEmail = linkedUserResult.rows[0].email;
+        }
+      }
+    }
+
     // Generate unique 21-character invite code using nanoid
     const inviteCode = nanoid();
 
-    // Calculate expiration date (default: 30 days)
+    // Calculate expiration date (default: 30 days, max: 365 days)
     let expiresAt = null;
-    const daysToExpire = expiresInDays || 30;
+    const daysToExpire = Math.min(Math.max(parseInt(expiresInDays) || 30, 1), 365);
     if (daysToExpire > 0) {
       const expirationDate = new Date();
       expirationDate.setDate(expirationDate.getDate() + daysToExpire);
@@ -63,12 +92,19 @@ router.post(
     }
 
     // Insert invite into database, storing created_by_user_id for organizer attribution
-    const createdByUserId = (req as any).user?.id || null;
+    const createdByUserId = req.user?.userId ?? null;
     const result = await query(
       `INSERT INTO invites (event_id, email, invite_code, status, expires_at, created_by_user_id)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING id, event_id, email, invite_code, status, expires_at, created_at`,
-      [eventId, email || null, inviteCode, "pending", expiresAt, createdByUserId],
+      [
+        eventId,
+        resolvedEmail,
+        inviteCode,
+        "pending",
+        expiresAt,
+        createdByUserId,
+      ],
     );
 
     const invite = result.rows[0];
@@ -90,8 +126,6 @@ router.post(
       "INSERT INTO magic_link_tokens (invite_id, token_hash, expires_at) VALUES ($1, $2, $3)",
       [invite.id, tokenHash, tokenExpiresAt],
     );
-
-    logger.log(invite);
 
     // Build magic link URL
     const magicLinkUrl = `${frontendUrl}/magic-link/${magicToken}`;
@@ -370,7 +404,6 @@ router.post(
     }
 
     const invite = inviteResult.rows[0];
-    console.log("🚀 ~ invite:", invite);
 
     // Invalidate all existing tokens for this invite
     await query("DELETE FROM magic_link_tokens WHERE invite_id = $1", [
@@ -394,12 +427,9 @@ router.post(
     // Build magic link URL
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
     const magicLinkUrl = `${frontendUrl}/magic-link/${magicToken}`;
-    console.log("🚀 ~ magicLinkUrl:", magicLinkUrl);
 
     // Fire-and-forget email if invite has an email address
     if (invite.email) {
-      logger.log("Resending magic link...");
-      console.log("Resending magic link...");
       sendMagicLinkEmail(invite.email, magicLinkUrl, invite.event_name);
     }
 

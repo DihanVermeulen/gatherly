@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import rateLimit from "express-rate-limit";
 import { query } from "../db/connection";
 import { asyncHandler } from "../middleware/asyncHandler";
 import {
@@ -14,6 +15,14 @@ import {
 const router: Router = Router();
 
 const SALT_ROUNDS = 12;
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (_req, res) => res.status(429).json({ error: "Too many requests, please try again later" }),
+});
 
 // Cookie configuration helper
 const getRefreshCookieOptions = () => ({
@@ -30,6 +39,7 @@ const getRefreshCookieOptions = () => ({
  */
 router.post(
   "/register",
+  authLimiter,
   asyncHandler(async (req: Request, res: Response) => {
     const { email, password, name } = req.body;
 
@@ -120,6 +130,7 @@ router.post(
  */
 router.post(
   "/login",
+  authLimiter,
   asyncHandler(async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
@@ -179,6 +190,7 @@ router.post(
  */
 router.post(
   "/refresh",
+  authLimiter,
   asyncHandler(async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken || req.body?.refreshToken;
 

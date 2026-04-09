@@ -3,11 +3,12 @@ import rateLimit from "express-rate-limit";
 import crypto from "crypto";
 import { query, getClient } from "../db/connection.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
+import { authenticateJWT } from "../middleware/auth.js";
+import { requireOrganizer } from "../middleware/requireOrganizer.js";
 import {
   generateTokens,
   generateParticipantTokens,
 } from "../services/tokenService.js";
-import { logger } from "tsdown";
 
 const router: Router = Router();
 
@@ -316,6 +317,177 @@ router.post(
         eventName: invite.event_name,
       },
     });
+  }),
+);
+
+/**
+ * POST /join
+ * Join an event via magic link token while already authenticated.
+ * Does NOT issue new tokens — the caller keeps their existing session.
+ *
+ * Security: requireOrganizer blocks participant-scoped JWTs (userId=0).
+ * All writes are inside a single transaction with row-level locks.
+ */
+router.post(
+  "/join",
+  redeemRateLimiter,
+  authenticateJWT,
+  requireOrganizer,
+  asyncHandler(async (req: Request, res: Response) => {
+    const { token } = req.body;
+    const userId = req.user!.userId;
+
+    if (!token || typeof token !== "string" || token.trim().length === 0) {
+      return res.status(400).json({ error: "Token is required" });
+    }
+
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+    const lookupResult = await query(
+      `SELECT invite_id FROM magic_link_tokens
+       WHERE token_hash = $1 AND expires_at > NOW()`,
+      [tokenHash],
+    );
+
+    if (lookupResult.rows.length === 0) {
+      return res.status(401).json({ error: "Invalid or expired magic link" });
+    }
+
+    const inviteId = lookupResult.rows[0].invite_id;
+
+    // All writes inside a single transaction with row-level locks
+    const client = await getClient();
+    try {
+      await client.query("BEGIN");
+
+      // Lock and read the invite
+      const inviteResult = await client.query(
+        `SELECT i.id, i.event_id, i.participant_id, i.status,
+                e.name as event_name
+         FROM invites i
+         JOIN events e ON i.event_id = e.id
+         WHERE i.id = $1
+         FOR UPDATE OF i`,
+        [inviteId],
+      );
+
+      if (inviteResult.rows.length === 0) {
+        await client.query("ROLLBACK");
+        return res
+          .status(401)
+          .json({ error: "Invalid or expired magic link" });
+      }
+
+      const invite = inviteResult.rows[0];
+
+      // Check if user is already a participant in this event (inside transaction)
+      const existingParticipant = await client.query(
+        "SELECT id FROM participants WHERE event_id = $1 AND user_id = $2",
+        [invite.event_id, userId],
+      );
+
+      if (existingParticipant.rows.length > 0) {
+        await client.query("ROLLBACK");
+        return res.status(200).json({
+          alreadyJoined: true,
+          eventId: invite.event_id,
+          eventName: invite.event_name,
+          participantId: existingParticipant.rows[0].id,
+        });
+      }
+
+      // If invite already accepted with an existing participant, link to this user
+      if (invite.status === "accepted" && invite.participant_id != null) {
+        await client.query(
+          "UPDATE participants SET user_id = $1 WHERE id = $2",
+          [userId, invite.participant_id],
+        );
+        await client.query("COMMIT");
+        return res.status(200).json({
+          eventId: invite.event_id,
+          eventName: invite.event_name,
+          participantId: invite.participant_id,
+        });
+      }
+
+      // First-time: cap check, create participant, accept invite
+      const eventTierCheck = await client.query(
+        "SELECT plan_tier FROM events WHERE id = $1 FOR SHARE",
+        [invite.event_id],
+      );
+      const tierForCap = eventTierCheck.rows[0]?.plan_tier || "free";
+      if (tierForCap === "free") {
+        const capCheck = await client.query(
+          "SELECT COUNT(*)::int AS count FROM participants WHERE event_id = $1",
+          [invite.event_id],
+        );
+        if (capCheck.rows[0].count >= 20) {
+          await client.query("ROLLBACK");
+          return res
+            .status(403)
+            .json({ error: "participant_cap_reached", limit: 20 });
+        }
+      }
+
+      // Use the authenticated user's name
+      const userResult = await client.query(
+        "SELECT name FROM users WHERE id = $1",
+        [userId],
+      );
+      const userName = (userResult.rows[0]?.name || "Participant").slice(
+        0,
+        255,
+      );
+
+      // Check for name conflict — don't silently hijack another user's participant record
+      const nameConflict = await client.query(
+        "SELECT id, user_id FROM participants WHERE event_id = $1 AND name = $2",
+        [invite.event_id, userName],
+      );
+
+      let participantId: number;
+
+      if (nameConflict.rows.length > 0) {
+        const existing = nameConflict.rows[0];
+        if (existing.user_id !== null && existing.user_id !== userId) {
+          // Name taken by a different user — reject
+          await client.query("ROLLBACK");
+          return res.status(409).json({
+            error: "A participant with that name already exists in this event",
+          });
+        }
+        // Unclaimed or same user — link and proceed
+        await client.query(
+          "UPDATE participants SET user_id = $1 WHERE id = $2",
+          [userId, existing.id],
+        );
+        participantId = existing.id;
+      } else {
+        const result = await client.query(
+          "INSERT INTO participants (event_id, name, user_id) VALUES ($1, $2, $3) RETURNING id",
+          [invite.event_id, userName, userId],
+        );
+        participantId = result.rows[0].id;
+      }
+
+      await client.query(
+        "UPDATE invites SET status = 'accepted', participant_id = $1 WHERE id = $2",
+        [participantId, invite.id],
+      );
+
+      await client.query("COMMIT");
+
+      return res.status(200).json({
+        eventId: invite.event_id,
+        eventName: invite.event_name,
+        participantId,
+      });
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
   }),
 );
 

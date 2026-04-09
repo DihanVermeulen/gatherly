@@ -1,6 +1,7 @@
 import express, { type Express } from "express";
 import morgan from "morgan";
 import cors from "cors";
+import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import authRouter from "./routes/auth";
 import eventsRouter from "./routes/events";
@@ -16,6 +17,7 @@ export const createServer = (): Express => {
   const app = express();
   app
     .disable("x-powered-by")
+    .use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }))
     .use(morgan("dev"))
     .use(express.urlencoded({ extended: true, limit: "50mb" }))
     .use(express.json({ limit: "50mb" }))
@@ -67,9 +69,10 @@ export const createServer = (): Express => {
       ) => {
         console.error("API Error:", err);
         const status = err.status || err.statusCode || 500;
+        const isProduction = process.env.NODE_ENV === "production";
         res.status(status).json({
-          error: err.message || "Internal Server Error",
-          ...(process.env.NODE_ENV !== "production" && { stack: err.stack }),
+          error: isProduction ? "Internal Server Error" : (err.message || "Internal Server Error"),
+          ...(!isProduction && { stack: err.stack }),
         });
       },
     );

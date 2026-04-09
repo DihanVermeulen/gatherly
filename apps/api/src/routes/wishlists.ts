@@ -196,7 +196,6 @@ router.put(
   asyncHandler(async (req: Request, res: Response) => {
     const { eventId, id } = req.params;
     const {
-      participantId,
       itemName,
       description,
       imageUrl,
@@ -204,6 +203,8 @@ router.put(
       priority,
       pricePence,
     } = req.body;
+    const callerParticipantId = req.user?.participantId;
+    const callerUserId = req.user?.userId;
 
     // Check ownership
     const ownerCheck = await query(
@@ -215,10 +216,20 @@ router.put(
       return res.status(404).json({ error: "Wishlist item not found" });
     }
 
-    if (ownerCheck.rows[0].participant_id !== parseInt(participantId)) {
-      return res
-        .status(403)
-        .json({ error: "Unauthorized - can only edit your own items" });
+    if (callerParticipantId !== undefined) {
+      // Participant session: must own the wishlist item
+      if (ownerCheck.rows[0].participant_id !== callerParticipantId) {
+        return res.status(403).json({ error: "Unauthorized - can only edit your own items" });
+      }
+    } else {
+      // Organizer session: must own the event
+      const eventOwnerCheck = await query(
+        "SELECT id FROM events WHERE id = $1 AND organizer_id = $2",
+        [eventId, callerUserId],
+      );
+      if (eventOwnerCheck.rows.length === 0) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
     }
 
     const result = await query(
@@ -277,7 +288,8 @@ router.delete(
   authenticateJWT,
   asyncHandler(async (req: Request, res: Response) => {
     const { eventId, id } = req.params;
-    const { participantId } = req.body;
+    const callerParticipantId = req.user?.participantId;
+    const callerUserId = req.user?.userId;
 
     // Check ownership
     const ownerCheck = await query(
@@ -289,10 +301,20 @@ router.delete(
       return res.status(404).json({ error: "Wishlist item not found" });
     }
 
-    if (ownerCheck.rows[0].participant_id !== parseInt(participantId)) {
-      return res
-        .status(403)
-        .json({ error: "Unauthorized - can only delete your own items" });
+    if (callerParticipantId !== undefined) {
+      // Participant session: must own the wishlist item
+      if (ownerCheck.rows[0].participant_id !== callerParticipantId) {
+        return res.status(403).json({ error: "Unauthorized - can only delete your own items" });
+      }
+    } else {
+      // Organizer session: must own the event
+      const eventOwnerCheck = await query(
+        "SELECT id FROM events WHERE id = $1 AND organizer_id = $2",
+        [eventId, callerUserId],
+      );
+      if (eventOwnerCheck.rows.length === 0) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
     }
 
     await query("DELETE FROM wishlists WHERE id = $1 AND event_id = $2", [
