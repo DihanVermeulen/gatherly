@@ -253,11 +253,7 @@ export default function CheckoutScreen() {
                   alignItems: "center",
                 })}
               >
-                <RNText
-                  style={{ color: "#ffffff", fontWeight: "700", fontSize: 15 }}
-                >
-                  Apple Pay
-                </RNText>
+                <Text className="text-on-primary-0">Apple Pay</Text>
               </Button>
               {/* Google Pay */}
               <Button
@@ -277,11 +273,7 @@ export default function CheckoutScreen() {
                   alignItems: "center",
                 })}
               >
-                <RNText
-                  style={{ color: "#111827", fontWeight: "700", fontSize: 15 }}
-                >
-                  Google Pay
-                </RNText>
+                <Text className="text-on-primary-0">Google Pay</Text>
               </Button>
             </View>
 
@@ -395,7 +387,7 @@ export default function CheckoutScreen() {
           </View>
 
           {/* ── Submit button ─────────────────────────────────────────────── */}
-          <Pressable
+          <Button
             onPress={handleSubmit}
             disabled={!isFormValid || loading}
             style={({ pressed }) => ({
@@ -416,7 +408,7 @@ export default function CheckoutScreen() {
                 Pay and Activate Event
               </RNText>
             )}
-          </Pressable>
+          </Button>
 
           {/* ── Footer ───────────────────────────────────────────────────── */}
           <View style={{ alignItems: "center", gap: 8 }}>

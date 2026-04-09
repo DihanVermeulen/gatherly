@@ -25,6 +25,11 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 const ACCESS_TOKEN_KEY = "gatherly_access_token";
 const USER_KEY = "gatherly_user";
 
+/** Participant-scoped sessions (magic link, no account) are ephemeral — memory only. */
+function isParticipantSession(u: User): boolean {
+  return !!u.participantId;
+}
+
 export function useSession() {
   const value = use(AuthContext);
   if (!value) throw new Error("useSession must be used within SessionProvider");
@@ -41,7 +46,18 @@ export function SessionProvider({ children }: PropsWithChildren) {
     async function restoreSession() {
       try {
         const response = await authApi.refresh();
-        // Store new access token and user in SecureStore
+
+        // Participant sessions are ephemeral — don't restore them on cold start.
+        // Clear the refresh cookie so it doesn't linger.
+        if (isParticipantSession(response.user)) {
+          try { await authApi.logout(); } catch {}
+          setAccessToken(null);
+          setSession(null);
+          setUser(null);
+          return;
+        }
+
+        // Full account: persist and restore as normal
         await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, response.accessToken);
         await SecureStore.setItemAsync(USER_KEY, JSON.stringify(response.user));
         setAccessToken(response.accessToken);
@@ -64,8 +80,11 @@ export function SessionProvider({ children }: PropsWithChildren) {
   }, []);
 
   const signIn = async (accessToken: string, newUser: User): Promise<void> => {
-    await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, accessToken);
-    await SecureStore.setItemAsync(USER_KEY, JSON.stringify(newUser));
+    // Participant sessions are ephemeral — memory only, no SecureStore persistence
+    if (!isParticipantSession(newUser)) {
+      await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, accessToken);
+      await SecureStore.setItemAsync(USER_KEY, JSON.stringify(newUser));
+    }
     setAccessToken(accessToken);
     setSession(accessToken);
     setUser(newUser);

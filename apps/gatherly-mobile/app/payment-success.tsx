@@ -15,6 +15,7 @@ import { eventsApi, TEvent } from "@/app/api/events";
 import { useEvents } from "@/app/contexts/EventsContext";
 import { PREMIUM_PRICE_DISPLAY } from "@/constants/upgrades";
 import { Button } from "@/components/ui/button";
+import { Text } from "@/components/Themed";
 
 export default function PaymentSuccessScreen() {
   const {
@@ -69,28 +70,9 @@ export default function PaymentSuccessScreen() {
             paddingBottom: 8,
           }}
         >
-          <Pressable
-            onPress={() => router.back()}
-            style={{ padding: 4 }}
-            hitSlop={8}
-          >
-            <ChevronLeft size={22} color="#111827" />
-          </Pressable>
           <View style={{ flex: 1, alignItems: "center" }}>
-            <RNText
-              style={{
-                fontSize: 13,
-                fontWeight: "700",
-                letterSpacing: 3,
-                color: "#6b7280",
-                textTransform: "uppercase",
-              }}
-            >
-              GATHERLY
-            </RNText>
+            <Text className="text-2xl">Gatherly</Text>
           </View>
-          {/* Spacer to balance back arrow */}
-          <View style={{ width: 30 }} />
         </View>
 
         {/* ── Hero section ─────────────────────────────────────────────── */}

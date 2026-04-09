@@ -29,7 +29,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
 } from "@/components/ui/alert-dialog";
-import { ScrollView, TextInput, View } from "react-native";
+import { Image, ScrollView, TextInput, View } from "react-native";
 import { Pressable } from "@/components/ui/pressable";
 import { FlatList } from "@/components/ui/flat-list";
 import { Text } from "@/components/ui/text";
@@ -37,6 +37,7 @@ import { Button, ButtonText } from "@/components/ui/button";
 import { Fab, FabIcon } from "@/components/ui/fab";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import { isSafeImageUri } from "@/app/utils/imageUri";
 import { eventsApi } from "@/app/api/events";
 import { TEvent } from "@/app/api/events";
 import { useSession } from "@/app/contexts/AuthContext";
@@ -306,18 +307,31 @@ function EventCard({ item, onPress, onManage, onDelete }: EventCardProps) {
       }}
     >
       {/* Hero block */}
-      <LinearGradient
-        colors={["#14b8a6", "#0f766e", "#134e4a"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={{ height: 128, alignItems: "center", justifyContent: "center" }}
-      >
-        <Text
-          className="text-5xl font-bold text-white"
-          style={{ opacity: 0.9 }}
-        >
-          {initial}
-        </Text>
+      <View style={{ height: 128 }}>
+        {isSafeImageUri(item.coverPhotoUrl) ? (
+          <Image
+            source={{ uri: item.coverPhotoUrl }}
+            style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" }}
+            resizeMode="cover"
+          />
+        ) : (
+          <LinearGradient
+            colors={["#14b8a6", "#0f766e", "#134e4a"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+          />
+        )}
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          {!isSafeImageUri(item.coverPhotoUrl) && (
+            <Text
+              className="text-5xl font-bold text-white"
+              style={{ opacity: 0.9 }}
+            >
+              {initial}
+            </Text>
+          )}
+        </View>
         {/* Status badge */}
         <View
           className={`absolute top-3 right-3 rounded-full px-3 py-1 ${
@@ -328,7 +342,7 @@ function EventCard({ item, onPress, onManage, onDelete }: EventCardProps) {
             {isActive ? "Active" : "Planning"}
           </Text>
         </View>
-      </LinearGradient>
+      </View>
 
       {/* Card body */}
       <View className="p-4">

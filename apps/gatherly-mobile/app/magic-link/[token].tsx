@@ -132,12 +132,28 @@ export default function MagicLinkScreen() {
 
   // Handle join for logged-in users
   async function handleJoin() {
-    console.log("🚀 ~ handleJoin ~ state:", state);
     if (state === "joining" || hasJoined.current) return; // double-call guard
     setState("joining");
     try {
+      // Full-account user: join without replacing session
+      if (session && user && !user.participantId) {
+        const result = await authApi.joinEventViaMagicLink(token);
+        hasJoined.current = true;
+        setEventId(result.eventId);
+        setEventName(result.eventName);
+
+        if (result.alreadyJoined) {
+          setState("already-joined");
+          return;
+        }
+
+        await refreshEvents();
+        setState("success");
+        return;
+      }
+
+      // No session or participant session: use /redeem flow
       const response = await authApi.redeemMagicLink(token, user?.email);
-      // Update local state first to ensure hasJoined is true before signIn might trigger side effects
       hasJoined.current = true;
       const resolvedEventId = response.user.eventId ?? eventId;
       if (resolvedEventId) setEventId(resolvedEventId);

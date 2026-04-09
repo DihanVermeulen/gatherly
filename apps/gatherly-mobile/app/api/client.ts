@@ -21,8 +21,6 @@ export const setSignOutCallback = (fn: () => Promise<void>) => {
   _signOutCallback = fn;
 };
 
-console.log(API_BASE_URL);
-
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -32,10 +30,12 @@ export const apiClient = axios.create({
   withCredentials: true, // Required for HttpOnly cookies
 });
 
-// Request interceptor for logging and auth token
+// Request interceptor for auth token
 apiClient.interceptors.request.use(
   (config) => {
-    console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
+    if (__DEV__) {
+      console.log(`[api] ${config.method?.toUpperCase()} ${config.url}`);
+    }
 
     // Add access token to Authorization header if available
     const token = getAccessToken();
@@ -131,7 +131,9 @@ apiClient.interceptors.response.use(
       }
     }
 
-    console.error("API Error:", error.response?.data || error.message);
+    if (__DEV__) {
+      console.error("[api] Error:", error.response?.data || error.message);
+    }
     return Promise.reject(error);
   },
 );

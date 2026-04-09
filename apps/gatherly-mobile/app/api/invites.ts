@@ -29,10 +29,18 @@ export type JoinResult = {
 };
 
 export const invitesApi = {
-  // Create an invite for an event (optionally pre-addressed to an email)
-  create: (eventId: string, email?: string): Promise<Invite> =>
+  // Create an invite for an event.
+  // Pass `email` to pre-address the invite to a specific address.
+  // Pass `participantId` when the invitee is an existing participant with a linked
+  // user account — the API will look up their registered email automatically so
+  // the magic link can issue a user-scoped JWT on redemption.
+  create: (
+    eventId: string,
+    email?: string,
+    participantId?: number,
+  ): Promise<Invite> =>
     apiClient
-      .post(`/api/events/${eventId}/invites`, { email })
+      .post(`/api/events/${eventId}/invites`, { email, participantId })
       .then((r) => r.data),
 
   // List all invites for an event

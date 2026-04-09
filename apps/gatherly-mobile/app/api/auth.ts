@@ -50,8 +50,6 @@ export const authApi = {
   },
 
   async refresh(refreshToken?: string): Promise<AuthResponse> {
-    console.log("Refreshing token...");
-    console.log(process.env.EXPO_PUBLIC_API_URL);
     const response = await apiClient.post<AuthResponse>(
       "/api/auth/refresh",
       refreshToken ? { refreshToken } : undefined,
@@ -68,6 +66,20 @@ export const authApi = {
       "/api/auth/magic-link/lookup",
       { token },
     );
+    return response.data;
+  },
+
+  async joinEventViaMagicLink(
+    token: string,
+  ): Promise<{
+    eventId: number;
+    eventName: string;
+    participantId: number;
+    alreadyJoined?: boolean;
+  }> {
+    const response = await apiClient.post("/api/auth/magic-link/join", {
+      token,
+    });
     return response.data;
   },
 
